@@ -5,7 +5,9 @@ import collections
 from functools import partial
 from itertools import product
 
+import fairlearn.metrics
 import numpy as np
+import pandas as pd
 import sklearn.metrics
 from sklearn.utils.multiclass import type_of_target
 from smac.utils.constants import MAXINT
@@ -22,6 +24,15 @@ from autosklearn.constants import (
 from autosklearn.data.target_validator import SUPPORTED_XDATA_TYPES
 
 from .util import sanitize_array
+
+# TODO find a way that is not that hacky
+sensitive_features: Optional[SUPPORTED_XDATA_TYPES]
+sensitive_features = None
+
+
+def set_sensitive_features(X_data: pd.Series, sf: str) -> None:
+    global sensitive_features
+    sensitive_features = X_data[sf]
 
 
 class Scorer(object, metaclass=ABCMeta):
@@ -239,6 +250,28 @@ class _ThresholdScorer(Scorer):
         )
 
 
+class _FairnessScorer(Scorer):
+    def __call__(
+        self,
+        y_true: np.ndarray,
+        y_pred: np.ndarray,
+        *,
+        X_data: Optional[SUPPORTED_XDATA_TYPES] = None,
+        sample_weight: Optional[List[float]] = None,
+    ) -> float:
+        sensitive_feature = pd.DataFrame(sensitive_features)
+        X_data = pd.DataFrame(X_data)
+        sf = sensitive_feature.loc[X_data.index]
+        if y_pred.shape[1] == 2:
+            y_pred = np.argmax(y_pred, axis=1)
+        if self.name == self._score_func.__name__:
+            return self._sign * self._score_func(
+                y_true, y_pred, sensitive_features=sf, sample_weight=sample_weight
+            )
+        else:
+            return 1.0
+
+
 def make_scorer(
     name: str,
     score_func: Callable,
@@ -249,6 +282,7 @@ def make_scorer(
     needs_proba: bool = False,
     needs_threshold: bool = False,
     needs_X: bool = False,
+    needs_fairness: bool = False,
     **kwargs: Any,
 ) -> Scorer:
     """Make a scorer from a performance metric or loss function.
@@ -309,8 +343,12 @@ def make_scorer(
         cls = _ProbaScorer
     elif needs_threshold:
         cls = _ThresholdScorer
+    # could off course also be
+    elif needs_fairness:
+        cls = _FairnessScorer
     else:
         cls = _PredictScorer
+
     return cls(
         name, score_func, optimum, worst_possible_result, sign, kwargs, needs_X=needs_X
     )
@@ -393,6 +431,28 @@ log_loss = make_scorer(
     greater_is_better=False,
     needs_proba=True,
 )
+# fairness scorer
+# TODO  implement more, it is possible with fairlearn
+demographic_parity_difference = make_scorer(
+    "demographic_parity_difference",
+    fairlearn.metrics.demographic_parity_difference,
+    optium=0,
+    worst_possible_result=MAXINT,
+    greater_is_better=False,
+    needs_fairness=True,
+    needs_X=True,
+)
+equalized_odds_difference = make_scorer(
+    "equalized_odds_difference",
+    fairlearn.metrics.equalized_odds_difference,
+    optium=0,
+    worst_possible_result=MAXINT,
+    greater_is_better=False,
+    needs_fairness=True,
+    needs_X=True,
+)
+
+
 # TODO what about mathews correlation coefficient etc?
 
 
@@ -410,7 +470,15 @@ REGRESSION_METRICS = {
 
 CLASSIFICATION_METRICS = {
     scorer.name: scorer
-    for scorer in [accuracy, balanced_accuracy, roc_auc, average_precision, log_loss]
+    for scorer in [
+        accuracy,
+        balanced_accuracy,
+        roc_auc,
+        average_precision,
+        log_loss,
+        demographic_parity_difference,
+        equalized_odds_difference,
+    ]
 }
 
 # NOTE: zero_division
