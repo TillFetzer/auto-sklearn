@@ -3,7 +3,7 @@ Classification
 ==============
 
 The following example shows how to fit *auto-sklearn* to optimize for two
-competing metrics: `precision` and ``.
+competing metrics: `accuracy` and `equalized odds`.
 
 Auto-sklearn uses `SMAC3's implementation of ParEGO <https://automl.github.io/SMAC3/main/examples/3_multi_objective/2_parego.html#parego>`_.
 Multi-objective ensembling and proper access to the full Pareto set will be added in the near
