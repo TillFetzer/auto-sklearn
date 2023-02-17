@@ -47,3 +47,16 @@ DATASET_PROPERTIES_TO_STRING = {
     SIGNED_DATA: "signed data",
     UNSIGNED_DATA: "unsigned data",
 }
+CONSTRAINS_IN = [
+    "DemographicParity",
+    "EqualizedOdds",
+    "TruePositiveRateParity",
+    "FalsePositiveRateParity",
+]
+# ’demographic_parity’, ‘selection_rate_parity’ (synonymous)
+CONSTRAINS_POST = [
+    "demographic_parity",
+    "equalized_odd",
+    "true_positive_rate_parity",
+    "false_positive_rate_parity",
+]

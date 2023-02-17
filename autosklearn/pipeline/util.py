@@ -12,6 +12,7 @@ import sklearn.datasets
 import unittest
 
 
+# maybe find_fair_classes is needed
 def find_sklearn_classes(class_):
     classifiers = set()
     all_subdirectories = []

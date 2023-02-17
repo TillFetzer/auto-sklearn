@@ -121,7 +121,6 @@ class SimpleClassificationPipeline(BasePipeline, ClassifierMixin):
                 fit_params.update(_fit_params)
 
         X, fit_params = super().fit_transformer(X, y, fit_params=fit_params)
-
         return X, fit_params
 
     def predict_proba(self, X, batch_size=None):
@@ -214,6 +213,8 @@ class SimpleClassificationPipeline(BasePipeline, ClassifierMixin):
 
         classifiers = cs.get_hyperparameter("classifier:__choice__").choices
         preprocessors = cs.get_hyperparameter("feature_preprocessor:__choice__").choices
+        # if "fairness" in dataset_properties:
+        #   fairlearn = cs.get_hyperparameter("fairlearn:__choice__").choices
         available_classifiers = self._final_estimator.get_available_components(
             dataset_properties
         )

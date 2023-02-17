@@ -432,6 +432,7 @@ class SingleBestFromRunhistory(AbstractSingleModelEnsemble):
                 best_model_score = score
 
         if not best_model_identifier:
+
             raise ValueError(
                 "No valid model found in run history. This means smac was not able to"
                 " fit a valid model. Please check the log file for errors."

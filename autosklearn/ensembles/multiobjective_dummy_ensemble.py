@@ -120,7 +120,7 @@ class MultiObjectiveDummyEnsemble(AbstractMultiObjectiveEnsemble):
         sort_by_first_metric = np.argsort(all_costs[:, 0])
         efficient_points = pareto_front(all_costs, is_loss=True)
         pareto_set = []
-
+        score = []
         for argsort_idx in sort_by_first_metric:
             if not efficient_points[argsort_idx]:
                 continue
@@ -139,8 +139,9 @@ class MultiObjectiveDummyEnsemble(AbstractMultiObjectiveEnsemble):
                 X_data=X_data,
             )
             pareto_set.append(ensemble)
-
+            score.append(all_costs[argsort_idx])
         self.pareto_set_ = pareto_set
+        self.scores_ = score
         return self
 
     def predict(

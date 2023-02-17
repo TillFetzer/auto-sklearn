@@ -1666,6 +1666,7 @@ class AutoML(BaseEstimator):
         return ensemble
 
     def _load_pareto_set(self) -> Sequence[VotingClassifier | VotingRegressor]:
+
         if self.ensemble_ is None:
             self.ensemble_ = self._backend.load_ensemble(self._seed)
 
@@ -1675,6 +1676,7 @@ class AutoML(BaseEstimator):
 
         if isinstance(self.ensemble_, AbstractMultiObjectiveEnsemble):
             pareto_set = self.ensemble_.pareto_set
+            scores = self.ensemble_.scores_
         else:
             self._logger.warning(
                 "Pareto set not available for single objective ensemble "
@@ -1733,7 +1735,6 @@ class AutoML(BaseEstimator):
                             ("feature_preprocessor", None),
                             (kind, estimator),
                         ]
-
                     estimator = Pipeline(steps=steps)
 
                 weight_vector.append(weight)
@@ -1766,7 +1767,7 @@ class AutoML(BaseEstimator):
 
             ensembles.append(voter)
 
-        return ensembles
+        return ensembles, scores
 
     def score(self, X, y):
         # fix: Consider only index 1 of second dimension

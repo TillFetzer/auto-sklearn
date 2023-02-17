@@ -148,6 +148,8 @@ class ClassifierChoice(AutoSklearnChoice):
         return cs
 
     def predict_proba(self, X):
+        if type(X) is tuple:
+            X = X[0]
         return self.choice.predict_proba(X)
 
     def estimator_supports_iterative_fit(self):
