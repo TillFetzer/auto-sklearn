@@ -23,7 +23,7 @@ import set_fair_params
 ############################################################################
 # Data Loading
 # ============
-def run_experiment(dataset, fairness_constrain, sf, runtime):
+def run_experiment(dataset, fairness_constrain, sf, runtime, file):
     X, y = set_fair_params.load_data(dataset)
     # set_fair_params.set_fairlearn_attributes(X.columns.get_loc("sex"), "sex", "DemographicParity")
     # Change the target to align with scikit-learn's convention that
@@ -78,6 +78,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime):
         fairness_constrain,
         "cr",
         dataset,
+        file
     )
     print(
         "finished correlation remover {}s long on the {} dataset".format(

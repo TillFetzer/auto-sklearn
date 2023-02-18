@@ -111,13 +111,14 @@ def save_pareto(
     fairness_constrain,
     methods,
     dataset,
+    path
 ):
     pareto_front, scores = automl.get_pareto_set()
-    with open("/home/till/Documents/auto-sklearn/results_t.json", "r") as f:
+    with open(path, "r") as f:
         infos = json.load(f)
     pprint(automl.cv_results_)
 
-    with open("/home/till/Documents/auto-sklearn/results_t.json", "w") as f:
+    with open(path, "w") as f:
         test = []
         val = []
         for idx, ensemble in enumerate(pareto_front):

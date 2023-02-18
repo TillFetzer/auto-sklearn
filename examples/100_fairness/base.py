@@ -22,7 +22,7 @@ import json
 from collections import defaultdict
 
 
-def run_experiment(dataset, fairness_constrain, sf, runtime):
+def run_experiment(dataset, fairness_constrain, sf, runtime, file):
     X, y = set_fair_params.load_data(dataset)
 
     # ==========================
@@ -80,4 +80,5 @@ def run_experiment(dataset, fairness_constrain, sf, runtime):
         fairness_constrain,
         "moo",
         dataset,
+        file
     )
