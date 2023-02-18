@@ -1,11 +1,21 @@
 import base
 import corrleation_remover
+import argparse, sys
 
-datasets = ["lawschool"]
-fairness_constrains = ["demographic_parity"]
-runtime = 3 * 60 * 60
-methods = ["moo", "cr"]
-sf = ["sex"]  # same length then dataset or 1
+parser=argparse.ArgumentParser()
+
+parser.add_argument("--d", help="datsets",nargs="*")
+parser.add_argument("--m", help="Foo the program",nargs="*")
+parser.add_argument("--r", help="Foo the program", type = int)
+parser.add_argument("--fc", help="Foo the program", nargs="*")
+parser.add_argument("--sa", help="Foo the program", nargs="*")
+args=parser.parse_args()
+
+datasets = args.d
+fairness_constrains = args.fc
+runtime = args.r
+methods = args.m
+sf = args.sa # same length then dataset or 1
 # sf= ["foreign_worker"]
 print("start")
 if len(sf) == 1:

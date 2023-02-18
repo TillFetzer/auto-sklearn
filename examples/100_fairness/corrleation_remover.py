@@ -1,8 +1,4 @@
-from typing import Optional
-import numpy as np
-import pandas as pd
 from ConfigSpace.configuration_space import ConfigurationSpace
-import fairlearn.reductions
 from autosklearn.askl_typing import FEAT_TYPE_TYPE
 import autosklearn.pipeline.components.classification
 from autosklearn.pipeline.constants import DENSE, PREDICTIONS, SPARSE
@@ -56,7 +52,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime):
             fair_metric,
         ],
         # metric=autosklearn.metrics.accuracy,
-        delete_tmp_folder_after_terminate=True,
+        delete_tmp_folder_after_terminate=False,
         initial_configurations_via_metalearning=0,
         include={
             "data_preprocessor": ["CorrelationRemover"],

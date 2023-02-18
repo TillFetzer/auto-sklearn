@@ -47,7 +47,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime):
     runtime = runtime
     automl = autosklearn.classification.AutoSklearnClassifier(
         time_left_for_this_task=runtime,  # 3h
-        per_run_time_limit=runtime / 2,
+        #per_run_time_limit=runtime / 2,
         metric=[
             autosklearn.metrics.accuracy,
             fair_metric,

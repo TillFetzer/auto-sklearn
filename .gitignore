@@ -2,7 +2,6 @@
 doc/build/*
 doc/examples
 
-*.py[cod]
 
 # Exmaples
 # examples 40_advanced generate a tmp_folder
