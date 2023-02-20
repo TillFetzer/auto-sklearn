@@ -57,7 +57,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file):
         initial_configurations_via_metalearning=0,
         memory_limit=6174,
         include={
-            #'feature_preprocessor': ["SensitiveAtributeRemover"],
+            'feature_preprocessor': ["SensitiveAtributeRemover"],
             "classifier": [
                 "random_forest",
             ]
@@ -78,7 +78,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file):
         sensitive_features,
         runtime,
         fairness_constrain,
-        "moo",
+        "moo without sa",
         dataset,
         file
     )

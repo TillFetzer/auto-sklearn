@@ -7,7 +7,7 @@ from matplotlib.lines import Line2D
 import sys
 
 
-def plot(data,ax,kwargs,):
+def plot(data,ax,**kwargs,):
         if ax is None:
             ax = plt.gca()
         if "marker" not in kwargs:
@@ -17,22 +17,29 @@ def plot(data,ax,kwargs,):
         return ax 
 def pareto_plot(data,ax,**kwargs,):
       
-    plot(ax=ax, **kwargs)
-
-      
+    ax =  plot(data,ax=ax, **kwargs) 
     if ax is None:
                 ax = plt.gca()
 
     if "marker" not in kwargs:
         kwargs["marker"] = "o"
-        xs,ys = data[0], data[1]
-        new_xs = list(xs)
-        new_ys = list(ys)
-        ax.step(new_xs, new_ys, where="post", **kwargs)
+    xs,ys = (data[0], data[1])
+    new_xs = list(xs)
+    new_ys = list(ys)
+     # line plots don't allow these
+    for k in ["facecolor", "edgecolor"]:
+        if k in kwargs:
+            del kwargs[k]
+    
+    for k, k_new in [("s", "markersize")]:
+        if k in kwargs:
+            kwargs[k_new] = kwargs.pop(k)
+    ax.step(new_xs, new_ys, where="post", **kwargs)
 
-        return ax
+    return ax
 
-def make_plot(methods=["moo","crr"], dataset= "adult", runtime=10800):
+def make_plot(methods=["moo","cr"], dataset= "adult", runtime=10800):
+    sns.set_context("paper", font_scale=0.6)
     figsize = (20, 8)
     dpi = 300
     main_size = 20
@@ -42,20 +49,24 @@ def make_plot(methods=["moo","crr"], dataset= "adult", runtime=10800):
     tick_size = 12
     with open('/home/till/Documents/auto-sklearn/results_t.json') as f:
         data = json.load(f)
-    result_0 = data[(data.dataset == "adult") & (dataset.methods==methods[0])&(dataset.runtime == runtime)]
-    result_1 = data[(data.dataset == "adult") & (dataset.methods==methods[0])&(dataset.runtime == runtime)]
-    result_0_val = pd.DataFrame(result_0["val"])
-    result_0_test = pd.DataFrame(result_0["test"])
-    result_1_val = pd.DataFrame(result_1["val"])
-    result_1_test = pd.DataFrame(result_1["test"])
+    data = pd.DataFrame(data)
+    result_0 = data.query("dataset == @dataset and methods == @methods[0] and runtime==@runtime")
+    result_1 = data.query("dataset == @dataset and methods == @methods[1] and runtime==@runtime")
+
+
+    result_0_val = pd.DataFrame(result_0["results"][result_0.index[0]]["val"])
+    result_0_test = pd.DataFrame(result_0["results"][result_0.index[0]]["test"])
+    result_1_val = pd.DataFrame(result_1["results"][result_1.index[0]]["val"])
+    result_1_test = pd.DataFrame(result_1["results"][result_1.index[0]]["test"])
+    
     fig, (val_ax, test_ax) = plt.subplots(
         nrows=1,
         ncols=2,
         sharey=True,
         figsize=figsize,
     )
-    fig.supxlabel(methods[0],fontsize=label_size)
-    fig.supylabel(methods[1].replace("_", " ").capitalize(), fontsize=label_size)
+    fig.supxlabel(result_0["performance_metrics"][result_0.index[0]],fontsize=label_size)
+    fig.supylabel(result_0["fairness_metrics"][result_0.index[0]].replace("_", " ").capitalize(), fontsize=label_size)
 
     val_ax.set_title("Validation", fontsize=title_size)
     test_ax.set_title("Test", fontsize=title_size)
@@ -118,11 +129,12 @@ def make_plot(methods=["moo","crr"], dataset= "adult", runtime=10800):
     # ax.legend()
     fig.suptitle(dataset, fontsize=main_size)
     legend_elements = [Line2D([0], [0], color=c_chocolate, lw=4, label='moo without preprocessing'),
-                   Line2D([0], [0], color="black", lw=4, label='moo without preprocessing')]
+                   Line2D([0], [0], color="black", lw=4, label='moo with correlation remover')]
     fig.tight_layout(rect=[0, 0.02, 1, 0.98])
-    fig.legend(legend_elements, loc=3,  prop={'size': 6})
+    fig.legend(handles=legend_elements, loc=3,  prop={'size': 6})
+    plt.show()
     plt.savefig(f"./figures/experiment_1_{dataset}.png", bbox_inches="tight", pad_inches=0, dpi=dpi)
 
 
 if __name__ == "__main__":
-    make_plot()
+    make_plot(["moo without sa","cr"],"lawschool")
