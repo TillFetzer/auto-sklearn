@@ -40,6 +40,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file):
 
     fair_metric = set_fair_params.set_fair_metric(sf, fairness_constrain)
     set_fair_params.add_sensitive_remover(X.columns.get_loc(sf))
+    set_fair_params.add_no_preprocessor()
 
     ############################################################################
     # Build and fit a classifier
@@ -57,7 +58,8 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file):
         initial_configurations_via_metalearning=0,
         memory_limit=6174,
         include={
-            'feature_preprocessor': ["SensitiveAtributeRemover"],
+            'feature_preprocessor': ["no_preprocessing"],
+            'data_preprocessor': ["no_preprocessor"],
             "classifier": [
                 "random_forest",
             ]
@@ -78,7 +80,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file):
         sensitive_features,
         runtime,
         fairness_constrain,
-        "moo without sa",
+        "moo",
         dataset,
         file
     )

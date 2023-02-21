@@ -31,6 +31,7 @@ from pprint import pprint
 
 
 def load_data(name):
+    print(name)
     if name == "adult":
         X, y = sklearn.datasets.fetch_openml(
             data_id=1590, return_X_y=True, as_frame=True
@@ -98,6 +99,10 @@ def load_data(name):
         X["foreign_worker"] = (X["foreign_worker"] == "yes").astype(int)
         X = pd.get_dummies(X)
         return X, y
+    if name == "crime":
+        # not finished but prepared 
+        X, y = sklearn.datasets.fetch_openml(data_id=315, return_X_y=True, as_frame=True)
+
 
     raise NotImplementedError
 
@@ -291,6 +296,47 @@ class LFR(AutoSklearnPreprocessingAlgorithm):
         return cs
 
 
+class  no_preprocessor(AutoSklearnPreprocessingAlgorithm):
+    
+
+    def __init__(self, **kwargs):
+        """This preprocessors only remove the sensitive attributes"""
+        for key, val in kwargs.items():
+            setattr(self, key, val)
+    
+
+    def fit(self, X, Y=None):
+        self.preprocessor = "no"
+        self.fitted_ = True
+        return self
+
+    def transform(self, X):
+        if self.preprocessor is None:
+            raise NotImplementedError()
+        
+        return X
+
+    @staticmethod
+    def get_properties(dataset_properties=None):
+        return {
+            "shortname": "no",
+            "name": "no",
+            "handles_regression": True,
+            "handles_classification": True,
+            "handles_multiclass": True,
+            "handles_multilabel": True,
+            "handles_multioutput": True,
+            "is_deterministic": True,
+            "input": (SPARSE, DENSE, UNSIGNED_DATA),
+            "output": (DENSE, UNSIGNED_DATA, SIGNED_DATA),
+        }
+
+    @staticmethod
+    def get_hyperparameter_search_space(
+        feat_type: Optional[FEAT_TYPE_TYPE] = None, dataset_properties=None
+    ):
+        cs = ConfigurationSpace()
+        return cs
 class SensitiveAtributeRemover(AutoSklearnPreprocessingAlgorithm):
     index_sf = None
 
@@ -333,6 +379,7 @@ class SensitiveAtributeRemover(AutoSklearnPreprocessingAlgorithm):
     ):
         cs = ConfigurationSpace()
         return cs
+
 
 
 class CorrelationRemover(AutoSklearnPreprocessingAlgorithm):
@@ -528,6 +575,12 @@ def add_correlation_remover(sf):
         CorrelationRemover
     )
     CorrelationRemover.set_fair_params(sf)
+
+def add_no_preprocessor():
+    autosklearn.pipeline.components.data_preprocessing.add_preprocessor(
+        no_preprocessor
+    )
+
 
 
 def add_sensitive_remover(index_sf):

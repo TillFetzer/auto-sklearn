@@ -39,6 +39,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file):
     # ==========================
 
     fair_metric = set_fair_params.set_fair_metric(sf, fairness_constrain)
+    set_fair_params.add_no_preprocessor()
     set_fair_params.add_correlation_remover(sf)
 
     ############################################################################
@@ -56,6 +57,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file):
         initial_configurations_via_metalearning=0,
         include={
             "data_preprocessor": ["CorrelationRemover"],
+            "feature_preprocessor": ["no_preprocessor"], 
             "classifier": [
                 "random_forest",
             ]

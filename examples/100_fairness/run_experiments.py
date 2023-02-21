@@ -5,10 +5,10 @@ import argparse, sys
 parser=argparse.ArgumentParser()
 
 parser.add_argument("--d", help="datsets",nargs="*")
-parser.add_argument("--m", help="Foo the program",nargs="*")
+parser.add_argument("--m", help="Foo the program",nargs="*", default=[])
 parser.add_argument("--r", help="Foo the program", type = int)
-parser.add_argument("--fc", help="Foo the program", nargs="*")
-parser.add_argument("--sa", help="Foo the program", nargs="*")
+parser.add_argument("--fc", help="Foo the program", nargs="*", default=[])
+parser.add_argument("--sa", help="Foo the program", nargs="*",default=[])
 parser.add_argument("--f")
 args=parser.parse_args()
 
