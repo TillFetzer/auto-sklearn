@@ -60,7 +60,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed):
         initial_configurations_via_metalearning=0,
         include={
             "data_preprocessor": ["CorrelationRemover"],
-            "feature_preprocessor": ["no_preprocessor"], 
+            "feature_preprocessor": ["no_preprocessing"], 
             "classifier": [
                 "random_forest",
             ]
@@ -74,17 +74,8 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed):
     # Compute the two competing metrics
     # =================================
     sensitive_features = X_test[sf]
-    set_fair_params.save_pareto(
-        automl,
-        X_test,
-        y_test,
-        sensitive_features,
-        runtime,
-        fairness_constrain,
-        "cr",
-        dataset,
-        file
-    )
+    shutil.copy(tmp + "/del/smac3-output/run_{}/runhistory.json".format(seed), tmp )
+    shutil.rmtree(tmp + "/del")
     print(
         "finished correlation remover {}s long on the {} dataset".format(
             runtime, dataset

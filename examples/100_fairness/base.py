@@ -80,7 +80,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed):
     sensitive_features = X_test[sf]
    
 
-    shutil.copy(tmp + "/del/smac3-output/run_{}/runhistory.json".format(seed), tmp)
+    shutil.copy(tmp + "/del/smac3-output/run_{}/runhistory.json".format(seed), tmp )
     shutil.rmtree(tmp + "/del")
     #set_fair_params.save_pareto(
     #    automl,

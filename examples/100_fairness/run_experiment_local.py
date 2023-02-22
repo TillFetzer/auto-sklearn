@@ -29,6 +29,8 @@ for constrain in fairness_constrains:
         for seed in seeds:
             for method in methods:
                 if method == "moo":
+                    if seed == 42:
+                        continue
                     base.run_experiment(dataset, constrain, sf[i], runtime, file, seed)
                 if method == "redlineing":
                     redlineing.run_experiment(dataset, constrain, sf[i], runtime, file, seed)
