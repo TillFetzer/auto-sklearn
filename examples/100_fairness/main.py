@@ -11,7 +11,7 @@ datasets = ["adult","compass", "german"]
 dataset = datasets[int(idx/15)]
 method = methods[int(idx/5)%3]
 seed = seeds[idx%5]
-print(dataset)
-print(method)
-print(seed)
-#run_experiment.run_experiment(datasets =[], fairness_constrains=["demographic_parity"], methods=["moo"], file="/work/dlclarge2/fetzert-MySpace/autosklearn", seeds=42, sf=["sex"] ,runtime = runtime)
+#rint(dataset)
+#print(method)
+#print(seed)
+run_experiment.run_experiment(datasets =[dataset], fairness_constrains=["demographic_parity"], methods=[method], file="/work/dlclarge2/fetzert-MySpace/autosklearn", seeds=seed, sf=["sex"] ,runtime = 10800)
