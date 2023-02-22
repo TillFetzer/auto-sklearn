@@ -6,6 +6,7 @@ doc/examples
 # Exmaples
 # examples 40_advanced generate a tmp_folder
 examples/40_advanced/tmp_folder
+tmp
 
 # C extensions
 *.c

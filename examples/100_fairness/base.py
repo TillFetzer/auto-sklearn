@@ -15,6 +15,7 @@ import sklearn.datasets
 import sklearn.metrics
 import autosklearn.classification
 import autosklearn.metrics
+import shutil
 
 # TODO change to new location if it is avaible
 import set_fair_params
@@ -22,7 +23,7 @@ import json
 from collections import defaultdict
 
 
-def run_experiment(dataset, fairness_constrain, sf, runtime, file):
+def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed):
     X, y = set_fair_params.load_data(dataset)
 
     # ==========================
@@ -45,6 +46,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file):
     ############################################################################
     # Build and fit a classifier
     # ==========================
+    tmp =  file + "/{}/{}/moo/{}".format(dataset, seed, runtime)
     runtime = runtime
     automl = autosklearn.classification.AutoSklearnClassifier(
         time_left_for_this_task=runtime,  # 3h
@@ -57,6 +59,8 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file):
         delete_tmp_folder_after_terminate=False,
         initial_configurations_via_metalearning=0,
         memory_limit=6174,
+        seed = seed,
+        tmp_folder =  tmp + "/del",
         include={
             'feature_preprocessor': ["no_preprocessing"],
             'data_preprocessor': ["no_preprocessor"],
@@ -73,14 +77,18 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file):
     # Compute the two competing metrics
     # =================================
     sensitive_features = X_test[sf]
-    set_fair_params.save_pareto(
-        automl,
-        X_test,
-        y_test,
-        sensitive_features,
-        runtime,
-        fairness_constrain,
-        "moo",
-        dataset,
-        file
-    )
+   
+
+    shutil.copy(tmp + "/del/smac3-output/run_{}/runhistory.json".format(seed), tmp)
+    shutil.rmtree(tmp + "/del")
+    #set_fair_params.save_pareto(
+    #    automl,
+    #    X_test,
+    #    y_test,
+    #    sensitive_features,
+    #    runtime,
+    #    fairness_constrain,
+    #    "moo",
+    #    dataset,
+    #    file
+    #)
