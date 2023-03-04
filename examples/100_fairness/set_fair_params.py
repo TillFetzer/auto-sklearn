@@ -51,7 +51,7 @@ def load_data(name):
         return X, y
     if name == "lawschool":  # not finished
         X = pd.read_csv(
-            "./dataset/law_data.csv",
+            "/work/dlclarge2/fetzert-MySpace/auto-sklearn/dataset/law_data.csv",
             dtype={"race": "category", "region_first": "category"},
             index_col=0,
         )
