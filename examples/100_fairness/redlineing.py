@@ -40,7 +40,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed):
     # ==========================
 
     fair_metric = set_fair_params.set_fair_metric(sf, fairness_constrain)
-    set_fair_params.add_sensitive_remover(X.columns.get_loc(sf))
+    set_fair_params.add_sensitive_remover(sf)
     set_fair_params.add_no_preprocessor()
 
     ############################################################################

@@ -5,14 +5,16 @@ parser.add_argument("--idx", type=int)
 args=parser.parse_args()
 
 idx = args.idx
-seeds = [42,12345,25,97,45451]
+seeds = [12345,25,42,45451, 97]
 methods = ["moo", "redlineing", "cr"]
-datasets = ["adult","compass", "german"]
-sfs = ["sex", "race", "foreign_worker"]
+datasets = ["adult","compass", "german", "lawschool"]
+sfs = ["sex", "race", "foreign_worker","race"]
+fairness_constrains=["demographic_parity","equalized_odds"]
 dataset = datasets[int(idx/15)]
 sf = sfs[int(idx/15)]
 method = methods[int(idx/5)%3]
 seed = seeds[idx%5]
+
 
 #rint(dataset)
 #print(method)

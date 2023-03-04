@@ -355,7 +355,7 @@ class SensitiveAtributeRemover(AutoSklearnPreprocessingAlgorithm):
     def transform(self, X):
         if self.preprocessor is None:
             raise NotImplementedError()
-        X = np.delete(X, [SensitiveAtributeRemover.index_sf], axis=1).astype(float)
+        X.drop(columns=[SensitiveAtributeRemover.index_sf], inplace=True)
         return X
 
     @staticmethod
