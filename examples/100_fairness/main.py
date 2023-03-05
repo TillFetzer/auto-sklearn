@@ -19,4 +19,4 @@ seed = seeds[idx%5]
 #rint(dataset)
 #print(method)
 #print(seed)
-run_experiment(datasets =[dataset], fairness_constrains=["demographic_parity"], methods=[method], file="/work/dlclarge2/fetzert-MySpace/autosklearn", seeds= [seed], sf=[sf] ,runtime = 10800)
+run_experiment(datasets =[dataset], fairness_constrains=["equalized_odds"], methods=[method], file="/work/dlclarge2/fetzert-MySpace/autosklearn", seeds= [seed], sf=[sf] ,runtime = 10800)
