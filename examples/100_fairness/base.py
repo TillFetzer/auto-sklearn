@@ -47,7 +47,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed):
     ############################################################################
     # Build and fit a classifier
     # ==========================
-    tmp =  file + "/{}/{}/moo/{}".format(dataset, seed, runtime)
+    tmp =  file + "/{}/{}/{}/moo/{}".format(fairness_constrain, dataset, seed, runtime)
     runtime = runtime
     automl = autosklearn.classification.AutoSklearnClassifier(
         time_left_for_this_task=runtime,  # 3h
