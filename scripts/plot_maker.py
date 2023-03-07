@@ -1,3 +1,6 @@
+import warnings
+warnings.simplefilter(action='ignore', category=FutureWarning)
+
 import json
 import pandas as pd
 import seaborn as sns
@@ -5,6 +8,10 @@ import matplotlib
 import matplotlib.pyplot as plt
 from matplotlib.lines import Line2D
 import sys
+import os
+from collections import defaultdict
+from autosklearn.util.multiobjective import pareto_front
+import numpy as np 
 
 
 def plot(data,ax,**kwargs,):
@@ -86,7 +93,7 @@ def make_plot(methods=["moo","cr"], dataset= "adult", runtime=10800):
         "moo_points": dict(s=15, marker="o", edgecolors=c_chocolate, facecolors="none"),
         "moo_pareto": dict(s=4, marker="o", color=c_chocolate, linestyle="dotted", linewidth=2),
         "cr_points": dict(s=15, marker="o", edgecolors="black", facecolors="none"),
-        "cr_pareto": dict(s=4, marker="o", color="black", linestyle="-", linewidth=2),
+        "cr_pareto": dict(s=4, marker="o", color="black", linestyle="-", linewidth=2, line ="dotted"),
         "cr_test_points": dict(s=15, marker="o", edgecolors="black", facecolors="none", color ="black"),
         "moo_test_points": dict(s=15, marker="o", edgecolors=c_chocolate,color=c_chocolate, facecolors="none"),
     }
@@ -136,5 +143,195 @@ def make_plot(methods=["moo","cr"], dataset= "adult", runtime=10800):
     plt.savefig(f"./figures/experiment_1_{dataset}.png", bbox_inches="tight", pad_inches=0, dpi=dpi)
 
 
+
+def pareto_set(all_costs):
+    all_costs = np.array(all_costs)
+    sort_by_first_metric = np.argsort(all_costs[:, 0])
+    efficient_points = pareto_front(all_costs, is_loss=True)
+    pareto_set = []
+    for argsort_idx in sort_by_first_metric:
+            if not efficient_points[argsort_idx]:
+                continue
+            pareto_set.append(all_costs[argsort_idx,:])
+    pareto_set = pd.DataFrame(pareto_set)
+    if len(pareto_set.index)>1:
+        pareto_set.loc[-1] = [-1, pareto_set[1][0]]
+        pareto_set.index = pareto_set.index + 1  # shifting index
+        pareto_set = pareto_set.sort_index()
+        pareto_set =  pareto_set.append([[2, pareto_set[1][0]]])
+    return pareto_set
+
+
+
+def load_data(filepath, runetime):
+    data = defaultdict()
+    for constrain in os.listdir(filepath):
+        data[constrain] = defaultdict()
+        constrain_path = "{}{}".format(filepath, constrain)
+        for dataset in os.listdir(constrain_path):
+            data[constrain][dataset] = defaultdict()
+            dataset_path = "{}/{}".format(constrain_path, dataset)
+            for seed in os.listdir(dataset_path):
+                data[constrain][dataset][seed] = defaultdict()
+                seed_path = "{}/{}".format(dataset_path, seed)
+                for method in os.listdir(seed_path):
+                    data[constrain][dataset][seed][method] = defaultdict()
+                    data[constrain][dataset][seed][method]["points"] = []
+                    data[constrain][dataset][seed][method]["pareto_front"] = []
+                    file  = "{}/{}/{}/runhistory.json".format(seed_path,method,runetime)
+                    with open(file) as f:
+                        ds = json.load(f)
+                    for d in ds["data"]:
+                        try:
+                          point = d[1][5]["train_loss"]
+
+                        #if run was not sucessfull no train loss is generated
+                        #these happened also for sucessfull runs for example timeout
+                        except KeyError:
+                            continue 
+                        data[constrain][dataset][seed][method]['points'].append(point)
+                    data[constrain][dataset][seed][method]['points'] = pd.DataFrame(data[constrain][dataset][seed][method]['points'])
+                    data[constrain][dataset][seed][method]['pareto_front']  = pareto_set(data[constrain][dataset][seed][method]["points"])
+                    print("file:{},pareto_set:{}".format(file, data[constrain][dataset][seed][method]['pareto_front']))
+    return data
+def make_plot_2(data):
+    #TODO add last and first point
+    sns.set_context("paper", font_scale=0.6)
+
+    #TODO set on big monitor
+    figsize = (27,8)
+    dpi = 300
+    main_size = 20
+    plot_offset = 0.1
+    title_size = 18
+    label_size = 16
+    tick_size = 12
+   
+   
+    
+    fig, axis = plt.subplots(
+        nrows=len(data),
+        ncols=len(data[list(data.keys())[0]]), #needs to be more flexible for nowe is ok
+        #sharey=True,
+        figsize=figsize,
+    )
+    fig.supxlabel("error",fontsize=label_size)
+    fig.supylabel("equalized_odds", fontsize=label_size)
+    
+    alpha = 0.1
+
+    styles = {
+        "moo_points": dict(s=15, marker="o", color="red"),
+        "moo_pareto": dict(s=4, marker="o", color="red", linestyle="-", linewidth=2),
+        "cr_points": dict(s=15, marker="o", color="blue"),
+        "cr_pareto": dict(s=4, marker="o", color="blue", linestyle="dashed", linewidth=2),
+        "redlineing_points": dict(s=15, marker="o", color ="green"),
+        "redlineing_pareto": dict(s=4, marker="o", color="green", linestyle="dotted", linewidth=2)
+    }
+    for i,constrain in enumerate(data.keys()):
+        
+        for j,dataset in enumerate(data[constrain].keys()):
+            global_min_x = 1
+            global_max_x = 0
+            global_max_y = 0
+            global_min_y = 1
+            if len(data.keys()) == 1:
+                ax = axis[j]
+            else:
+                ax = axis[i,j]
+            ax.set_title(dataset, fontsize=title_size)
+            for seed in data[constrain][dataset].keys():
+                #seed = "25" 
+                moo_points = data[constrain][dataset][seed]['moo']['points']
+                cr_points = data[constrain][dataset][seed]['cr']['points']
+                redlineing_points = data[constrain][dataset][seed]['redlineing']['points']
+                moo_pf = data[constrain][dataset][seed]['moo']['pareto_front']
+                cr_pf = data[constrain][dataset][seed]['cr']['pareto_front']
+                redlineing_pf = data[constrain][dataset][seed]['redlineing']['pareto_front']
+                plot(moo_points, ax=ax, **styles["moo_points"], alpha = alpha)
+                pareto_plot(moo_pf, ax=ax, **styles["moo_pareto"])
+                plot(cr_points, ax=ax, **styles["cr_points"], alpha = alpha)
+                pareto_plot(cr_pf, ax=ax, **styles["cr_pareto"])
+                plot(redlineing_points, ax=ax, **styles["redlineing_points"], alpha = alpha)
+                pareto_plot(redlineing_pf, ax=ax, **styles["redlineing_pareto"])
+                if len(moo_pf.index)>3:
+                    moo_pf.drop(index=moo_pf.index[[0,-1]],inplace=True)
+                if len(cr_pf.index)>3:
+                    cr_pf.drop(index=cr_pf.index[[0,-1]],inplace=True)
+                if len(redlineing_pf.index)>3:
+                    redlineing_pf.drop(index=redlineing_pf.index[[0,-1]],inplace=True)
+                local_min_x = min(min(moo_pf[0]), min(cr_pf[0]), min(redlineing_pf[0]))
+                local_min_y = min(min(moo_pf[1]), min(cr_pf[1]), min(redlineing_pf[1]))
+                local_max_x = max(max(moo_pf[0]), max(cr_pf[0]), max(redlineing_pf[0]))
+                local_max_y = max(max(moo_pf[1]), max(cr_pf[1]), max(redlineing_pf[1]))
+                global_min_y = local_min_y if local_min_y < global_min_y  else global_min_y
+                global_min_x = local_min_x if local_min_x < global_min_x  else global_min_x
+                global_max_y = local_max_y if local_max_y > global_max_y  else global_max_y
+                global_max_x = local_max_x if local_max_x > global_max_x  else global_max_x
+            dx = abs(global_max_x - global_min_x) if abs(global_max_x - global_min_x) > 0 else 0.1
+            ax.set_xlim(max(global_min_x - dx * plot_offset,0), min(global_max_x + dx * plot_offset,0.01))
+            dy = abs(global_max_y - global_min_y)
+            ax.set_ylim(max(global_min_y - dy*plot_offset,0), min(global_max_y +  dy * plot_offset, 0.01))
+            ax.tick_params(axis="both", which="major", labelsize=tick_size)
+        for j,dataset in enumerate(data[constrain].keys()):
+            if len(data.keys()) == 1:
+                ax = axis[j]
+            else:
+                ax = axis[i,j]
+           
+            #ax.set_box_aspect(1)
+    
+    legend_elements = [Line2D([0], [0], color="red", lw=4, label='moo without preprocessing'),
+                   Line2D([0], [0], color="blue", lw=4, label='moo with correlation remover'),
+                    Line2D([0], [0], color="green", lw=4, label='moo without preprocessing and correlation remover')]
+    fig.tight_layout(rect=[0.03, 0.02, 1, 0.98])
+    fig.legend(handles=legend_elements, loc=3,  prop={'size': 8})
+
+
+    """  
+    ax = val_ax
+
+    # Highlight val pareto front and how things moved
+    
+    
+    # Show the test pareto but faded
+    plot(result_1_val, ax=ax, **styles["cr_points"])
+    pareto_plot(result_1_val, ax=ax, **styles["cr_pareto"])
+    # test_scores.plot( ax=ax, alpha=alpha, **styles["test_points"])
+
+    ax = test_ax
+
+
+    # Highlight val pareto front and how things moved
+    
+    plot(result_0_test, ax=ax, **styles["moo_test_points"])
+   
+    # Show the test pareto but faded
+    plot(result_1_test, ax=ax, **styles["cr_test_points"])
+   
+    # test_scores.plot( ax=ax, alpha=alpha, **styles["test_points"])
+
+    min_x = min(min(result_0_val[0]), min(result_0_test[0]), min(result_1_val[0]), min(result_1_test[0]))
+    min_y = min(min(result_0_val[1]), min(result_0_test[1]), min(result_1_val[1]), min(result_1_test[1]))
+    max_x = max(max(result_0_val[0]), max(result_0_test[0]), max(result_1_val[0]), max(result_1_test[0]))
+    max_y = max(max(result_0_val[1]), max(result_0_test[1]), max(result_1_val[1]), max(result_1_test[1]))
+
+    dx = abs(max_x - min_x)
+    dy = abs(max_y - min_y)
+
+    for ax in (val_ax, test_ax):
+        ax.set_xlim(min_x - dx * plot_offset, max_x + dx * plot_offset)
+        ax.set_ylim(min_y - dy * plot_offset, max_y + dy * plot_offset)
+    # We're adding the legend in tex code
+    # ax.legend()
+    fig.suptitle(dataset, fontsize=main_size)
+    
+    """
+    plt.show()
+    #plt.savefig(f"./figures/experiment_1_{dataset}.png", bbox_inches="tight", pad_inches=0, dpi=dpi)
+
+
+
 if __name__ == "__main__":
-    make_plot(["moo without sa","cr"],"lawschool")
+    data = load_data("/home/till/Documents/auto-sklearn/tmp/", 10800)
+    make_plot_2(data)
