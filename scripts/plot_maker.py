@@ -283,7 +283,7 @@ def make_plot_2(data):
     
     legend_elements = [Line2D([0], [0], color="red", lw=4, label='moo without preprocessing'),
                    Line2D([0], [0], color="blue", lw=4, label='moo with correlation remover'),
-                    Line2D([0], [0], color="green", lw=4, label='moo without preprocessing and correlation remover')]
+                    Line2D([0], [0], color="green", lw=4, label='moo without SA and corrleation remover')]
     fig.tight_layout(rect=[0.03, 0.02, 1, 0.98])
     fig.legend(handles=legend_elements, loc=3,  prop={'size': 8})
 

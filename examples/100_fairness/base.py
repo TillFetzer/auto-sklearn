@@ -24,7 +24,7 @@ import json
 from collections import defaultdict
 
 
-def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed):
+def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcount):
     X, y = set_fair_params.load_data(dataset)
 
     # ==========================
@@ -47,10 +47,11 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed):
     ############################################################################
     # Build and fit a classifier
     # ==========================
-    tmp =  file + "/{}/{}/{}/moo/{}".format(fairness_constrain, dataset, seed, runtime)
+    tmp =  file + "/{}/{}/{}/moo/{}times".format(fairness_constrain, dataset, seed, runcount)
     runtime = runtime
     automl = autosklearn.classification.AutoSklearnClassifier(
         time_left_for_this_task=runtime,  # 3h
+
         #per_run_time_limit=runtime / 2,
         metric=[
             autosklearn.metrics.accuracy,
@@ -59,6 +60,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed):
         # metric=autosklearn.metrics.accuracy,
         delete_tmp_folder_after_terminate=False,
         initial_configurations_via_metalearning=0,
+        smac_scenario_args={"runcount_limit": runcount},
         memory_limit=6174,
         seed = seed,
         tmp_folder =  tmp + "/del",

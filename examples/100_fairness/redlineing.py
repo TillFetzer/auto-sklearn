@@ -23,7 +23,7 @@ import json
 from collections import defaultdict
 
 
-def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed):
+def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcount):
     X, y = set_fair_params.load_data(dataset)
 
     # ==========================
@@ -46,7 +46,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed):
     ############################################################################
     # Build and fit a classifier
     # ==========================
-    tmp =  file + "/{}/{}/{}/redlineing/{}".format(fairness_constrain, dataset, seed, runtime)
+    tmp =  file + "/{}/{}/{}/redlineing/{}times".format(fairness_constrain, dataset, seed, runcount)
     runtime = runtime
     automl = autosklearn.classification.AutoSklearnClassifier(
         time_left_for_this_task=runtime,  # 3h
@@ -60,6 +60,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed):
         initial_configurations_via_metalearning=0,
         memory_limit=6174,
         seed = seed,
+        smac_scenario_args={"runcount_limit": runcount},
         tmp_folder =  tmp + "/del",
         include={
             'feature_preprocessor': ["SensitiveAtributeRemover"],

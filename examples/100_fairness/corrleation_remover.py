@@ -24,7 +24,7 @@ import set_fair_params
 ############################################################################
 # Data Loading
 # ============
-def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed):
+def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcount):
     X, y = set_fair_params.load_data(dataset)
     # set_fair_params.set_fairlearn_attributes(X.columns.get_loc("sex"), "sex", "DemographicParity")
     # Change the target to align with scikit-learn's convention that
@@ -46,7 +46,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed):
     ############################################################################
     # Build and fit a classifier
     # ==========================
-    tmp =  file + "/{}/{}/{}/cr/{}".format(fairness_constrain, dataset, seed, runtime)
+    tmp =  file + "/{}/{}/{}/cr/{}times".format(fairness_constrain, dataset, seed, runcount)
     automl = autosklearn.classification.AutoSklearnClassifier(
         time_left_for_this_task=runtime,
         seed = seed,
@@ -59,6 +59,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed):
         # metric=autosklearn.metrics.accuracy,
         delete_tmp_folder_after_terminate=False,
         initial_configurations_via_metalearning=0,
+        smac_scenario_args={"runcount_limit": runcount},
         include={
             "data_preprocessor": ["CorrelationRemover"],
             "feature_preprocessor": ["no_preprocessing"], 
