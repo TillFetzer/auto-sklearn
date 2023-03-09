@@ -154,7 +154,7 @@ def pareto_set(all_costs):
                 continue
             pareto_set.append(all_costs[argsort_idx,:])
     pareto_set = pd.DataFrame(pareto_set)
-    if len(pareto_set.index)>1:
+    if len(pareto_set.index)<1:
         pareto_set.loc[-1] = [-1, pareto_set[1][0]]
         pareto_set.index = pareto_set.index + 1  # shifting index
         pareto_set = pareto_set.sort_index()
@@ -183,7 +183,10 @@ def load_data(filepath, runetime):
                         ds = json.load(f)
                     for d in ds["data"]:
                         try:
-                          point = d[1][5]["train_loss"]
+                            if d[1][2]["__enum__"] != "StatusType.SUCCESS":
+                                continue
+                            point = d[1][0]
+                    
 
                         #if run was not sucessfull no train loss is generated
                         #these happened also for sucessfull runs for example timeout
@@ -192,7 +195,7 @@ def load_data(filepath, runetime):
                         data[constrain][dataset][seed][method]['points'].append(point)
                     data[constrain][dataset][seed][method]['points'] = pd.DataFrame(data[constrain][dataset][seed][method]['points'])
                     data[constrain][dataset][seed][method]['pareto_front']  = pareto_set(data[constrain][dataset][seed][method]["points"])
-                    print("file:{},pareto_set:{}".format(file, data[constrain][dataset][seed][method]['pareto_front']))
+                    #print("file:{},pareto_set:{}".format(file, data[constrain][dataset][seed][method]['pareto_front']))
     return data
 def make_plot_2(data):
     #TODO add last and first point
@@ -212,7 +215,7 @@ def make_plot_2(data):
     fig, axis = plt.subplots(
         nrows=len(data),
         ncols=len(data[list(data.keys())[0]]), #needs to be more flexible for nowe is ok
-        #sharey=True,
+        sharey=True,
         figsize=figsize,
     )
     fig.supxlabel("error",fontsize=label_size)
@@ -224,17 +227,17 @@ def make_plot_2(data):
         "moo_points": dict(s=15, marker="o", color="red"),
         "moo_pareto": dict(s=4, marker="o", color="red", linestyle="-", linewidth=2),
         "cr_points": dict(s=15, marker="o", color="blue"),
-        "cr_pareto": dict(s=4, marker="o", color="blue", linestyle="dashed", linewidth=2),
+        "cr_pareto": dict(s=4, marker="o", color="blue", linestyle="-", linewidth=2),
         "redlineing_points": dict(s=15, marker="o", color ="green"),
-        "redlineing_pareto": dict(s=4, marker="o", color="green", linestyle="dotted", linewidth=2)
+        "redlineing_pareto": dict(s=4, marker="o", color="green", linestyle="-", linewidth=2)
     }
     for i,constrain in enumerate(data.keys()):
-        
+        global_max_y = 0
+        global_min_y = 1
         for j,dataset in enumerate(data[constrain].keys()):
             global_min_x = 1
             global_max_x = 0
-            global_max_y = 0
-            global_min_y = 1
+            
             if len(data.keys()) == 1:
                 ax = axis[j]
             else:
@@ -260,18 +263,22 @@ def make_plot_2(data):
                     cr_pf.drop(index=cr_pf.index[[0,-1]],inplace=True)
                 if len(redlineing_pf.index)>3:
                     redlineing_pf.drop(index=redlineing_pf.index[[0,-1]],inplace=True)
-                local_min_x = min(min(moo_pf[0]), min(cr_pf[0]), min(redlineing_pf[0]))
-                local_min_y = min(min(moo_pf[1]), min(cr_pf[1]), min(redlineing_pf[1]))
-                local_max_x = max(max(moo_pf[0]), max(cr_pf[0]), max(redlineing_pf[0]))
-                local_max_y = max(max(moo_pf[1]), max(cr_pf[1]), max(redlineing_pf[1]))
+                #local_min_x = min(min(moo_pf[0]), min(cr_pf[0]), min(redlineing_pf[0]))
+                #local_min_y = min(min(moo_pf[1]), min(cr_pf[1]), min(redlineing_pf[1]))
+                #local_max_x = max(max(moo_pf[0]), max(cr_pf[0]), max(redlineing_pf[0]))
+                #local_max_y = max(max(moo_pf[1]), max(cr_pf[1]), max(redlineing_pf[1]))
+                local_min_x = min(min(moo_points[0]), min(cr_points[0]), min(redlineing_points[0]))
+                local_min_y = min(min(moo_points[1]), min(cr_points[1]), min(redlineing_points[1]))
+                local_max_x = max(max(moo_points[0]), max(cr_points[0]), max(redlineing_points[0]))
+                local_max_y = max(max(moo_points[1]), max(cr_points[1]), max(redlineing_points[1]))
                 global_min_y = local_min_y if local_min_y < global_min_y  else global_min_y
                 global_min_x = local_min_x if local_min_x < global_min_x  else global_min_x
                 global_max_y = local_max_y if local_max_y > global_max_y  else global_max_y
                 global_max_x = local_max_x if local_max_x > global_max_x  else global_max_x
-            dx = abs(global_max_x - global_min_x) if abs(global_max_x - global_min_x) > 0 else 0.1
-            ax.set_xlim(max(global_min_x - dx * plot_offset,0), min(global_max_x + dx * plot_offset,0.01))
+            dx = abs(global_max_x - global_min_x) if abs(global_max_x - global_min_x) > 0 else 0.01
+            ax.set_xlim(max(global_min_x - dx * plot_offset,0), global_max_x + dx * plot_offset)
             dy = abs(global_max_y - global_min_y)
-            ax.set_ylim(max(global_min_y - dy*plot_offset,0), min(global_max_y +  dy * plot_offset, 0.01))
+            ax.set_ylim(max(global_min_y - dy*plot_offset,0), global_max_y +  dy * plot_offset)
             ax.tick_params(axis="both", which="major", labelsize=tick_size)
         for j,dataset in enumerate(data[constrain].keys()):
             if len(data.keys()) == 1:
@@ -283,55 +290,18 @@ def make_plot_2(data):
     
     legend_elements = [Line2D([0], [0], color="red", lw=4, label='moo without preprocessing'),
                    Line2D([0], [0], color="blue", lw=4, label='moo with correlation remover'),
-                    Line2D([0], [0], color="green", lw=4, label='moo without SA and corrleation remover')]
+                    Line2D([0], [0], color="green", lw=4, label='moo without SA and corrleation remover')
+                    ]
     fig.tight_layout(rect=[0.03, 0.02, 1, 0.98])
     fig.legend(handles=legend_elements, loc=3,  prop={'size': 8})
 
 
-    """  
-    ax = val_ax
-
-    # Highlight val pareto front and how things moved
-    
-    
-    # Show the test pareto but faded
-    plot(result_1_val, ax=ax, **styles["cr_points"])
-    pareto_plot(result_1_val, ax=ax, **styles["cr_pareto"])
-    # test_scores.plot( ax=ax, alpha=alpha, **styles["test_points"])
-
-    ax = test_ax
-
-
-    # Highlight val pareto front and how things moved
-    
-    plot(result_0_test, ax=ax, **styles["moo_test_points"])
-   
-    # Show the test pareto but faded
-    plot(result_1_test, ax=ax, **styles["cr_test_points"])
-   
-    # test_scores.plot( ax=ax, alpha=alpha, **styles["test_points"])
-
-    min_x = min(min(result_0_val[0]), min(result_0_test[0]), min(result_1_val[0]), min(result_1_test[0]))
-    min_y = min(min(result_0_val[1]), min(result_0_test[1]), min(result_1_val[1]), min(result_1_test[1]))
-    max_x = max(max(result_0_val[0]), max(result_0_test[0]), max(result_1_val[0]), max(result_1_test[0]))
-    max_y = max(max(result_0_val[1]), max(result_0_test[1]), max(result_1_val[1]), max(result_1_test[1]))
-
-    dx = abs(max_x - min_x)
-    dy = abs(max_y - min_y)
-
-    for ax in (val_ax, test_ax):
-        ax.set_xlim(min_x - dx * plot_offset, max_x + dx * plot_offset)
-        ax.set_ylim(min_y - dy * plot_offset, max_y + dy * plot_offset)
-    # We're adding the legend in tex code
-    # ax.legend()
-    fig.suptitle(dataset, fontsize=main_size)
-    
-    """
+  
     plt.show()
     #plt.savefig(f"./figures/experiment_1_{dataset}.png", bbox_inches="tight", pad_inches=0, dpi=dpi)
 
 
 
 if __name__ == "__main__":
-    data = load_data("/home/till/Documents/auto-sklearn/tmp/", 10800)
+    data = load_data("/home/till/Documents/auto-sklearn/tmp/", "10800")
     make_plot_2(data)
