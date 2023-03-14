@@ -171,10 +171,10 @@ class RandomForest(
 
         max_depth = UnParametrizedHyperparameter("max_depth", "None")
         min_samples_split = UniformIntegerHyperparameter(
-            "min_samples_split", 2, 20, default_value=2
+            "min_samples_split", 2, 20, default_value=18
         )
         min_samples_leaf = UniformIntegerHyperparameter(
-            "min_samples_leaf", 1, 20, default_value=1
+            "min_samples_leaf", 1, 20, default_value=20
         )
         min_weight_fraction_leaf = UnParametrizedHyperparameter(
             "min_weight_fraction_leaf", 0.0
