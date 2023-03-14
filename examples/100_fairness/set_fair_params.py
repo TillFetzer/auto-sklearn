@@ -119,10 +119,10 @@ def save_pareto(
     path
 ):
     pareto_front, scores = automl.get_pareto_set()
-    with open(path, "r") as f:
-        infos = json.load(f)
+    # with open(path, "r") as f:
+    #    infos = json.load(f)
     pprint(automl.cv_results_)
-
+    """
     with open(path, "w") as f:
         test = []
         val = []
@@ -145,8 +145,8 @@ def save_pareto(
                 "results": {"test": test, "val": val},
             }
         )
-        json.dump(infos, f)
-
+        #json.dump(infos, f)
+    """
 
 def demographic_parity_difference(solution, prediction, X_data, sensitive_features):
     sf = X_data[sensitive_features]
@@ -231,7 +231,7 @@ class LFR(AutoSklearnPreprocessingAlgorithm):
         cls.index_sf = index_sf
 
     def fit(self, X, y=None):
-        from aif360.sklearn.preprocessing import LearnedFairRepresentations
+        from aif360.sklearn.preprocessing import  LearnedFairRepresentations
 
         # maybe type needs to transform
         self.preprocessor = LearnedFairRepresentations(
@@ -249,7 +249,7 @@ class LFR(AutoSklearnPreprocessingAlgorithm):
     def transform(self, X):
         if self.preprocessor is None:
             raise NotImplementedError()
-        return self.preprocessor.transform(X), self.preprocessor.predict(X)
+        return self.preprocessor.transform(X)#, self.preprocessor.predict(X)
 
     @staticmethod
     def get_properties(dataset_properties=None):
@@ -282,7 +282,7 @@ class LFR(AutoSklearnPreprocessingAlgorithm):
             "fairness_weight", 0.5, 500, default_value=50, log=True
         )
         tol = UniformFloatHyperparameter("tol", 1e-6, 0.1, default_value=1e-4)
-        max_iter = UniformIntegerHyperparameter("max_iter", 10, 200, default_value=200)
+        max_iter = UniformIntegerHyperparameter("max_iter", 5000, 10000, default_value=5000)
         cs.add_hyperparameters(
             [
                 n_protoypes,

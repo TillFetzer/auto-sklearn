@@ -41,13 +41,13 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     # ==========================
 
     fair_metric = set_fair_params.set_fair_metric(sf, fairness_constrain)
-    set_fair_params.add_sensitive_remover(X.columns.get_loc(sf))
+    set_fair_params.add_LFR(sf)
     set_fair_params.add_no_preprocessor()
 
     ############################################################################
     # Build and fit a classifier
     # ==========================
-    tmp =  file + "/{}/{}/{}/moo/{}times".format(fairness_constrain, dataset, seed, runcount)
+    tmp =  file + "/{}/{}/{}/lfr/{}times".format(fairness_constrain, dataset, seed, runcount)
     runtime = runtime
     automl = autosklearn.classification.AutoSklearnClassifier(
         time_left_for_this_task=runtime,  # 3h
@@ -66,7 +66,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
         tmp_folder =  tmp + "/del",
         include={
             'feature_preprocessor': ["no_preprocessing"],
-            'data_preprocessor': ["no_preprocessor"],
+            'data_preprocessor': ["LFR"],
             "classifier": [
                 "random_forest",
             ]
@@ -74,24 +74,22 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
         },
     )
     # sensitive attributes needs to go out
-    automl.fit(X_train, y_train, dataset_name="adult")
+    automl.fit(X_train, y_train)
 
     ############################################################################
     # Compute the two competing metrics
     # =================================
     sensitive_features = X_test[sf]
-    #set_fair_params.save_pareto(
-    #    automl,
-    #    X_test,
-    #    y_test,
-    #    sensitive_features,
-    #    runtime,
-    #    fairness_constrain,
-    #    "moo",
-    #    dataset,
-    #    file
-    #)
+    #set_fair_params.save_pareto( automl,
+    #X_test,
+    #y_test,
+    #sensitive_features,
+    #runtime,
+    #fairness_constrain,
+    #"test",
+    #dataset,
+    #"/home/till/Documents/auto-sklearn/results_t.json")
 
     shutil.copy(tmp + "/del/smac3-output/run_{}/runhistory.json".format(seed), tmp )
     shutil.rmtree(tmp + "/del")
-   
+  

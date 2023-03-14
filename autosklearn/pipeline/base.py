@@ -122,8 +122,8 @@ class BasePipeline(Pipeline):
             a classification algorithm first.
         """
         X, fit_params = self.fit_transformer(X, y, **fit_params)
-        # if type(X) is tuple:
-        #    X,y = X
+        if type(X) is tuple:
+            X,y = X
         self.fit_estimator(X, y, **fit_params)
         return self
 

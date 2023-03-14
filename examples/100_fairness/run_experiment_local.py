@@ -1,5 +1,6 @@
 import base
 import corrleation_remover
+import lfr
 import argparse, sys
 import redlineing
 
@@ -34,8 +35,10 @@ for constrain in fairness_constrains:
                 if method == "moo":
                     base.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount)
                 if method == "redlineing":
-                    redlineing.run_experiment(dataset, constrain, sf[i], runtime, file, seed)
+                    redlineing.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount)
                 if method == "cr":
-                    corrleation_remover.run_experiment(dataset, constrain, sf[i], runtime, file, seed)
+                    corrleation_remover.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount)
+                if method == "lfr":
+                    lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount)
         print("all runs of {} finished".format(dataset))
 print("finished")

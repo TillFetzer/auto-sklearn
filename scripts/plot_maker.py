@@ -263,14 +263,14 @@ def make_plot_2(data):
                     cr_pf.drop(index=cr_pf.index[[0,-1]],inplace=True)
                 if len(redlineing_pf.index)>3:
                     redlineing_pf.drop(index=redlineing_pf.index[[0,-1]],inplace=True)
-                #local_min_x = min(min(moo_pf[0]), min(cr_pf[0]), min(redlineing_pf[0]))
-                #local_min_y = min(min(moo_pf[1]), min(cr_pf[1]), min(redlineing_pf[1]))
-                #local_max_x = max(max(moo_pf[0]), max(cr_pf[0]), max(redlineing_pf[0]))
-                #local_max_y = max(max(moo_pf[1]), max(cr_pf[1]), max(redlineing_pf[1]))
-                local_min_x = min(min(moo_points[0]), min(cr_points[0]), min(redlineing_points[0]))
-                local_min_y = min(min(moo_points[1]), min(cr_points[1]), min(redlineing_points[1]))
-                local_max_x = max(max(moo_points[0]), max(cr_points[0]), max(redlineing_points[0]))
-                local_max_y = max(max(moo_points[1]), max(cr_points[1]), max(redlineing_points[1]))
+                local_min_x = min(min(moo_pf[0]), min(cr_pf[0]), min(redlineing_pf[0]))
+                local_min_y = min(min(moo_pf[1]), min(cr_pf[1]), min(redlineing_pf[1]))
+                local_max_x = max(max(moo_pf[0]), max(cr_pf[0]), max(redlineing_pf[0]))
+                local_max_y = max(max(moo_pf[1]), max(cr_pf[1]), max(redlineing_pf[1]))
+                #local_min_x = min(min(moo_points[0]), min(cr_points[0]), min(redlineing_points[0]))
+                #local_min_y = min(min(moo_points[1]), min(cr_points[1]), min(redlineing_points[1]))
+                #local_max_x = max(max(moo_points[0]), max(cr_points[0]), max(redlineing_points[0]))
+                #local_max_y = max(max(moo_points[1]), max(cr_points[1]), max(redlineing_points[1]))
                 global_min_y = local_min_y if local_min_y < global_min_y  else global_min_y
                 global_min_x = local_min_x if local_min_x < global_min_x  else global_min_x
                 global_max_y = local_max_y if local_max_y > global_max_y  else global_max_y
@@ -303,5 +303,5 @@ def make_plot_2(data):
 
 
 if __name__ == "__main__":
-    data = load_data("/home/till/Documents/auto-sklearn/tmp/", "10800")
+    data = load_data("/home/till/Documents/auto-sklearn/tmp/", "200times")
     make_plot_2(data)
