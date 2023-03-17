@@ -28,7 +28,48 @@ import json
 import sklearn
 import pandas as pd
 from pprint import pprint
+from sklearn.model_selection import train_test_split
 
+def stratified_split(
+    *x, on, size, seed=1, ignore_missing=False
+):
+    # First we get the groups in the stratification, we need to make sure each of them exists
+    # in the output
+    stratification_groups = on.value_counts()
+    min_name, min_val = min(stratification_groups.items(), key=lambda t: t[1])
+    required_samples = len(x) / min_val
+
+    if min_val == 1:
+        raise RuntimeError(
+            f"Can't create a stratified split with only 1 value for {min_name}"
+            f"\n{stratification_groups}"
+        )
+    elif size < required_samples:
+        raise RuntimeError(
+            f"Sampling {size} but need at least {required_samples} samples"
+            f" to accomodate lowest stratification group {min_name} with only"
+            f" {min_val} samples"
+        )
+
+    # We split everything but also make sure to split the stratification column so
+    # we can validate it
+    *splits, sleft, sright = train_test_split(
+        *x,
+        on,
+        train_size=size,
+        stratify=on,
+        random_state=seed,
+    )
+
+    if set(sright) != set(sleft) and not ignore_missing:
+        raise RuntimeError(
+            "Unique values to stratify on are not present in both splits"
+            f" ,try increasing the split size"
+            f"\nbefore {sright.value_counts()}"
+            f"\nafter {sleft.value_counts()}"
+        )
+
+    return splits
 
 def load_data(name):
     print(name)
@@ -52,6 +93,7 @@ def load_data(name):
     if name == "lawschool":  # not finished
         X = pd.read_csv(
             "/work/dlclarge2/fetzert-MySpace/auto-sklearn/dataset/law_data.csv",
+            #"/home/till/Documents/auto-sklearn/dataset/law_data.csv",
             dtype={"race": "category", "region_first": "category"},
             index_col=0,
         )
@@ -98,6 +140,7 @@ def load_data(name):
         y = (y == "good") * 1
         X["foreign_worker"] = (X["foreign_worker"] == "yes").astype(int)
         X = pd.get_dummies(X)
+
         return X, y
     if name == "crime":
         # not finished but prepared 
@@ -122,31 +165,32 @@ def save_pareto(
     # with open(path, "r") as f:
     #    infos = json.load(f)
     pprint(automl.cv_results_)
-    """
-    with open(path, "w") as f:
-        test = []
-        val = []
-        for idx, ensemble in enumerate(pareto_front):
-            predictions = ensemble.predict(X_test)
-            acc = sklearn.metrics.accuracy_score(y_test, predictions)
+    
+   # with open(path, "w") as f:
+    test = []
+    val = []
+    for idx, ensemble in enumerate(pareto_front):
+        predictions = ensemble.predict(X_test)
+        acc = sklearn.metrics.accuracy_score(y_test, predictions)
             # TODO: needs adapted sometime
-            fairness = fairlearn.metrics.demographic_parity_difference(
-                y_test, predictions, sensitive_features=sensitive_features
-            )
-            test.append([1 - acc, fairness])
-            val.append(list(scores[idx]))
-        infos.append(
-            {
-                "dataset": dataset,
-                "methods": methods,
-                "runtime": runtime,
-                "performance_metrics": "error",
-                "fairness_metrics": fairness_constrain,
-                "results": {"test": test, "val": val},
-            }
+        fairness = fairlearn.metrics.equalized_odds_difference(
+            y_test, predictions, sensitive_features=sensitive_features
         )
+        test.append([1 - acc, fairness])
+        val.append(list(scores[idx]))
+        #infos.append(
+        #    {
+        #        "dataset": dataset,
+        #        "methods": methods,
+        #        "runtime": runtime,
+        #        "performance_metrics": "error",
+        #        "fairness_metrics": fairness_constrain,
+        #        "results": {"test": test, "val": val},
+        #    }
+        #)
+    print(test)
         #json.dump(infos, f)
-    """
+    #"""
 
 def demographic_parity_difference(solution, prediction, X_data, sensitive_features):
     sf = X_data[sensitive_features]

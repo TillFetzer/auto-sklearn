@@ -6,7 +6,8 @@ from sklearn.model_selection._split import _validate_shuffle_split
 from sklearn.utils import _approximate_mode, check_random_state, indexable
 from sklearn.utils.multiclass import type_of_target
 from sklearn.utils.validation import _num_samples, check_array, column_or_1d
-
+from sklearn.model_selection import train_test_split
+import pandas as pd 
 
 class CustomStratifiedShuffleSplit(StratifiedShuffleSplit):
     """Splitter that deals with classes with too few samples"""
@@ -104,6 +105,55 @@ class CustomStratifiedShuffleSplit(StratifiedShuffleSplit):
             test = rng.permutation(test)
 
             yield train, test
+
+class CostumFairnessShuffleSplit(StratifiedShuffleSplit):
+
+    def _iter_indices(self, X, y, groups=None):#
+        # First we get the groups in the stratification, we need to make sure each of them exists
+        # in the output
+        x = ((X, y, groups.to_numpy()))
+        groups = groups.reset_index()
+        on = pd.concat([groups, pd.DataFrame(y)],axis=1).drop(columns="index")
+        stratification_groups = on.value_counts()
+        size = self.train_size if self.train_size else 1 - self.test_size #or self.train_size petend how it is
+        min_name, min_val = min(stratification_groups.items(), key=lambda t: t[1])
+        required_samples = len(x) / min_val
+
+        if min_val == 1:
+            raise RuntimeError(
+                f"Can't create a stratified split with only 1 value for {min_name}"
+                f"\n{stratification_groups}"
+            )
+        elif size < required_samples:
+            raise RuntimeError(
+                f"Sampling {size} but need at least {required_samples} samples"
+                f" to accomodate lowest stratification group {min_name} with only"
+                f" {min_val} samples"
+            )
+
+        # We split everything but also make sure to split the stratification column so
+        # we can validate it
+
+        _,_ ,_,_,_,_, sleft, sright = train_test_split(
+                *x,
+                on,
+                train_size=size,
+                stratify=on,
+                random_state=self.random_state,
+            )
+
+        if set(sright) != set(sleft):
+            raise RuntimeError(
+                "Unique values to stratify on are not present in both splits"
+                f" ,try increasing the split size"
+                f"\nbefore {sright.value_counts()}"
+                f"\nafter {sleft.value_counts()}"
+            )
+        #print(sleft.index[:10])
+
+        yield sleft.index, sright.index
+
+
 
 
 class CustomStratifiedKFold(StratifiedKFold):

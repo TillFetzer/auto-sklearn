@@ -23,7 +23,6 @@ from sklearn.model_selection import (
 )
 from sklearn.model_selection._split import BaseShuffleSplit, _RepeatedSplits
 from smac.tae import StatusType, TAEAbortException
-
 from autosklearn.automl_common.common.utils.backend import Backend
 from autosklearn.constants import (
     CLASSIFICATION_TASKS,
@@ -41,6 +40,7 @@ from autosklearn.evaluation.abstract_evaluator import (
 from autosklearn.evaluation.splitter import (
     CustomStratifiedKFold,
     CustomStratifiedShuffleSplit,
+    CostumFairnessShuffleSplit
 )
 from autosklearn.metrics import Scorer
 from autosklearn.pipeline.base import PIPELINE_DATA_DTYPE
@@ -516,9 +516,10 @@ class TrainEvaluator(AbstractEvaluator):
             # TODO: mention that no additional run info is possible in this
             # case! -> maybe remove full CV from the train evaluator anyway and
             # make the user implement this!
+            groups = self.X_train[self.resampling_strategy_args.get("groups")] if self.resampling_strategy_args.get("groups") else None
             for i, (train_split, test_split) in enumerate(
                 self.splitter.split(
-                    self.X_train, y, groups=self.resampling_strategy_args.get("groups")
+                    self.X_train, y, groups=groups
                 )
             ):
 
@@ -1057,6 +1058,34 @@ class TrainEvaluator(AbstractEvaluator):
                         )
                         test_cv = copy.deepcopy(cv)
                         next(test_cv.split(y, y))
+                    except ValueError as e:
+                        if "The least populated class in y has only" in e.args[0]:
+                            cv = CustomStratifiedShuffleSplit(
+                                n_splits=1,
+                                test_size=test_size,
+                                random_state=1,
+                            )
+                        else:
+                            raise e
+                else:
+                    tmp_train_size = int(np.floor(train_size * y.shape[0]))
+                    test_fold = np.zeros(y.shape[0])
+                    test_fold[:tmp_train_size] = -1
+                    cv = PredefinedSplit(test_fold=test_fold)
+                    cv.n_splits = 1  # As sklearn is inconsistent here
+            elif self.resampling_strategy in ["fairness-holdout"]:
+
+                if shuffle:
+                    try:
+                        cv = CostumFairnessShuffleSplit(
+                            n_splits=1,
+                            test_size=test_size,
+                            random_state= self.resampling_strategy_args.get("seed")
+                        )
+                        test_cv = copy.deepcopy(cv)
+                        X = D.data["X_train"]
+                        next(test_cv.split(y, y, groups=X[self.resampling_strategy_args["groups"]]))
+                    
                     except ValueError as e:
                         if "The least populated class in y has only" in e.args[0]:
                             cv = CustomStratifiedShuffleSplit(

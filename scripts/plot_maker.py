@@ -14,6 +14,9 @@ from autosklearn.util.multiobjective import pareto_front
 import numpy as np 
 
 
+from eaf import get_empirical_attainment_surface, EmpiricalAttainmentFuncPlot
+
+
 def plot(data,ax,**kwargs,):
         if ax is None:
             ax = plt.gca()
@@ -242,6 +245,7 @@ def make_plot_2(data):
                 ax = axis[j]
             else:
                 ax = axis[i,j]
+            
             ax.set_title(dataset, fontsize=title_size)
             for seed in data[constrain][dataset].keys():
                 #seed = "25" 
@@ -252,6 +256,7 @@ def make_plot_2(data):
                 cr_pf = data[constrain][dataset][seed]['cr']['pareto_front']
                 redlineing_pf = data[constrain][dataset][seed]['redlineing']['pareto_front']
                 plot(moo_points, ax=ax, **styles["moo_points"], alpha = alpha)
+                #eaf_plot = EmpiricalAttainmentFuncPlot()
                 pareto_plot(moo_pf, ax=ax, **styles["moo_pareto"])
                 plot(cr_points, ax=ax, **styles["cr_points"], alpha = alpha)
                 pareto_plot(cr_pf, ax=ax, **styles["cr_pareto"])
@@ -302,6 +307,82 @@ def make_plot_2(data):
 
 
 
+def make_plot_3(data):
+    sns.set_context("paper", font_scale=0.6)
+
+    #TODO set on big monitor
+    figsize = (27,8)
+    dpi = 300
+    main_size = 20
+    plot_offset = 0.1
+    title_size = 18
+    label_size = 16
+    tick_size = 12
+   
+   
+    
+    fig, axis = plt.subplots(
+        nrows=len(data),
+        ncols=len(data[list(data.keys())[0]]), #needs to be more flexible for nowe is ok
+        sharey=True,
+        figsize=figsize,
+    )
+    fig.supxlabel("error",fontsize=label_size)
+    fig.supylabel("equalized_odds", fontsize=label_size)
+    
+    alpha = 0.1
+
+    styles = {
+        "moo_points": dict(s=15, marker="o", color="red"),
+        "moo_pareto": dict(s=4, marker="o", color="red", linestyle="-", linewidth=2),
+        "cr_points": dict(s=15, marker="o", color="blue"),
+        "cr_pareto": dict(s=4, marker="o", color="blue", linestyle="-", linewidth=2),
+        "redlineing_points": dict(s=15, marker="o", color ="green"),
+        "redlineing_pareto": dict(s=4, marker="o", color="green", linestyle="-", linewidth=2)
+    }
+    for i,constrain in enumerate(data.keys()):
+        global_max_y = 0
+        global_min_y = 1
+        for j,dataset in enumerate(data[constrain].keys()):
+            global_min_x = 1
+            global_max_x = 0
+            
+            if len(data.keys()) == 1:
+                ax = axis[j]
+            else:
+                ax = axis[i,j]
+            
+            ax.set_title(dataset, fontsize=title_size)
+            moo_pf = []
+            #cr_points = []
+
+            for seed in data[constrain][dataset].keys():
+                moo_pf.append(np.array(data[constrain][dataset][seed]['moo']['pareto_front']))
+                #cr_points.append()
+                #seed = "25" 
+            #moo_points = data[constrain][dataset][seed]['moo']['points']
+            #cr_points = data[constrain][dataset][seed]['cr']['points']
+            #redlineing_points = data[constrain][dataset][seed]['redlineing']['points']
+            #moo_pf = data[constrain][dataset][seed]['moo']['pareto_front']
+            #cr_pf = data[constrain][dataset][seed]['cr']['pareto_front']
+            #redlineing_pf = data[constrain][dataset][seed]['redlineing']['pareto_front']
+            #TODO: transform in shape(seed, point, metric)
+            #TODO: also need to thing about that not every seed has the same amount of points
+            #moo_pf = np.vstack(moo_pf)
+            levels = [1, len(moo_pf) // 2, len(moo_pf)]
+            surfs = get_empirical_attainment_surface(costs=moo_pf, levels= levels)
+            eaf_plot = EmpiricalAttainmentFuncPlot()
+            eaf_plot.plot_multiple_surface(
+                ax,
+                surfs=surfs,
+                colors=["red","red","red"], 
+                linestyles=["-","dotted","dashed"],
+                )
+
+              
+
+
+
 if __name__ == "__main__":
     data = load_data("/home/till/Documents/auto-sklearn/tmp/", "200times")
-    make_plot_2(data)
+    make_plot_3(data)

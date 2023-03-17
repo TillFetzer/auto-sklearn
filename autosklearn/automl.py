@@ -1113,6 +1113,7 @@ class AutoML(BaseEstimator):
                 "holdout",
                 "holdout-iterative-fit",
                 "cv",
+                "fairness-holdout",
                 "cv-iterative-fit",
                 "partial-cv",
                 "partial-cv-iterative-fit",
