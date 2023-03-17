@@ -6,7 +6,7 @@ args=parser.parse_args()
 
 idx = args.idx
 seeds = [12345,25,42,45451, 97]
-methods = ["lfr"]
+methods = ["moo","cr","redlineing"]
 datasets = ["adult","compass", "german", "lawschool"]
 sfs = ["sex", "race", "foreign_worker","race"]
 fairness_constrains=["demographic_parity","equalized_odds"]
