@@ -28,6 +28,7 @@ import json
 import sklearn
 import pandas as pd
 from pprint import pprint
+
 from sklearn.model_selection import train_test_split
 
 def stratified_split(
@@ -211,6 +212,14 @@ def consistency_score(solution, prediction, X_data):
 
     return consistency_score(X_data, prediction)
 
+def error_rate_difference(solution, prediction, X_data, sensitive_features):
+    sf = X_data[sensitive_features] 
+    sf = sf.reset_index().drop(columns='index')
+   
+    return abs(
+        (1 - sklearn.metrics.accuracy_score(solution[(sf[sf[sensitive_features] == 0]).index.tolist()], prediction[(sf[sf[sensitive_features] == 0]).index.tolist()]))
+    -   (1 - sklearn.metrics.accuracy_score(solution[(sf[sf[sensitive_features] == 1]).index.tolist()], prediction[(sf[sf[sensitive_features] == 1]).index.tolist()]))
+    )
 
 def set_fair_metric(sf, metric):
     if metric == "demographic_parity":
@@ -244,6 +253,16 @@ def set_fair_metric(sf, metric):
             needs_proba=False,
             needs_X=True,
             needs_threshold=False,
+        )
+    return autosklearn.metrics.make_scorer(
+            name="error_rate_difference",
+            score_func=error_rate_difference,
+            optimum=0,
+            greater_is_better=False,
+            needs_proba=False,
+            needs_X=True,
+            needs_threshold=False,
+            sensitive_features=sf,
         )
     raise NotImplementedError
 
