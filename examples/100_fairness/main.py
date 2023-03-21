@@ -6,7 +6,7 @@ args=parser.parse_args()
 
 idx = args.idx
 #seeds = [12345,25,42,45451, 97]
-seeds = [12345,25,42,45451,97,13,27,39,41,53]
+seeds = [13,27,39,41,53]
 methods = ["moo","cr","redlineing","lfr"]
 datasets = ["adult","compass", "german", "lawschool"]
 sfs = ["sex", "race", "personal_status","race"]
@@ -18,8 +18,8 @@ seed = seeds[idx%len(seeds)]
 fairness_constrains = fairness_constrains[int(idx/(len(seeds)*len(methods)*len(datasets)))]
 
 
-#print(dataset)
-#print(method)
-#print(seed)
-#print(fairness_constrains)
-run_experiment(datasets =[dataset], fairness_constrains=fairness_constrains, methods=[method], file="/work/dlclarge2/fetzert-MySpace/autosklearn", seeds= [seed], sf=[sf] ,runtime = 200000, runcount=200)
+print(dataset)
+print(method)
+print(seed)
+print(fairness_constrains)
+#run_experiment(datasets =[dataset], fairness_constrains=fairness_constrains, methods=[method], file="/work/dlclarge2/fetzert-MySpace/autosklearn", seeds= [seed], sf=[sf] ,runtime = 200000, runcount=200)
