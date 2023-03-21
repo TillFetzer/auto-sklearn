@@ -139,7 +139,7 @@ def load_data(name):
     if name == "german":
         X, y = sklearn.datasets.fetch_openml(data_id=31, return_X_y=True, as_frame=True)
         y = (y == "good") * 1
-        X["foreign_worker"] = (X["foreign_worker"] == "yes").astype(int)
+        X["personal_status"] = X["personal_status"].str.contains("female").astype(int)
         X = pd.get_dummies(X)
 
         return X, y
