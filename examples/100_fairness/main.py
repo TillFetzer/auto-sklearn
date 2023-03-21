@@ -14,7 +14,7 @@ fairness_constrains=["demographic_parity","equalized_odds", "error_rate_differen
 dataset = datasets[int(idx/(len(seeds)*len(methods)))%len(datasets)]
 sf = sfs[int(idx/(len(seeds)*len(methods)))%len(datasets)]
 method = methods[int(idx/len(seeds))%len(methods)]
-seed = seeds[idx%5]
+seed = seeds[idx%len(seeds)]
 fairness_constrains = fairness_constrains[int(idx/(len(seeds)*len(methods)*len(datasets)))]
 
 
