@@ -5,18 +5,21 @@ parser.add_argument("--idx", type=int)
 args=parser.parse_args()
 
 idx = args.idx
-seeds = [12345,25,42,45451, 97]
-methods = ["moo","cr","redlineing"]
+#seeds = [12345,25,42,45451, 97]
+seeds = [12345,25,42,45451,97,13,27,39,41,53]
+methods = ["moo","cr","redlineing","lfr"]
 datasets = ["adult","compass", "german", "lawschool"]
 sfs = ["sex", "race", "foreign_worker","race"]
-fairness_constrains=["demographic_parity","equalized_odds"]
-dataset = datasets[int(idx/15)]
-sf = sfs[int(idx/15)]
-method = methods[int(idx/5)%3]
+fairness_constrains=["demographic_parity","equalized_odds", "error_rate_difference", "consistency_score"]
+dataset = datasets[int(idx/(len(seeds)*len(methods)))%len(datasets)]
+sf = sfs[int(idx/(len(seeds)*len(methods)))%len(datasets)]
+method = methods[int(idx/len(seeds))%len(methods)]
 seed = seeds[idx%5]
+fairness_constrains = fairness_constrains[int(idx/(len(seeds)*len(methods)*len(datasets)))]
 
 
-#rint(dataset)
+#print(dataset)
 #print(method)
 #print(seed)
-run_experiment(datasets =[dataset], fairness_constrains=["error_rate_difference"], methods=[method], file="/work/dlclarge2/fetzert-MySpace/autosklearn", seeds= [seed], sf=[sf] ,runtime = 200000, runcount=200)
+#print(fairness_constrains)
+run_experiment(datasets =[dataset], fairness_constrains=fairness_constrains, methods=[method], file="/work/dlclarge2/fetzert-MySpace/autosklearn", seeds= [seed], sf=[sf] ,runtime = 200000, runcount=200)

@@ -12,7 +12,7 @@ import os
 from collections import defaultdict
 from autosklearn.util.multiobjective import pareto_front
 import numpy as np 
-
+import copy
 
 from eaf import get_empirical_attainment_surface, EmpiricalAttainmentFuncPlot
 
@@ -180,7 +180,7 @@ def load_data(filepath, runetime):
                 for method in os.listdir(seed_path):
                     data[constrain][dataset][seed][method] = defaultdict()
                     data[constrain][dataset][seed][method]["points"] = []
-                    data[constrain][dataset][seed][method]["pareto_front"] = []
+                    data[constrain][dataset][seed][method]["points"] = []
                     file  = "{}/{}/{}/runhistory.json".format(seed_path,method,runetime)
                     with open(file) as f:
                         ds = json.load(f)
@@ -197,8 +197,8 @@ def load_data(filepath, runetime):
                             continue 
                         data[constrain][dataset][seed][method]['points'].append(point)
                     data[constrain][dataset][seed][method]['points'] = pd.DataFrame(data[constrain][dataset][seed][method]['points'])
-                    data[constrain][dataset][seed][method]['pareto_front']  = pareto_set(data[constrain][dataset][seed][method]["points"])
-                    #print("file:{},pareto_set:{}".format(file, data[constrain][dataset][seed][method]['pareto_front']))
+                    data[constrain][dataset][seed][method]['points']  = pareto_set(data[constrain][dataset][seed][method]["points"])
+                    #print("file:{},pareto_set:{}".format(file, data[constrain][dataset][seed][method]['points']))
     return data
 def make_plot_2(data):
     #TODO add last and first point
@@ -216,13 +216,14 @@ def make_plot_2(data):
    
     
     fig, axis = plt.subplots(
-        nrows=len(data),
-        ncols=len(data[list(data.keys())[0]]), #needs to be more flexible for nowe is ok
+        len(data),
+        len(data[list(data.keys())[0]]),
+        1, #needs to be more flexible for nowe is ok
         sharey=True,
         figsize=figsize,
     )
     fig.supxlabel("error",fontsize=label_size)
-    fig.supylabel("equalized_odds", fontsize=label_size)
+    fig.supylabel("1-equalized_odds", fontsize=label_size)
     
     alpha = 0.1
 
@@ -252,9 +253,9 @@ def make_plot_2(data):
                 moo_points = data[constrain][dataset][seed]['moo']['points']
                 cr_points = data[constrain][dataset][seed]['cr']['points']
                 redlineing_points = data[constrain][dataset][seed]['redlineing']['points']
-                moo_pf = data[constrain][dataset][seed]['moo']['pareto_front']
-                cr_pf = data[constrain][dataset][seed]['cr']['pareto_front']
-                redlineing_pf = data[constrain][dataset][seed]['redlineing']['pareto_front']
+                moo_pf = data[constrain][dataset][seed]['moo']['points']
+                cr_pf = data[constrain][dataset][seed]['cr']['points']
+                redlineing_pf = data[constrain][dataset][seed]['redlineing']['points']
                 plot(moo_points, ax=ax, **styles["moo_points"], alpha = alpha)
                 #eaf_plot = EmpiricalAttainmentFuncPlot()
                 pareto_plot(moo_pf, ax=ax, **styles["moo_pareto"])
@@ -305,13 +306,24 @@ def make_plot_2(data):
     plt.show()
     #plt.savefig(f"./figures/experiment_1_{dataset}.png", bbox_inches="tight", pad_inches=0, dpi=dpi)
 
-
+def plots_we(pf, ax, color):
+    levels = [len(pf[0]) // 4, len(pf[0]) // 2, 3* len(pf[0]) //4]
+    surfs_list = [get_empirical_attainment_surface(costs=costs, levels=levels) for costs in pf]
+    #_,we = plt.Subplot(fig, ax)
+    eaf_plot = EmpiricalAttainmentFuncPlot()
+    eaf_plot.plot_multiple_surface_with_band(
+                ax,
+                surfs_list=surfs_list,
+                colors=color,
+                labels=[1,2,3]
+                )
+   
 
 def make_plot_3(data):
     sns.set_context("paper", font_scale=0.6)
 
     #TODO set on big monitor
-    figsize = (27,8)
+    figsize = (27,10)
     dpi = 300
     main_size = 20
     plot_offset = 0.1
@@ -323,12 +335,13 @@ def make_plot_3(data):
     
     fig, axis = plt.subplots(
         nrows=len(data),
-        ncols=len(data[list(data.keys())[0]]), #needs to be more flexible for nowe is ok
-        sharey=True,
+        ncols=len(data[list(data.keys())[0]]),  #needs to be more flexible for nowe is ok
+        #sharey=True,
         figsize=figsize,
     )
+    
     fig.supxlabel("error",fontsize=label_size)
-    fig.supylabel("equalized_odds", fontsize=label_size)
+    fig.supylabel("1-consistency_score", fontsize=label_size)
     
     alpha = 0.1
 
@@ -344,6 +357,7 @@ def make_plot_3(data):
         global_max_y = 0
         global_min_y = 1
         for j,dataset in enumerate(data[constrain].keys()):
+            print(dataset)
             global_min_x = 1
             global_max_x = 0
             
@@ -354,35 +368,73 @@ def make_plot_3(data):
             
             ax.set_title(dataset, fontsize=title_size)
             moo_pf = []
-            #cr_points = []
-
+            cr_pf = []
+            redlineing_pf = []
+            max_len, max_len_cr, max_len_rl = 0,0,0
             for seed in data[constrain][dataset].keys():
-                moo_pf.append(np.array(data[constrain][dataset][seed]['moo']['pareto_front']))
-                #cr_points.append()
+                moo_pf.append(np.array(data[constrain][dataset][seed]['moo']['points']))
+                cr_pf.append(np.array(data[constrain][dataset][seed]['cr']['points']))
+                redlineing_pf.append(np.array(data[constrain][dataset][seed]['redlineing']['points']))
                 #seed = "25" 
+                #moo
+                length = len(data[constrain][dataset][seed]['moo']['points'])
+                max_len = length if max_len < length else max_len
+                plot(data[constrain][dataset][seed]['moo']['points'], ax=ax, **styles["moo_points"], alpha = alpha)
+
+                #cr 
+                length = len(data[constrain][dataset][seed]['cr']['points'])
+                max_len= length if max_len < length else max_len
+                plot(data[constrain][dataset][seed]['cr']['points'], ax=ax, **styles["cr_points"], alpha = alpha)
+
+                #redelineing
+                length = len(data[constrain][dataset][seed]['redlineing']['points'])
+                max_len= length if max_len < length else max_len
+                plot(data[constrain][dataset][seed]['cr']['points'], ax=ax, **styles["redlineing_points"], alpha = alpha)
+
+                
+
+            for  i in range(len(moo_pf)):
+                #moo
+                diff = max_len-len(moo_pf[i]) 
+                if diff:
+                    moo_pf[i] = np.vstack((moo_pf[i], [moo_pf[i][-1]]*(diff)))
+                #cr
+                diff = max_len-len(cr_pf[i]) 
+                if diff:
+                    cr_pf[i] = np.vstack((cr_pf[i], [cr_pf[i][-1]]*(diff)))
+
+                #redliening
+                diff = max_len-len(redlineing_pf[i]) 
+                if diff:
+                    redlineing_pf[i] = np.vstack((redlineing_pf[i], [redlineing_pf[i][-1]]*(diff)))
+
+
             #moo_points = data[constrain][dataset][seed]['moo']['points']
             #cr_points = data[constrain][dataset][seed]['cr']['points']
             #redlineing_points = data[constrain][dataset][seed]['redlineing']['points']
-            #moo_pf = data[constrain][dataset][seed]['moo']['pareto_front']
-            #cr_pf = data[constrain][dataset][seed]['cr']['pareto_front']
-            #redlineing_pf = data[constrain][dataset][seed]['redlineing']['pareto_front']
+            #moo_pf = data[constrain][dataset][seed]['moo']['points']
+            #cr_pf = data[constrain][dataset][seed]['cr']['points']
+            #redlineing_pf = data[constrain][dataset][seed]['redlineing']['points']
             #TODO: transform in shape(seed, point, metric)
             #TODO: also need to thing about that not every seed has the same amount of points
             #moo_pf = np.vstack(moo_pf)
-            levels = [1, len(moo_pf) // 2, len(moo_pf)]
-            surfs = get_empirical_attainment_surface(costs=moo_pf, levels= levels)
-            eaf_plot = EmpiricalAttainmentFuncPlot()
-            eaf_plot.plot_multiple_surface(
-                ax,
-                surfs=surfs,
-                colors=["red","red","red"], 
-                linestyles=["-","dotted","dashed"],
-                )
-
+            #t = copy.deepcopy(ax)
+            #_, ax = plt.subplots(ax)
+            pf = [np.stack(moo_pf, axis=0), np.stack(cr_pf, axis=0), np.stack(redlineing_pf,axis=0)]
+            plots_we(pf, ax, [styles["moo_points"]['color'], styles["cr_points"]['color'],styles["redlineing_points"]['color']])
+            ax.tick_params(axis="both", which="major", labelsize=tick_size)
+    legend_elements = [Line2D([0], [0], color="red", lw=4, label='moo without preprocessing'),
+                   Line2D([0], [0], color="blue", lw=4, label='moo with correlation remover'),
+                    Line2D([0], [0], color="green", lw=4, label='moo without SA and corrleation remover')
+                    ]
+    fig.tight_layout(rect=[0.03, 0.05, 1, 1], pad = 5)
+    fig.legend(handles=legend_elements, loc=3,  prop={'size': 16})
+    plt.show()
               
 
 
 
 if __name__ == "__main__":
-    data = load_data("/home/till/Documents/auto-sklearn/tmp/", "200times")
+
+    data = load_data("/home/till/Documents/auto-sklearn/tmp/", "200timesstrat")
     make_plot_3(data)
