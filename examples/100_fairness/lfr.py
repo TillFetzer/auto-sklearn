@@ -47,7 +47,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     ############################################################################
     # Build and fit a classifier
     # ==========================
-    tmp =  file + "/{}/{}/{}/lfr/{}times".format(fairness_constrain, dataset, seed, runcount)
+    tmp =  file + "/{}/{}/{}/lfr/{}timesstr".format(fairness_constrain, dataset, seed, runcount)
     runtime = runtime
     automl = autosklearn.classification.AutoSklearnClassifier(
         time_left_for_this_task=runtime,  # 3h
@@ -72,6 +72,14 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
             ]
             # "GridSearch_DecisionTree", "ThresholdOptimizer_DecisionTree", , "decision_tree", "ExponentiatedGradient_DecisionTree"
         },
+        resampling_strategy='fairness-holdout',
+        resampling_strategy_arguments= {
+        "train_size": 0.67,     # The size of the training set
+        "shuffle": True,        # Whether to shuffle before splitting data
+        "folds": 5,             # Used in 'cv' based resampling strategies
+        "groups": sf,
+        "seed": seed             
+        }
     )
     # sensitive attributes needs to go out
     automl.fit(X_train, y_train)
