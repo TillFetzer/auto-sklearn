@@ -254,7 +254,7 @@ def set_fair_metric(sf, metric):
             needs_X=True,
             needs_threshold=False,
         )
-    if metric == "err_rate_difference":
+    if metric == "error_rate_difference":
         return autosklearn.metrics.make_scorer(
                 name="error_rate_difference",
                 score_func=error_rate_difference,

@@ -6,13 +6,13 @@ parser.add_argument("--uf", type=str)
 args=parser.parse_args()
 
 idx = args.idx
-under_folder = args.idx
+under_folder = args.uf
 seeds = [12345,25,42,45451, 97]
 #seeds = [13,27,39,41,53]
 methods = ["moo","cr","redlineing","lfr"]
-#datasets = ["adult","compass", "german", "lawschool"]
-datasets = ["german"]
-sfs = ["sex", "race", "personal_status","race"]
+datasets = ["adult","compass", "german", "lawschool"]
+#datasets = ["german"]
+sfs = ["sex", "race", ,"race"]
 #sfs = ["personal_status"]
 fairness_constrains=["demographic_parity","equalized_odds", "error_rate_difference", "consistency_score"]
 dataset = datasets[int(idx/(len(seeds)*len(methods)))%len(datasets)]
