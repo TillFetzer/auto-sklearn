@@ -24,7 +24,7 @@ import json
 from collections import defaultdict
 
 
-def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcount):
+def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcount, under_folder):
     X, y = set_fair_params.load_data(dataset)
 
     # ==========================
@@ -47,7 +47,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     ############################################################################
     # Build and fit a classifier
     # ==========================
-    tmp =  file + "/moreseeds/{}/{}/{}/moo/{}timesstrat".format(fairness_constrain, dataset, seed, runcount)
+    tmp =  file + "/{}/{}/{}/{}/moo/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
     runtime = runtime
     automl = autosklearn.classification.AutoSklearnClassifier(
         time_left_for_this_task=runtime,  # 3h

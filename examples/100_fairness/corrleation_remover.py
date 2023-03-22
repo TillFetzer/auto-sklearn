@@ -24,7 +24,7 @@ import set_fair_params
 ############################################################################
 # Data Loading
 # ============
-def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcount):
+def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcount, under_folder):
     X, y = set_fair_params.load_data(dataset)
     # set_fair_params.set_fairlearn_attributes(X.columns.get_loc("sex"), "sex", "DemographicParity")
     # Change the target to align with scikit-learn's convention that
@@ -46,7 +46,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     ############################################################################
     # Build and fit a classifier
     # ==========================
-    tmp =  file + "/moreseeds/{}/{}/{}/cr/{}timesstrat".format(fairness_constrain, dataset, seed, runcount)
+    tmp =  file + "/{}/{}/{}/{}/cr/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
     automl = autosklearn.classification.AutoSklearnClassifier(
         time_left_for_this_task=runtime,
         seed = seed,

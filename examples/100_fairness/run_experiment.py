@@ -2,7 +2,15 @@ import base
 import corrleation_remover
 import redlineing
 import lfr
-def run_experiment(datasets =["adult"], fairness_constrains=["demographic_parity"], methods=["moo"], file="/work/dlclarge2/fetzert-MySpace/autosklearn", seeds=[42], sf=["sex"] ,runtime = 10800, runcount=-1):
+def run_experiment(datasets =["adult"],
+ fairness_constrains=["demographic_parity"],
+  methods=["moo"], 
+  file="/work/dlclarge2/fetzert-MySpace/autosklearn", 
+  seeds=[42],
+   sf=["sex"] ,
+   runtime = 10800, 
+   runcount=-1,
+   under_folder="dummy"):
     # sf= ["foreign_worker"]
     print("start")
     if len(sf) == 1:
@@ -12,12 +20,12 @@ def run_experiment(datasets =["adult"], fairness_constrains=["demographic_parity
             for seed in seeds:
                 for method in methods:
                     if method == "moo":
-                        base.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount)
+                        base.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder)
                     if method == "redlineing":
-                        redlineing.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount)
+                        redlineing.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder)
                     if method == "cr":
-                        corrleation_remover.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount)
+                        corrleation_remover.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder)
                     if method == "lfr":
-                        lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount)
+                        lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder)
             print("all runs of {} finished".format(dataset))
     print("finished")
