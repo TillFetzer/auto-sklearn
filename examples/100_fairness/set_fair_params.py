@@ -254,16 +254,17 @@ def set_fair_metric(sf, metric):
             needs_X=True,
             needs_threshold=False,
         )
-    return autosklearn.metrics.make_scorer(
-            name="error_rate_difference",
-            score_func=error_rate_difference,
-            optimum=0,
-            greater_is_better=False,
-            needs_proba=False,
-            needs_X=True,
-            needs_threshold=False,
-            sensitive_features=sf,
-        )
+    if metric == "err_rate_difference":
+        return autosklearn.metrics.make_scorer(
+                name="error_rate_difference",
+                score_func=error_rate_difference,
+                optimum=0,
+                greater_is_better=False,
+                needs_proba=False,
+                needs_X=True,
+                needs_threshold=False,
+                sensitive_features=sf,
+            )
     raise NotImplementedError
 
 
