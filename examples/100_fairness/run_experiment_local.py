@@ -39,6 +39,6 @@ for constrain in fairness_constrains:
                 if method == "cr":
                     corrleation_remover.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount)
                 if method == "lfr":
-                    lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount)
+                    lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
         print("all runs of {} finished".format(dataset))
 print("finished")

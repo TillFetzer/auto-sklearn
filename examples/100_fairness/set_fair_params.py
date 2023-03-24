@@ -278,7 +278,6 @@ class LFR(AutoSklearnPreprocessingAlgorithm):
         target_weight=1,
         fairness_weight=50,
         tol=1e-4,
-        max_iter=200,
         **kwargs,
     ):
         self.n_prototypes = n_prototypes
@@ -286,7 +285,7 @@ class LFR(AutoSklearnPreprocessingAlgorithm):
         self.target_weight = target_weight
         self.fairness_weight = fairness_weight
         self.tol = tol
-        self.max_iter = max_iter
+        self.n_iter = self.get_max_iter()
         for key, val in kwargs.items():
             setattr(self, key, val)
 
@@ -304,11 +303,57 @@ class LFR(AutoSklearnPreprocessingAlgorithm):
             target_weight=self.target_weight,
             fairness_weight=self.fairness_weight,
             tol=self.tol,
-            max_iter=self.max_iter,
+            n_prototypes= self.n_prototypes,
+            max_iter=self.n_iter,
         )
         # patched something in aif360, not good
         self.preprocessor.fit(X, y)
         return self
+
+    @staticmethod
+    def get_max_iter():
+        return 6000
+
+    def get_current_iter(self):
+        return self.preprocessor.max_iter
+
+    def iterative_fit(self, X, y, sample_weight=None, iter=1, refit=False):
+        from sklearn.ensemble import RandomForestClassifier
+
+        if refit:
+            self.preprocessor = None
+
+        if self.preprocessor is None:
+            self.n_iter = int(self.max_iter)
+            # initial fit of only increment trees
+            from aif360.sklearn.preprocessing import  LearnedFairRepresentations
+
+            # maybe type needs to transform
+            self.preprocessor = LearnedFairRepresentations(
+                prot_attr=LFR.index_sf,
+                reconstruct_weight=self.reconstruct_weight,
+                target_weight=self.target_weight,
+                fairness_weight=self.fairness_weight,
+                tol=self.tol,
+                n_prototypes=4, 
+                max_iter=iter,
+            )
+        else:
+            self.preprocessor.n_iter += iter
+            self.preprocessor.n_preprocessors = min(
+                self.preprocessor.max_iter, self.n_iter
+            )
+
+        self.preprocessor.fit(X, y, sample_weight=sample_weight)
+        return self
+
+    def configuration_fully_fitted(self):
+        if self.preprocessor is None:
+            return False
+
+        return not len(self.preprocessor.max_iter) < self.n_iter
+    
+
 
     def transform(self, X):
         if self.preprocessor is None:
@@ -335,7 +380,8 @@ class LFR(AutoSklearnPreprocessingAlgorithm):
         feat_type: Optional[FEAT_TYPE_TYPE] = None, dataset_properties=None
     ):
         cs = ConfigurationSpace()
-        n_protoypes = UniformIntegerHyperparameter("n_protypes", 1, 10, default_value=5)
+        # 
+        n_protoypes = UniformIntegerHyperparameter("n_protypes", 1, 100, default_value=50)
         reconstruct_weight = UniformFloatHyperparameter(
             "reconstruction_weight", 0.0001, 1, default_value=0.01, log=True
         )
@@ -346,7 +392,7 @@ class LFR(AutoSklearnPreprocessingAlgorithm):
             "fairness_weight", 0.5, 500, default_value=50, log=True
         )
         tol = UniformFloatHyperparameter("tol", 1e-6, 0.1, default_value=1e-4)
-        max_iter = UniformIntegerHyperparameter("max_iter", 5000, 10000, default_value=5000)
+        #max_iter = UniformIntegerHyperparameter("max_iter", 5000, 10000, default_value=5000)
         cs.add_hyperparameters(
             [
                 n_protoypes,
@@ -354,7 +400,7 @@ class LFR(AutoSklearnPreprocessingAlgorithm):
                 target_weight,
                 tol,
                 fairness_weight,
-                max_iter,
+                #max_iter,
             ]
         )
         return cs

@@ -178,6 +178,8 @@ def load_data(filepath, runetime):
                 data[constrain][dataset][seed] = defaultdict()
                 seed_path = "{}/{}".format(dataset_path, seed)
                 for method in os.listdir(seed_path):
+                    if method == "lfr":
+                        continue
                     data[constrain][dataset][seed][method] = defaultdict()
                     data[constrain][dataset][seed][method]["points"] = []
                     data[constrain][dataset][seed][method]["points"] = []
@@ -197,7 +199,7 @@ def load_data(filepath, runetime):
                             continue 
                         data[constrain][dataset][seed][method]['points'].append(point)
                     data[constrain][dataset][seed][method]['points'] = pd.DataFrame(data[constrain][dataset][seed][method]['points'])
-                    data[constrain][dataset][seed][method]['points']  = pareto_set(data[constrain][dataset][seed][method]["points"])
+                    data[constrain][dataset][seed][method]['pareto_set']  = pareto_set(data[constrain][dataset][seed][method]["points"])
                     #print("file:{},pareto_set:{}".format(file, data[constrain][dataset][seed][method]['points']))
     return data
 def make_plot_2(data):
