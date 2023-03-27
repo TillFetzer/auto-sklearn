@@ -346,7 +346,7 @@ class LFR(AutoSklearnPreprocessingAlgorithm):
         #cahnge shortly the attribute to look on the higher picturec d
         n_prototypes = UniformIntegerHyperparameter("n_prototypes", 1, 100, default_value=50)
         reconstruct_weight = UniformFloatHyperparameter(
-            "reconstruction_weight", 0.0001, 1, default_value=0.01, log=True
+            "reconstruct_weight", 0.0001, 1, default_value=0.01, log=True
         )
         target_weight = UniformFloatHyperparameter(
             "target_weight", 0.01, 100, default_value=30, log=True
