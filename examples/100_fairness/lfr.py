@@ -65,8 +65,8 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
         seed = seed,
         tmp_folder =  tmp + "/del",
         include={
-            'feature_preprocessor': ["no_preprocessing"],
-            'data_preprocessor': ["LFR"],
+            'data_preprocessor': ["no_preprocessor"],
+            'feature_preprocessor': ["LFR"],
             "classifier": [
                 "random_forest",
             ]

@@ -275,12 +275,13 @@ class LFR(AutoSklearnPreprocessingAlgorithm):
     # n_prototypes, reconstruct_weight, target_weight, fairness_weight, tol, max_iter,
     def __init__(
         self,
-        n_prototypes=5,
-        reconstruct_weight=0.01,
-        target_weight=1,
-        fairness_weight=50,
-        tol=1e-4,
-        max_iter=6000, 
+        n_prototypes,
+        reconstruct_weight,
+        target_weight,
+        fairness_weight,
+        tol,
+        max_iter, 
+        predict_y,
         **kwargs,
     ):
         self.n_prototypes = n_prototypes
@@ -289,6 +290,7 @@ class LFR(AutoSklearnPreprocessingAlgorithm):
         self.fairness_weight = fairness_weight
         self.tol = tol
         self.n_iter = max_iter
+        self.predict_y = predict_y
         for key, val in kwargs.items():
             setattr(self, key, val)
 
@@ -316,7 +318,10 @@ class LFR(AutoSklearnPreprocessingAlgorithm):
     def transform(self, X):
         if self.preprocessor is None:
             raise NotImplementedError()
-        return self.preprocessor.transform(X), self.preprocessor.predict(X)
+        if self.predict_y:
+            return self.preprocessor.transform(X), self.preprocessor.predict(X)
+        else:
+            return self.preprocessor.transform(X)
 
     @staticmethod
     def get_properties(dataset_properties=None):
@@ -339,26 +344,28 @@ class LFR(AutoSklearnPreprocessingAlgorithm):
     ):
         cs = ConfigurationSpace()
         #cahnge shortly the attribute to look on the higher picturec d
-        n_protoypes = UniformIntegerHyperparameter("n_protypes", 1, 100, default_value=50)
+        n_prototypes = UniformIntegerHyperparameter("n_prototypes", 1, 100, default_value=50)
         reconstruct_weight = UniformFloatHyperparameter(
             "reconstruction_weight", 0.0001, 1, default_value=0.01, log=True
         )
         target_weight = UniformFloatHyperparameter(
-            "target_weight", 0.01, 10, default_value=1, log=True
+            "target_weight", 0.01, 100, default_value=30, log=True
         )
         fairness_weight = UniformFloatHyperparameter(
             "fairness_weight", 0.5, 500, default_value=50, log=True
         )
         tol = UniformFloatHyperparameter("tol", 1e-6, 0.1, default_value=1e-4)
+        predict_y = CategoricalHyperparameter("predict_y", [True, False])
         max_iter = Constant("max_iter",6000)
         cs.add_hyperparameters(
             [
-                n_protoypes,
+                n_prototypes,
                 reconstruct_weight,
                 target_weight,
                 tol,
                 fairness_weight,
                 max_iter,
+                predict_y
             ]
         )
         return cs
@@ -453,7 +460,7 @@ class SensitiveAtributeRemover(AutoSklearnPreprocessingAlgorithm):
 class CorrelationRemover(AutoSklearnPreprocessingAlgorithm):
     index_sf = []
 
-    def __init__(self, alpha=1, **kwargs):
+    def __init__(self, alpha, **kwargs):
         self.alpha = alpha
         for key, val in kwargs.items():
             setattr(self, key, val)
@@ -639,7 +646,7 @@ def set_fairlearn_attributes(index_sf, metric_name):
 
 
 def add_correlation_remover(sf):
-    autosklearn.pipeline.components.data_preprocessing.add_preprocessor(
+    autosklearn.pipeline.components.feature_preprocessing.add_preprocessor(
         CorrelationRemover
     )
     CorrelationRemover.set_fair_params(sf)
@@ -659,5 +666,5 @@ def add_sensitive_remover(index_sf):
 
 
 def add_LFR(index_sf):
-    autosklearn.pipeline.components.data_preprocessing.add_preprocessor(LFR)
+    autosklearn.pipeline.components.feature_preprocessing.add_preprocessor(LFR)
     LFR.set_fair_params(index_sf)

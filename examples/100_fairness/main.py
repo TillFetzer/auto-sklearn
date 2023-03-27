@@ -8,12 +8,12 @@ args=parser.parse_args()
 idx = args.idx
 under_folder = args.uf
 seeds = [12345,25,42,45451, 97,13,27,39,41,53]
-methods = ["lfr"]
-datasets = ["compass"]
+methods = ["cr"]
+datasets = ["german","adult","compass","lawschool"]
 #datasets = ["german"]
-sfs = ["race"]
-#sfs = ["personal_status"]
-fairness_constrains=["demographic_parity"]
+sfs = ["personal_status", "sex", "race", "race"]
+fairness_constrains=["demographic_parity","equalized_odds", "error_rate_difference", "consistency_score"]
+
 dataset = datasets[int(idx/(len(seeds)*len(methods)))%len(datasets)]
 sf = sfs[int(idx/(len(seeds)*len(methods)))%len(datasets)]
 method = methods[int(idx/len(seeds))%len(methods)]

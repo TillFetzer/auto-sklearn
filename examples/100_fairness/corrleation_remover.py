@@ -61,8 +61,8 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
         initial_configurations_via_metalearning=0,
         smac_scenario_args={"runcount_limit": runcount},
         include={
-            "data_preprocessor": ["CorrelationRemover"],
-            "feature_preprocessor": ["no_preprocessing"], 
+            "feature_preprocessor": ["CorrelationRemover"],
+            "data_preprocessor": ["no_preprocessor"], 
             "classifier": [
                 "random_forest",
             ]
