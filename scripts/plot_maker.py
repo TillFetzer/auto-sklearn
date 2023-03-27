@@ -366,11 +366,13 @@ def make_plot_3(data):
             print(dataset)
             global_min_x = 1
             global_max_x = 0
-            
-            if len(data.keys()) == 1:
-                ax = axis[j]
+            if len(data) ==1:
+                ax= axis 
             else:
-                ax = axis[i,j]
+                if len(data.keys()) == 1:
+                    ax = axis[j]
+                else:
+                    ax = axis[i,j]
             
             ax.set_title(dataset, fontsize=title_size)
             moo_pf = []
@@ -381,7 +383,7 @@ def make_plot_3(data):
             for seed in data[constrain][dataset].keys():
                 moo_pf.append(np.array(data[constrain][dataset][seed]['moo']['points']))
                 cr_pf.append(np.array(data[constrain][dataset][seed]['cr']['points']))
-                redlineing_pf.append(np.array(data[constrain][dataset][seed]['redlineing']['points']))
+                redlineing_pf.append(np.array(data[constrain][dataset][seed]['lfr-new']['points']))
                 lfr_pf.append(np.array(data[constrain][dataset][seed]['lfr']['points']))
                 #seed = "25" 
                 #moo
@@ -395,7 +397,7 @@ def make_plot_3(data):
                 plot(data[constrain][dataset][seed]['cr']['points'], ax=ax, **styles["cr_points"], alpha = alpha)
 
                 #redelineing
-                length = len(data[constrain][dataset][seed]['redlineing']['points'])
+                length = len(data[constrain][dataset][seed]['lfr-new']['points'])
                 max_len= length if max_len < length else max_len
                 plot(data[constrain][dataset][seed]['redlineing']['points'], ax=ax, **styles["redlineing_points"], alpha = alpha)
 

@@ -316,7 +316,7 @@ class LFR(AutoSklearnPreprocessingAlgorithm):
     def transform(self, X):
         if self.preprocessor is None:
             raise NotImplementedError()
-        return self.preprocessor.transform(X)#, self.preprocessor.predict(X)
+        return self.preprocessor.transform(X), self.preprocessor.predict(X)
 
     @staticmethod
     def get_properties(dataset_properties=None):
