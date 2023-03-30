@@ -770,9 +770,10 @@ class AutoML(BaseEstimator):
                 return self.configuration_space
 
             # == Perform dummy predictions
-            with self._stopwatch.time("Dummy predictions"):
-                self.num_run += 1
-                self._do_dummy_prediction()
+            #thhese need to be on comented again
+            #with self._stopwatch.time("Dummy predictions"):
+            #    self.num_run += 1
+            #    self._do_dummy_prediction()
 
             # == RUN ensemble builder
             # Do this before calculating the meta-features to make sure that the

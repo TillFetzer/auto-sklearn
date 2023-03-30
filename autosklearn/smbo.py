@@ -21,7 +21,7 @@ from smac.runhistory.runhistory2epm import RunHistory2EPM4LogCost
 from smac.scenario.scenario import Scenario
 from smac.tae.dask_runner import DaskParallelRunner
 from smac.tae.serial_runner import SerialRunner
-
+from ConfigSpace.configuration_space import Configuration
 import autosklearn.metalearning
 from autosklearn.constants import (
     BINARY_CLASSIFICATION,
@@ -444,7 +444,7 @@ class AutoMLSMBO:
         # Initialize some SMAC dependencies
 
         metalearning_configurations = self.get_metalearning_suggestions()
-
+        
         if self.resampling_strategy in ["partial-cv", "partial-cv-iterative-fit"]:
             num_folds = self.resampling_strategy_args["folds"]
             instances = [
@@ -521,8 +521,15 @@ class AutoMLSMBO:
                         scenario_dict[arg],
                         self.smac_scenario_args[arg],
                     )
+            metalearning_configurations = []
+            if "init_config" in self.smac_scenario_args:
+                for config in self.smac_scenario_args["init_config"]:
+                    config['feature_preprocessor:__choice__'] = "CorrelationRemover"
+                    for i in range(1,11):
+                        config['feature_preprocessor:CorrelationRemover:alpha'] = 1/i
+                        metalearning_configurations.append(Configuration(self.config_space,config))
             scenario_dict.update(self.smac_scenario_args)
-
+            
         smac_args = {
             "scenario_dict": scenario_dict,
             "seed": seed,

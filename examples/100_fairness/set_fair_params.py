@@ -32,7 +32,7 @@ import pandas as pd
 from pprint import pprint
 
 from sklearn.model_selection import train_test_split
-
+from ConfigSpace.configuration_space import Configuration
 def stratified_split(
     *x, on, size, seed=1, ignore_missing=False
 ):
@@ -151,6 +151,7 @@ def load_data(name):
 
 
     raise NotImplementedError
+
 
 
 def save_pareto(

@@ -18,13 +18,22 @@ import set_fair_params
 
 # logging.basicConfig(filename="/home/till/Documents/loogging.txt")
 
-# TODO search if 5 is right now rigth
+
 
 
 ############################################################################
 # Data Loading
 # ============
-def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcount, under_folder):
+def run_experiment(
+    dataset, 
+    fairness_constrain, 
+    sf, 
+    runtime, 
+    file, 
+    seed, 
+    runcount=None, 
+    under_folder="no_name", 
+    configs = None):
     X, y = set_fair_params.load_data(dataset)
     # set_fair_params.set_fairlearn_attributes(X.columns.get_loc("sex"), "sex", "DemographicParity")
     # Change the target to align with scikit-learn's convention that
@@ -38,15 +47,20 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     ############################################################################
     # Build and fit a classifier
     # ==========================
-
-    fair_metric = set_fair_params.set_fair_metric(sf, fairness_constrain)
-    set_fair_params.add_no_preprocessor()
-    set_fair_params.add_correlation_remover(sf)
+    if runcount:
+        scenario_args = {"runcount_limit": 10*runcount + 1, "init_config": configs} if configs  else {"runcount_limit": runcount}
+        #these only for structure in the folders
+        runcount = "same_hyperparamer" if configs else str(runcount) + "strat"
+        fair_metric = set_fair_params.set_fair_metric(sf, fairness_constrain)
+        set_fair_params.add_no_preprocessor()
+        set_fair_params.add_correlation_remover(sf)
+    else: 
+        runcount = runtime
 
     ############################################################################
     # Build and fit a classifier
     # ==========================
-    tmp =  file + "/{}/{}/{}/{}/cr/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
+    tmp =  file + "/{}/{}/{}/{}/cr/{}".format(under_folder, fairness_constrain, dataset, seed, runcount)
     automl = autosklearn.classification.AutoSklearnClassifier(
         time_left_for_this_task=runtime,
         seed = seed,
@@ -58,8 +72,8 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
         ],
         # metric=autosklearn.metrics.accuracy,
         delete_tmp_folder_after_terminate=False,
-        initial_configurations_via_metalearning=0,
-        smac_scenario_args={"runcount_limit": runcount},
+        initial_configurations_via_metalearning=15,
+        smac_scenario_args=scenario_args,
         include={
             "feature_preprocessor": ["CorrelationRemover"],
             "data_preprocessor": ["no_preprocessor"], 

@@ -29,7 +29,7 @@ X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(
 # ==========================
 
 automl = autosklearn.classification.AutoSklearnClassifier(
-    time_left_for_this_task=120,
+    time_left_for_this_task=12000,
     per_run_time_limit=30,
     tmp_folder="/tmp/autosklearn_classification_example_tmp",
 )

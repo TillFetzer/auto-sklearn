@@ -223,7 +223,7 @@ def make_plot_2(data):
         figsize=figsize,
     )
     fig.supxlabel("error",fontsize=label_size)
-    fig.supylabel("1-equalized_odds", fontsize=label_size)
+    fig.supylabel("error_rate_difference", fontsize=label_size)
     
     alpha = 0.1
 
@@ -341,7 +341,7 @@ def make_plot_3(data):
     )
     
     fig.supxlabel("error",fontsize=label_size)
-    fig.supylabel("1-equalized_odds", fontsize=label_size)
+    fig.supylabel("consistency_score", fontsize=label_size)
     def rgb(r: int, g: int, b: int) -> str:
         return "#%02x%02x%02x" % (r, g, b)
 
@@ -366,25 +366,25 @@ def make_plot_3(data):
             print(dataset)
             global_min_x = 1
             global_max_x = 0
-            if len(data) ==1:
-                ax= axis 
+            #if len(data) ==1:
+               # ax= axis 
+            #else:
+            if len(data.keys()) == 1:
+                ax = axis[j]
             else:
-                if len(data.keys()) == 1:
-                    ax = axis[j]
-                else:
-                    ax = axis[i,j]
+                ax = axis[i,j]
             
             ax.set_title(dataset, fontsize=title_size)
             moo_pf = []
             cr_pf = []
             redlineing_pf = []
-            lfr_pf = []
+            #lfr_pf = []
             max_len, max_len_cr, max_len_rl = 0,0,0
             for seed in data[constrain][dataset].keys():
                 moo_pf.append(np.array(data[constrain][dataset][seed]['moo']['points']))
                 cr_pf.append(np.array(data[constrain][dataset][seed]['cr']['points']))
-                redlineing_pf.append(np.array(data[constrain][dataset][seed]['lfr-new']['points']))
-                lfr_pf.append(np.array(data[constrain][dataset][seed]['lfr']['points']))
+                redlineing_pf.append(np.array(data[constrain][dataset][seed]['redlineing']['points']))
+                #lfr_pf.append(np.array(data[constrain][dataset][seed]['lfr']['points']))
                 #seed = "25" 
                 #moo
                 length = len(data[constrain][dataset][seed]['moo']['points'])
@@ -397,14 +397,14 @@ def make_plot_3(data):
                 plot(data[constrain][dataset][seed]['cr']['points'], ax=ax, **styles["cr_points"], alpha = alpha)
 
                 #redelineing
-                length = len(data[constrain][dataset][seed]['lfr-new']['points'])
+                length = len(data[constrain][dataset][seed]['redlineing']['points'])
                 max_len= length if max_len < length else max_len
                 plot(data[constrain][dataset][seed]['redlineing']['points'], ax=ax, **styles["redlineing_points"], alpha = alpha)
 
-                #lfr
-                length = len(data[constrain][dataset][seed]['lfr']['points'])
-                max_len= length if max_len < length else max_len
-                plot(data[constrain][dataset][seed]['lfr']['points'], ax=ax, **styles["lfr_points"], alpha = alpha)
+                ##lfr
+                #length = len(data[constrain][dataset][seed]['lfr']['points'])
+                #max_len= length if max_len < length else max_len
+                #plot(data[constrain][dataset][seed]['lfr']['points'], ax=ax, **styles["lfr_points"], alpha = alpha)
 
             for  i in range(len(moo_pf)):
                 #moo
@@ -434,14 +434,14 @@ def make_plot_3(data):
             #t = copy.deepcopy(ax)
             #_, ax = plt.subplots(ax)
             # 
-            pf = [np.stack(moo_pf, axis=0),np.stack(cr_pf, axis=0),np.stack(redlineing_pf,axis=0), np.stack(lfr_pf,axis=0)]
+            pf = [np.stack(moo_pf, axis=0),np.stack(cr_pf, axis=0),np.stack(redlineing_pf,axis=0)]
             #
-            plots_we(pf, ax, [styles["moo_points"]['color'],styles["cr_points"]['color'], styles["redlineing_points"]['color'],styles["lfr_points"]['color']])
+            plots_we(pf, ax, [styles["moo_points"]['color'],styles["cr_points"]['color'], styles["redlineing_points"]['color']])
             ax.tick_params(axis="both", which="major", labelsize=tick_size)
     legend_elements = [Line2D([0], [0], color="red", lw=4, label='moo without preprocessing'),
                    Line2D([0], [0], color="blue", lw=4, label='moo with correlation remover'),
                     Line2D([0], [0], color="green", lw=4, label='moo without SA and corrleation remover'),
-                    Line2D([0], [0], color=c_color, lw=4, label='moo with learned fair represenation')
+                    #Line2D([0], [0], color=c_color, lw=4, label='moo with learned fair represenation')
                     ]
     fig.tight_layout(rect=[0.03, 0.05, 1, 1], pad = 5)
     fig.legend(handles=legend_elements, loc=3,  prop={'size': 16})
