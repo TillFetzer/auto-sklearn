@@ -1103,7 +1103,7 @@ class TrainEvaluator(AbstractEvaluator):
                     cv = CustomStratifiedFairnessKFold(
                                 n_splits=self.resampling_strategy_args["folds"],
                                 shuffle=shuffle,
-                                random_state=1,
+                                random_state=self.resampling_strategy_args.get("seed"),
                                 groups=self.resampling_strategy_args["groups"]
                             )
                 except:
