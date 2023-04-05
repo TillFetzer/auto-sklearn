@@ -148,21 +148,25 @@ def make_plot(methods=["moo","cr"], dataset= "adult", runtime=10800):
 
 
 def pareto_set(all_costs):
-    all_costs = np.array(all_costs)
+    confs = all_costs["configs"]
+    all_costs = np.array(all_costs["points"])
     sort_by_first_metric = np.argsort(all_costs[:, 0])
     efficient_points = pareto_front(all_costs, is_loss=True)
     pareto_set = []
+    pareto_config =[]
     for argsort_idx in sort_by_first_metric:
             if not efficient_points[argsort_idx]:
                 continue
             pareto_set.append(all_costs[argsort_idx,:])
+            pareto_config.append(confs[argsort_idx])
     pareto_set = pd.DataFrame(pareto_set)
-    if len(pareto_set.index)<1:
-        pareto_set.loc[-1] = [-1, pareto_set[1][0]]
-        pareto_set.index = pareto_set.index + 1  # shifting index
-        pareto_set = pareto_set.sort_index()
-        pareto_set =  pareto_set.append([[2, pareto_set[1][0]]])
-    return pareto_set
+    #if len(pareto_set.index)<1:
+    #    pareto_set.loc[-1] = [-1, pareto_set[1][0]]
+    #    pareto_set.index = pareto_set.index + 1  # shifting index
+    #    pareto_set = pareto_set.sort_index()
+    #    pareto_set =  pareto_set.append([[2, pareto_set[1][0]]])
+    return pareto_set, pareto_config
+
 
 
 
@@ -180,8 +184,12 @@ def load_data(filepath, runetime):
                 for method in os.listdir(seed_path):
                     data[constrain][dataset][seed][method] = defaultdict()
                     data[constrain][dataset][seed][method]["points"] = []
-                    data[constrain][dataset][seed][method]["points"] = []
-                    file  = "{}/{}/{}/runhistory.json".format(seed_path,method,runetime)
+                    data[constrain][dataset][seed][method]["configs"] = []
+                   
+                    runetime_folder = "same_hyperparameter"  if method == "cr" else runetime
+                    
+                    file  = "{}/{}/{}/runhistory.json".format(seed_path,method,runetime_folder)
+
                     with open(file) as f:
                         ds = json.load(f)
                     for d in ds["data"]:
@@ -189,15 +197,16 @@ def load_data(filepath, runetime):
                             if d[1][2]["__enum__"] != "StatusType.SUCCESS":
                                 continue
                             point = d[1][0]
-                    
+                            config = ds["configs"][str(d[0][0])]
 
                         #if run was not sucessfull no train loss is generated
                         #these happened also for sucessfull runs for example timeout
                         except KeyError:
                             continue 
                         data[constrain][dataset][seed][method]['points'].append(point)
+                        data[constrain][dataset][seed][method]['configs'].append(config)
                     data[constrain][dataset][seed][method]['points'] = pd.DataFrame(data[constrain][dataset][seed][method]['points'])
-                    data[constrain][dataset][seed][method]['pareto_set']  = pareto_set(data[constrain][dataset][seed][method]["points"])
+                    data[constrain][dataset][seed][method]['pareto_set'], data[constrain][dataset][seed][method]['pareto_config']   = pareto_set(data[constrain][dataset][seed][method])
                     #print("file:{},pareto_set:{}".format(file, data[constrain][dataset][seed][method]['points']))
     return data
 def make_plot_2(data):
@@ -307,6 +316,7 @@ def make_plot_2(data):
     #plt.savefig(f"./figures/experiment_1_{dataset}.png", bbox_inches="tight", pad_inches=0, dpi=dpi)
 
 def plots_we(pf, ax, color):
+    #
     levels = [len(pf[0]) // 4, len(pf[0]) // 2, 3* len(pf[0]) //4]
     surfs_list = [get_empirical_attainment_surface(costs=costs, levels=levels) for costs in pf]
     #_,we = plt.Subplot(fig, ax)
@@ -319,9 +329,10 @@ def plots_we(pf, ax, color):
                 )
    
 
+    
 def make_plot_3(data):
     sns.set_context("paper", font_scale=0.6)
-
+    load_data()
     #TODO set on big monitor
     figsize = (27,10)
     dpi = 300
@@ -400,7 +411,7 @@ def make_plot_3(data):
                 length = len(data[constrain][dataset][seed]['redlineing']['points'])
                 max_len= length if max_len < length else max_len
                 plot(data[constrain][dataset][seed]['redlineing']['points'], ax=ax, **styles["redlineing_points"], alpha = alpha)
-
+               
                 ##lfr
                 #length = len(data[constrain][dataset][seed]['lfr']['points'])
                 #max_len= length if max_len < length else max_len
@@ -446,11 +457,176 @@ def make_plot_3(data):
     fig.tight_layout(rect=[0.03, 0.05, 1, 1], pad = 5)
     fig.legend(handles=legend_elements, loc=3,  prop={'size': 16})
     plt.show()
-              
+def plot_arrows(
+        to,
+        frm,
+        ax,
+        **kwargs,
+    ):
+       
 
+        if ax is None:
+            ax = plt.gca()
+
+        default = {
+            "color": "grey",
+            "width": 0.01,
+        }
+        kwargs = {**default, **kwargs}
+
+       
+
+        # Define a list of segments going from one point to the other
+        frm = pd.DataFrame(frm)
+        dif =  frm - to
+        
+        ax.quiver(to[0], to[1], dif[0], dif[1], angles="xy", scale_units="xy", scale=1, **kwargs)
+
+        return 
+
+def right_alpha(data, alpha_cr):
+    points = []
+    h_points = []
+    
+    for idx, conf in enumerate(data["configs"]):
+        if idx == 0:
+            continue
+        if alpha_cr == "best":
+            h_points.append(np.array(data['points'][idx:(idx+1)]))
+            if len(h_points)==10:
+                idx_best = np.argmin(np.squeeze(np.stack(h_points, axis=0)),axis=0)[1]#
+                points.append(h_points[idx_best]) #min of fairness
+                h_points = []
+        else:
+            if conf['feature_preprocessor:CorrelationRemover:alpha'] == alpha_cr:        
+                points.append(np.array(data['points'][idx:(idx+1)]))
+    
+    try:
+        points = np.stack(points, axis=0)
+    except:
+        print()
+    points = np.squeeze(points)
+    return points
+
+
+
+def make_difference_plot(data, alpha_cr):
+    # in: data should have the pareto_front and the results of alpha  
+    # do: check of the different alpha the best one, if their are multiple best the one with the highest fairness
+    # out: image with the difference between pareto front and the cr output. 
+        
+        sns.set_context("paper", font_scale=0.6)
+
+        #TODO set on big monitor
+        figsize = (27,10)
+        dpi = 300
+        main_size = 20
+        plot_offset = 0.1
+        title_size = 18
+        label_size = 16
+        tick_size = 12
+    
+    
+        
+        fig, axis = plt.subplots(
+            nrows=len(data),
+            ncols=len(data[list(data.keys())[0]]),  #needs to be more flexible for nowe is ok
+            #sharey=True,
+            figsize=figsize,
+        )
+        
+        fig.supxlabel("error",fontsize=label_size)
+        fig.supylabel("1-demographic_parity", fontsize=label_size)
+        def rgb(r: int, g: int, b: int) -> str:
+            return "#%02x%02x%02x" % (r, g, b)
+
+
+        c_color = rgb(128, 0, 128)
+    
+        alpha = 1
+
+        styles = {
+            "moo_points": dict(s=15, marker="o", color="red"),
+            "moo_pareto": dict(s=4, marker="o", color="red", linestyle="-", linewidth=2),
+            "cr_points": dict(s=15, marker="o", color="blue"),
+            "cr_pareto": dict(s=4, marker="o", color="blue", linestyle="-", linewidth=2),
+        }
+        for i,constrain in enumerate(data.keys()):
+            global_max_y = 0
+            global_min_y = 1
+            for j,dataset in enumerate(data[constrain].keys()):
+                print(dataset)
+                global_min_x = 1
+                global_max_x = 0
+                #if len(data) ==1:
+                # ax= axis 
+                #else:
+                if len(data.keys()) == 1:
+                    ax = axis[j]
+                else:
+                    ax = axis[i,j]
+                
+                ax.set_title(dataset, fontsize=title_size)
+                moo_pf = []
+                cr_pf = []
+                redlineing_pf = []
+                #lfr_pf = []
+                max_len, max_len_cr, max_len_rl = 0,0,0
+                for seed in data[constrain][dataset].keys():
+                    seed = "45451" 
+                    moo_pf.append(np.array(data[constrain][dataset][seed]['moo']['pareto_set']))
+                    cr_front = right_alpha(data[constrain][dataset][seed]['cr'], alpha_cr)
+                    cr_pf.append(np.array(cr_front))
+                    #lfr_pf.append(np.array(data[constrain][dataset][seed]['lfr']['points']))
+                    
+                    #moo
+                    length = len(data[constrain][dataset][seed]['moo']['pareto_set'])
+                    max_len = length if max_len < length else max_len
+                    #plot(data[constrain][dataset][seed]['moo']['points'], ax=ax, **styles["moo_points"], alpha = alpha)
+
+                    #cr 
+                    length = len(data[constrain][dataset][seed]['cr']['points'])
+                    max_len= length if max_len < length else max_len
+                    #plot(data[constrain][dataset][seed]['cr']['points'], ax=ax, **styles["cr_points"], alpha = alpha)
+                    pareto_plot(data[constrain][dataset][seed]['moo']['pareto_set'], ax=ax, **styles["moo_pareto"])
+                    pareto_plot(pd.DataFrame(cr_pf[-1]), ax=ax, **styles["cr_pareto"])
+                    plot_arrows(data[constrain][dataset][seed]['moo']['pareto_set'],cr_pf[-1],ax)
+            
+                for  i in range(len(moo_pf)):
+                    #moo
+                    diff = max_len-len(moo_pf[i]) 
+                    if diff:
+                        try:
+                            moo_pf[i] = np.vstack((moo_pf[i], [moo_pf[i][-1]]*(diff)))
+                        except:
+                            moo_pf[i] = np.vstack(([moo_pf[i]]*(max_len)))   
+                    #cr
+                    diff = max_len-len(cr_pf[i]) 
+                    if diff:
+                        try:
+                            cr_pf[i] = np.vstack((cr_pf[i], [cr_pf[i][-1]]*(diff)))
+                        except:
+                            cr_pf[i] = np.vstack(([cr_pf[i]]*(max_len)))
+
+
+                
+                pf = [np.stack(moo_pf, axis=0), np.stack(cr_pf, axis=0)]
+                #pareto_plot(moo_pf, ax=ax, **styles["moo_pareto"])
+                #pareto_plot(cr_pf, ax=ax, **styles["cr_pareto"])
+                #plots_we(pf, ax, [styles["moo_points"]['color'],styles["cr_points"]['color']])
+
+                ax.tick_params(axis="both", which="major", labelsize=tick_size)
+        legend_elements = [
+                    Line2D([0], [0], color="red", lw=4, label='moo without preprocessing'),
+                    Line2D([0], [0], color="blue", lw=4, label='moo with correlation remover'),
+                    #Line2D([0], [0], color="green", lw=4, label='moo without SA and corrleation remover'),
+                        #Line2D([0], [0], color=c_color, lw=4, label='moo with learned fair represenation')
+                        ]
+        fig.tight_layout(rect=[0.03, 0.05, 1, 1], pad = 5)
+        fig.legend(handles=legend_elements, loc=3,  prop={'size': 16})
+        plt.show()
 
 
 if __name__ == "__main__":
-
     data = load_data("/home/till/Documents/auto-sklearn/tmp/", "200timesstrat")
-    make_plot_3(data)
+    make_difference_plot(data,"best")

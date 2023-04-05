@@ -29,7 +29,7 @@ X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(
 ############################################################################
 # Holdout
 # =======
-
+"""
 automl = autosklearn.classification.AutoSklearnClassifier(
     time_left_for_this_task=120,
     per_run_time_limit=30,
@@ -49,15 +49,15 @@ automl.fit(X_train, y_train, dataset_name="breast_cancer")
 
 predictions = automl.predict(X_test)
 print("Accuracy score holdout: ", sklearn.metrics.accuracy_score(y_test, predictions))
-
+"""
 
 ############################################################################
 # Cross-validation
 # ================
 
 automl = autosklearn.classification.AutoSklearnClassifier(
-    time_left_for_this_task=120,
-    per_run_time_limit=30,
+    time_left_for_this_task=1200000,
+    per_run_time_limit=60000,
     tmp_folder="/tmp/autosklearn_resampling_example_tmp",
     disable_evaluator_output=False,
     resampling_strategy="cv",

@@ -103,6 +103,9 @@ if __name__ == "__main__":
     method = methods[int(idx/len(seeds))%len(methods)]
     seed = seeds[idx%len(seeds)]
     fairness_constrains = fairness_constrains[int(idx/(len(seeds)*len(methods)*len(datasets)))]
+    print(fairness_constrains)
+    print(dataset)
+    print(seed)
     data = create_cr_reruns(
         source_folder= source_folder, 
         dataset=dataset, 

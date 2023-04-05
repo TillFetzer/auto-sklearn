@@ -40,7 +40,8 @@ from autosklearn.evaluation.abstract_evaluator import (
 from autosklearn.evaluation.splitter import (
     CustomStratifiedKFold,
     CustomStratifiedShuffleSplit,
-    CostumFairnessShuffleSplit
+    CostumFairnessShuffleSplit,
+    CustomStratifiedFairnessKFold
 )
 from autosklearn.metrics import Scorer
 from autosklearn.pipeline.base import PIPELINE_DATA_DTYPE
@@ -1095,12 +1096,19 @@ class TrainEvaluator(AbstractEvaluator):
                             )
                         else:
                             raise e
-                else:
-                    tmp_train_size = int(np.floor(train_size * y.shape[0]))
-                    test_fold = np.zeros(y.shape[0])
-                    test_fold[:tmp_train_size] = -1
-                    cv = PredefinedSplit(test_fold=test_fold)
-                    cv.n_splits = 1  # As sklearn is inconsistent here
+            elif self.resampling_strategy in ["fairness-cv"]:
+
+                
+                try:
+                    cv = CustomStratifiedFairnessKFold(
+                                n_splits=self.resampling_strategy_args["folds"],
+                                shuffle=shuffle,
+                                random_state=1,
+                                groups=self.resampling_strategy_args["groups"]
+                            )
+                except:
+                    raise "error" 
+                
             elif self.resampling_strategy in [
                 "cv",
                 "cv-iterative-fit",
@@ -1110,6 +1118,7 @@ class TrainEvaluator(AbstractEvaluator):
                 if shuffle:
                     try:
                         with warnings.catch_warnings():
+                            #raise UserWarning( "The least populated class in y has only") #only to see the custom splitter
                             warnings.simplefilter("error")
                             cv = StratifiedKFold(
                                 n_splits=self.resampling_strategy_args["folds"],

@@ -33,7 +33,7 @@ for constrain in fairness_constrains:
         for seed in seeds:
             for method in methods:
                 if method == "moo":
-                    base.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount)
+                    base.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
                 if method == "redlineing":
                     redlineing.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount)
                 if method == "cr":

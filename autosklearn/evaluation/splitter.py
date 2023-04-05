@@ -107,6 +107,8 @@ class CustomStratifiedShuffleSplit(StratifiedShuffleSplit):
             yield train, test
 
 class CostumFairnessShuffleSplit(StratifiedShuffleSplit):
+ 
+
 
     def _iter_indices(self, X, y, groups=None):#
         # First we get the groups in the stratification, we need to make sure each of them exists
@@ -160,8 +162,9 @@ class CustomStratifiedKFold(StratifiedKFold):
     """Stratified K-Folds cross-validator that ensures that there is always at least
     1 sample per class in the training set.
     """
+   
 
-    def _make_test_folds(self, X, y=None):  # type: ignore
+    def _make_test_folds(self, X, y=None, groups=None):  # type: ignore
         rng = check_random_state(self.random_state)
         y = np.asarray(y)
         type_of_target_y = type_of_target(y)
@@ -218,7 +221,105 @@ class CustomStratifiedKFold(StratifiedKFold):
                 f"Cannot have number of splits n_splits={self.n_splits} greater"
                 f" than the number of samples: n_samples={n_samples}."
             )
+        
+        for train, test in super().split(X, y, groups):
+            all_classes = np.unique(y)
+            train_classes = np.unique(y[train])
+            train = list(train)
+            test = list(test)
+            missing_classes = set(all_classes) - set(train_classes)
+            if len(missing_classes) > 0:
+                # print(missing_classes)
+                for diff in missing_classes:
+                    # print(len(train), len(test))
+                    to_move = np.where(y[test] == diff)[0][0]
+                    # print(y[test][to_move])
+                    train = train + [test[to_move]]
+                    del test[to_move]
+                    # print(len(train), len(test))
+            train = np.array(train, dtype=int)
+            test = np.array(test, dtype=int)
 
+            yield train, test
+
+
+class CustomStratifiedFairnessKFold(StratifiedKFold):
+    """Stratified K-Folds cross-validator that ensures that there is always at least
+    1 sample per class and per group in the sensitive attribute in the training set. 
+    It is for reading and writing purposes, equall to the CustomStratifiedKFold then possible.
+    """
+    def __init__(
+        self, n_splits=10,random_state=None,shuffle=None, groups="sex"
+    ):
+        super().__init__(
+            n_splits=n_splits,
+            shuffle=shuffle,
+            random_state=random_state
+        )
+        self._default_test_size = 0.1
+        self.groups = groups
+        self.shuffle = shuffle
+
+    def _make_test_folds(self, X, y=None):  # type: ignore
+        rng = check_random_state(self.random_state)
+        y = np.asarray(y)
+        type_of_target_y = type_of_target(y)
+        allowed_target_types = ("binary", "multiclass")
+        if type_of_target_y not in allowed_target_types:
+            raise ValueError(
+                "Supported target types are: {}. Got {!r} instead.".format(
+                     allowed_target_types, type_of_target_y
+                )
+            )
+
+        y = column_or_1d(y)
+
+        _, y_idx, y_inv = np.unique(y, return_index=True, return_inverse=True)
+        # y_inv encodes y according to lexicographic order. We invert y_idx to
+        # map the classes so that they are encoded by order of appearance:
+        # 0 represents the first label appearing in y, 1 the second, etc.
+        _, class_perm = np.unique(y_idx, return_inverse=True)
+        y_encoded = class_perm[y_inv]
+
+        n_classes = len(y_idx)
+
+        # Determine the optimal number of samples from each class in each fold,
+        # using round robin over the sorted y. (This can be done direct from
+        # counts, but that code is unreadable.)
+        y_order = np.sort(y_encoded)
+        allocation = np.asarray(
+            [
+                np.bincount(y_order[i :: self.n_splits], minlength=n_classes)
+                for i in range(self.n_splits)
+            ]
+        )
+
+        # To maintain the data order dependencies as best as possible within
+        # the stratification constraint, we assign samples from each class in
+        # blocks (and then mess that up when shuffle=True).
+        test_folds = np.empty(len(y), dtype="i")
+        for k in range(n_classes):
+            # since the kth column of allocation stores the number of samples
+            # of class k in each test set, this generates blocks of fold
+            # indices corresponding to the allocation for class k.
+            folds_for_class = np.arange(self.n_splits).repeat(allocation[:, k])
+            if self.shuffle:
+                rng.shuffle(folds_for_class)
+            test_folds[y_encoded == k] = folds_for_class
+        return test_folds
+
+    def split(self, X, y=None, groups=None):  # type: ignore
+
+        X, y, groups = indexable(X, y, groups)
+        n_samples = _num_samples(X)
+        if self.n_splits > n_samples:
+            raise ValueError(
+                f"Cannot have number of splits n_splits={self.n_splits} greater"
+                f" than the number of samples: n_samples={n_samples}."
+            )
+        #y = pd.DataFrame(y).astype(str) + "_" + X.sex.astype(str)
+        y = pd.concat([X[self.groups], pd.DataFrame(y)],axis=1)
+        y = y[self.groups].astype(str) + "_" + y[0].astype(str)
         for train, test in super().split(X, y, groups):
             all_classes = np.unique(y)
             train_classes = np.unique(y[train])

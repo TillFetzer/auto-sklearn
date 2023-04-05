@@ -61,7 +61,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
         delete_tmp_folder_after_terminate=False,
         initial_configurations_via_metalearning=0,
         smac_scenario_args={"runcount_limit": runcount},
-        memory_limit=6174,
+        memory_limit=130000,
         seed = seed,
         tmp_folder =  tmp + "/del",
         include={
@@ -72,7 +72,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
             ], 
             # "GridSearch_DecisionTree", "ThresholdOptimizer_DecisionTree", , "decision_tree", "ExponentiatedGradient_DecisionTree"
         },
-        resampling_strategy='fairness-holdout',
+        resampling_strategy='fairness-cv',
         resampling_strategy_arguments= {
         "train_size": 0.67,     # The size of the training set
         "shuffle": True,        # Whether to shuffle before splitting data

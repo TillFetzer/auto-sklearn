@@ -771,9 +771,9 @@ class AutoML(BaseEstimator):
 
             # == Perform dummy predictions
             #thhese need to be on comented again
-            #with self._stopwatch.time("Dummy predictions"):
-            #    self.num_run += 1
-            #    self._do_dummy_prediction()
+            with self._stopwatch.time("Dummy predictions"):
+                self.num_run += 1
+                self._do_dummy_prediction()
 
             # == RUN ensemble builder
             # Do this before calculating the meta-features to make sure that the
@@ -1115,6 +1115,7 @@ class AutoML(BaseEstimator):
                 "holdout-iterative-fit",
                 "cv",
                 "fairness-holdout",
+                "fairness-cv",
                 "cv-iterative-fit",
                 "partial-cv",
                 "partial-cv-iterative-fit",

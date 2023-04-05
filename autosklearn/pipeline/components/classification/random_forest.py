@@ -54,6 +54,7 @@ class RandomForest(
         self.class_weight = class_weight
         self.estimator = None
 
+
     @staticmethod
     def get_max_iter():
         return 512

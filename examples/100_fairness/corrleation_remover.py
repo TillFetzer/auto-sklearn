@@ -59,10 +59,11 @@ def run_experiment(
 
     ############################################################################
     # Build and fit a classifier
-    # ==========================
+    # ==========================train_ev
     tmp =  file + "/{}/{}/{}/{}/cr/{}".format(under_folder, fairness_constrain, dataset, seed, runcount)
     automl = autosklearn.classification.AutoSklearnClassifier(
         time_left_for_this_task=runtime,
+        memory_limit=13000,
         seed = seed,
         tmp_folder =  tmp + "/del", 
          # 3h

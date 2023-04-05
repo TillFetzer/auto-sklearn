@@ -526,7 +526,7 @@ class AutoMLSMBO:
                 for config in self.smac_scenario_args["init_config"]:
                     config['feature_preprocessor:__choice__'] = "CorrelationRemover"
                     for i in range(1,11):
-                        config['feature_preprocessor:CorrelationRemover:alpha'] = 1/i
+                        config['feature_preprocessor:CorrelationRemover:alpha'] = i*0.1
                         metalearning_configurations.append(Configuration(self.config_space,config))
             scenario_dict.update(self.smac_scenario_args)
             
