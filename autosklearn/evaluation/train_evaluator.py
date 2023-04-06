@@ -517,7 +517,10 @@ class TrainEvaluator(AbstractEvaluator):
             # TODO: mention that no additional run info is possible in this
             # case! -> maybe remove full CV from the train evaluator anyway and
             # make the user implement this!
-            groups = self.X_train[self.resampling_strategy_args.get("groups")] if self.resampling_strategy_args.get("groups") else None
+            if isinstance(self.X_train, pd.DataFrame):
+                groups = self.X_train[self.resampling_strategy_args.get("groups")] if self.resampling_strategy_args.get("groups") else None
+            else:
+                groups = self.X_train[:,self.resampling_strategy_args.get("groups")] if self.resampling_strategy_args.get("groups") else None
             for i, (train_split, test_split) in enumerate(
                 self.splitter.split(
                     self.X_train, y, groups=groups

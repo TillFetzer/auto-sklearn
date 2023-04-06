@@ -21,8 +21,8 @@ seed = seeds[idx%len(seeds)]
 fairness_constrains = fairness_constrains[int(idx/(len(seeds)*len(methods)*len(datasets)))]
 
 
-#print(dataset)
-#print(method)
-#print(seed)
-#print(fairness_constrains)
-run_experiment(datasets =[dataset], fairness_constrains=[fairness_constrains], methods=[method], file="/work/dlclarge2/fetzert-MySpace/autosklearn", seeds= [seed], sf=[sf] ,runtime = 200000, runcount=200, under_folder=under_folder)
+print(dataset)
+print(method)
+print(seed)
+print(fairness_constrains)
+#run_experiment(datasets =[dataset], fairness_constrains=[fairness_constrains], methods=[method], file="/work/dlclarge2/fetzert-MySpace/autosklearn", seeds= [seed], sf=[sf] ,runtime = 200000, runcount=200, under_folder=under_folder)

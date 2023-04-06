@@ -472,7 +472,7 @@ class CorrelationRemover(AutoSklearnPreprocessingAlgorithm):
 
     def fit(self, X, y=None):
         from fairlearn.preprocessing import CorrelationRemover as FCR
-
+        X = pd.DataFrame(X)
         self.alpha = float(self.alpha)
         self.preprocessor = FCR(
             sensitive_feature_ids=CorrelationRemover.index_sf, alpha=self.alpha
@@ -482,6 +482,7 @@ class CorrelationRemover(AutoSklearnPreprocessingAlgorithm):
         return self
 
     def transform(self, X):
+        X = pd.DataFrame(X)
         if self.preprocessor is None:
             raise NotImplementedError()
         return self.preprocessor.transform(X)

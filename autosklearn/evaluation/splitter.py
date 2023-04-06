@@ -318,8 +318,10 @@ class CustomStratifiedFairnessKFold(StratifiedKFold):
                 f" than the number of samples: n_samples={n_samples}."
             )
         #y = pd.DataFrame(y).astype(str) + "_" + X.sex.astype(str)
-        y = pd.concat([X[self.groups], pd.DataFrame(y)],axis=1)
-        y = y[self.groups].astype(str) + "_" + y[0].astype(str)
+        #groups = groups.reset_index()
+        y = pd.concat([pd.DataFrame(groups), pd.DataFrame(y)],axis=1)
+        y.columns = [0,1]
+        y = y[0].astype(str) + "_" + y[1].astype(str)
         for train, test in super().split(X, y, groups):
             all_classes = np.unique(y)
             train_classes = np.unique(y[train])

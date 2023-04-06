@@ -20,10 +20,18 @@ from autosklearn.pipeline.implementations.util import (
 from autosklearn.util.common import check_for_bool, check_none
 
 
+
 class RandomForest(
     IterativeComponentWithSampleWeight,
     AutoSklearnClassificationAlgorithm,
 ):
+    transferre_exp = False
+    @classmethod
+    def acitvate_random_seed(cls):
+        cls.transferre_exp = True
+    @classmethod
+    def deacitvate_random_seed(cls):
+        cls.transferre_exp = False
     def __init__(
         self,
         criterion,
@@ -40,6 +48,7 @@ class RandomForest(
         class_weight=None,
     ):
         self.n_estimators = self.get_max_iter()
+        self.random_state= random_state if RandomForest.transferre_exp else None
         self.criterion = criterion
         self.max_features = max_features
         self.max_depth = max_depth
@@ -187,6 +196,7 @@ class RandomForest(
         bootstrap = CategoricalHyperparameter(
             "bootstrap", ["True", "False"], default_value="True"
         )
+        random_state = UniformIntegerHyperparameter("random_state", 0, 10)
         cs.add_hyperparameters(
             [
                 criterion,
@@ -198,6 +208,7 @@ class RandomForest(
                 max_leaf_nodes,
                 bootstrap,
                 min_impurity_decrease,
+                random_state
             ]
         )
         return cs
