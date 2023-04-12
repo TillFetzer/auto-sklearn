@@ -52,9 +52,9 @@ def run_experiment(
     # Build and fit a classifier
     # ==========================
     if runcount:
-        scenario_args = {"runcount_limit": 110*runcount + 1, "init_config": configs} if configs  else {"runcount_limit": runcount}
+        scenario_args = {"runcount_limit": runcount, "init_config": configs} if configs  else {"runcount_limit": runcount}
         #these only for structure in the folders
-        runcount = "same_hyperparamer" if configs else str(runcount) + "strat"
+        runcount = "same_hyperparameter" if configs else str(runcount) + "strat"
         fair_metric = set_fair_params.set_fair_metric(sf, fairness_constrain)
         set_fair_params.add_no_preprocessor()
         set_fair_params.add_correlation_remover(sf)

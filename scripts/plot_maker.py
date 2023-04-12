@@ -186,7 +186,7 @@ def load_data(filepath, runetime):
                     data[constrain][dataset][seed][method]["points"] = []
                     data[constrain][dataset][seed][method]["configs"] = []
                    
-                    runetime_folder = "same_hyperparameter"  if method == "cr" else runetime
+                    runetime_folder = "same_hyperparamer"  if method == "cr" else runetime
                     
                     file  = "{}/{}/{}/runhistory.json".format(seed_path,method,runetime_folder)
 
@@ -209,6 +209,51 @@ def load_data(filepath, runetime):
                     data[constrain][dataset][seed][method]['pareto_set'], data[constrain][dataset][seed][method]['pareto_config']   = pareto_set(data[constrain][dataset][seed][method])
                     #print("file:{},pareto_set:{}".format(file, data[constrain][dataset][seed][method]['points']))
     return data
+
+
+def  load_data_particully(filepath , runetime , datasets = ["german"], constrains = ["demographic_parity"], seeds= [42]):
+    data = defaultdict()
+    for constrain in constrains:
+        data[constrain] = defaultdict()
+        constrain_path = "{}{}".format(filepath, constrain)
+        for dataset in datasets:
+            data[constrain][dataset] = defaultdict()
+            dataset_path = "{}/{}".format(constrain_path, dataset)
+            for seed in seeds:
+                data[constrain][dataset][seed] = defaultdict()
+                seed_path = "{}/{}".format(dataset_path, seed)
+                for method in os.listdir(seed_path):
+                    print(method)
+                    data[constrain][dataset][seed][method] = defaultdict()
+                    data[constrain][dataset][seed][method]["points"] = []
+                    data[constrain][dataset][seed][method]["configs"] = []
+                   
+                    runetime_folder = "same_hyperparatemer"  if method == "cr" else runetime
+                    
+                    file  = "{}/{}/{}/runhistory.json".format(seed_path,method,runetime_folder)
+
+                    with open(file) as f:
+                        ds = json.load(f)
+                    for d in ds["data"]:
+                        try:
+                            if d[1][2]["__enum__"] != "StatusType.SUCCESS":
+                                continue
+                            point = d[1][0]
+                            config = ds["configs"][str(d[0][0])]
+
+                        #if run was not sucessfull no train loss is generated
+                        #these happened also for sucessfull runs for example timeout
+                        except KeyError:
+                            continue 
+                        data[constrain][dataset][seed][method]['points'].append(point)
+                        data[constrain][dataset][seed][method]['configs'].append(config)
+                    data[constrain][dataset][seed][method]['points'] = pd.DataFrame(data[constrain][dataset][seed][method]['points'])
+                    data[constrain][dataset][seed][method]['pareto_set'], data[constrain][dataset][seed][method]['pareto_config']   = pareto_set(data[constrain][dataset][seed][method])
+                    #print("file:{},pareto_set:{}".format(file, data[constrain][dataset][seed][method]['points']))
+    return data
+
+
+
 def make_plot_2(data):
     #TODO add last and first point
     sns.set_context("paper", font_scale=0.6)
@@ -491,6 +536,10 @@ def right_alpha(data, alpha_cr):
     for idx, conf in enumerate(data["configs"]):
         if idx == 0:
             continue
+        if conf['feature_preprocessor:CorrelationRemover:alpha'] == 0.0:
+            continue
+        if alpha_cr == "all":
+            points.append(np.array(data['points'][idx:(idx+1)]))
         if alpha_cr == "best":
             h_points.append(np.array(data['points'][idx:(idx+1)]))
             if len(h_points)==10:
@@ -498,7 +547,8 @@ def right_alpha(data, alpha_cr):
                 points.append(h_points[idx_best]) #min of fairness
                 h_points = []
         else:
-            if conf['feature_preprocessor:CorrelationRemover:alpha'] == alpha_cr:        
+            # because  
+            if conf['feature_preprocessor:CorrelationRemover:alpha'] == int(alpha_cr/0.1)*0.1:        
                 points.append(np.array(data['points'][idx:(idx+1)]))
     
     try:
@@ -555,16 +605,17 @@ def make_difference_plot(data, alpha_cr):
             global_max_y = 0
             global_min_y = 1
             for j,dataset in enumerate(data[constrain].keys()):
+                dataset = "german"
                 print(dataset)
                 global_min_x = 1
                 global_max_x = 0
-                #if len(data) ==1:
-                # ax= axis 
-                #else:
-                if len(data.keys()) == 1:
-                    ax = axis[j]
+                if len(data) ==1:
+                 ax= axis 
                 else:
-                    ax = axis[i,j]
+                    if len(data.keys()) == 1:
+                        ax = axis[j]
+                    else:
+                        ax = axis[i,j]
                 
                 ax.set_title(dataset, fontsize=title_size)
                 moo_pf = []
@@ -573,7 +624,7 @@ def make_difference_plot(data, alpha_cr):
                 #lfr_pf = []
                 max_len, max_len_cr, max_len_rl = 0,0,0
                 for seed in data[constrain][dataset].keys():
-                    seed = "45451" 
+                    seed = "42" 
                     moo_pf.append(np.array(data[constrain][dataset][seed]['moo']['pareto_set']))
                     cr_front = right_alpha(data[constrain][dataset][seed]['cr'], alpha_cr)
                     cr_pf.append(np.array(cr_front))
@@ -588,8 +639,9 @@ def make_difference_plot(data, alpha_cr):
                     length = len(data[constrain][dataset][seed]['cr']['points'])
                     max_len= length if max_len < length else max_len
                     #plot(data[constrain][dataset][seed]['cr']['points'], ax=ax, **styles["cr_points"], alpha = alpha)
-                    pareto_plot(data[constrain][dataset][seed]['moo']['pareto_set'], ax=ax, **styles["moo_pareto"])
-                    pareto_plot(pd.DataFrame(cr_pf[-1]), ax=ax, **styles["cr_pareto"])
+                    #pareto_plot(data[constrain][dataset][seed]['moo']['pareto_set'], ax=ax, **styles["moo_pareto"])
+                    #pareto_plot(pd.DataFrame(cr_pf[-1]), ax=ax, **styles["cr_pareto"])
+
                     plot_arrows(data[constrain][dataset][seed]['moo']['pareto_set'],cr_pf[-1],ax)
             
                 for  i in range(len(moo_pf)):
@@ -628,5 +680,6 @@ def make_difference_plot(data, alpha_cr):
 
 
 if __name__ == "__main__":
-    data = load_data("/home/till/Documents/auto-sklearn/tmp/", "200timesstrat")
-    make_difference_plot(data,"best")
+    #data = load_data("/home/till/Documents/auto-sklearn/tmp/", "200timesstrat")
+    data = load_data_particully("/home/till/Documents/auto-sklearn/tmp/cross_val/", "200timesstrat", datasets = ["german"], constrains = ["demographic_parity"], seeds= ["42"])
+    make_difference_plot(data,0.3)

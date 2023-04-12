@@ -58,7 +58,7 @@ class RandomForest(
 
     def iterative_fit(self, X, y, n_iter=1, refit=False):
         from sklearn.ensemble import RandomForestRegressor
-
+        self.random_state = int(self.random_state)
         if refit:
             self.estimator = None
 

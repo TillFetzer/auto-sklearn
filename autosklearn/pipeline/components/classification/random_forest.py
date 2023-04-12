@@ -27,10 +27,10 @@ class RandomForest(
 ):
     transferre_exp = False
     @classmethod
-    def acitvate_random_seed(cls):
+    def activate_random_seed(cls):
         cls.transferre_exp = True
     @classmethod
-    def deacitvate_random_seed(cls):
+    def deactivate_random_seed(cls):
         cls.transferre_exp = False
     def __init__(
         self,
@@ -44,11 +44,12 @@ class RandomForest(
         max_leaf_nodes,
         min_impurity_decrease,
         random_state=None,
+        random_state_forest = None,
         n_jobs=1,
         class_weight=None,
     ):
         self.n_estimators = self.get_max_iter()
-        self.random_state= random_state if RandomForest.transferre_exp else None
+        self.random_state_forest = random_state_forest if RandomForest.transferre_exp else None
         self.criterion = criterion
         self.max_features = max_features
         self.max_depth = max_depth
@@ -83,7 +84,8 @@ class RandomForest(
                 self.max_depth = None
             else:
                 self.max_depth = int(self.max_depth)
-
+            if self.random_state_forest:
+                self.random_state = int(self.random_state_forest)
             self.min_samples_split = int(self.min_samples_split)
             self.min_samples_leaf = int(self.min_samples_leaf)
             self.min_weight_fraction_leaf = float(self.min_weight_fraction_leaf)
@@ -196,7 +198,7 @@ class RandomForest(
         bootstrap = CategoricalHyperparameter(
             "bootstrap", ["True", "False"], default_value="True"
         )
-        random_state = UniformIntegerHyperparameter("random_state", 0, 10)
+        random_state_forest = UniformIntegerHyperparameter("random_state_forest", 1, 10)
         cs.add_hyperparameters(
             [
                 criterion,
@@ -208,7 +210,7 @@ class RandomForest(
                 max_leaf_nodes,
                 bootstrap,
                 min_impurity_decrease,
-                random_state
+                random_state_forest
             ]
         )
         return cs

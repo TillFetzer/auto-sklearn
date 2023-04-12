@@ -33,7 +33,14 @@ def pareto_set(all_costs):
     #    pareto_set =  pareto_set.append([[2, pareto_set[1][0]]])
     return pareto_set, pareto_config
 
-
+def calc_configs(configs):
+    num = 1 #for init
+    for config in configs:
+        if config['classifier:random_forest:bootstrap'] == "True" or config['classifier:random_forest:bootstrap']:
+            num += 100
+        else:
+            num += 10
+    return num
 
 def create_cr_reruns(
 source_folder= "/home/till/Documents/auto-sklearn/tmp", 
@@ -65,14 +72,15 @@ goal_folder = "base"
             data['points'].append(point)
             data['configs'].append(config)
     data['points'] = pd.DataFrame(data['points'])
-    data['pareto_set'], data['pareto_config']  = pareto_set(data)                 
+    data['pareto_set'], data['pareto_config']  = pareto_set(data) 
+    num_configs = calc_configs(data['pareto_config'])
     corrleation_remover.run_experiment(
         dataset,
         constrain, sf,  
         20000000, #these is only that it does stop 
         source_folder,
         seed, 
-        len(data["pareto_set"]), #these stops it
+        num_configs, #these stops it
         goal_folder,
         configs = data["pareto_config"])
                   
