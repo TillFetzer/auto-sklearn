@@ -224,6 +224,7 @@ def  load_data_particully(filepath , runetime , datasets = ["german"], constrain
                 seed_path = "{}/{}".format(dataset_path, seed)
                 for method in os.listdir(seed_path):
                     print(method)
+                    method = 'moo'
                     data[constrain][dataset][seed][method] = defaultdict()
                     data[constrain][dataset][seed][method]["points"] = []
                     data[constrain][dataset][seed][method]["configs"] = []
@@ -701,5 +702,5 @@ def make_difference_plot(data, alpha_cr):
 
 if __name__ == "__main__":
     #data = load_data("/home/till/Documents/auto-sklearn/tmp/", "200timesstrat")
-    data = load_data_particully("/home/till/Desktop/cross_val/", "200timesstrat", datasets = ["german","adult"], constrains = ["equalized_odds"], seeds= ["39"])
+    data = load_data_particully("/home/till/Desktop/cross_val/", "200timesstrat", datasets = ["adult"], constrains = ["demographic_parity"], seeds= ["39"])
     make_difference_plot(data,"all")

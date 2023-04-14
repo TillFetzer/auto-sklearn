@@ -37,9 +37,9 @@ def calc_configs(configs,no_seeds):
     num = 1 #for init
     for config in configs:
         if config['classifier:random_forest:bootstrap'] == "True" or config['classifier:random_forest:bootstrap'] == True:
-            num += 10*no_seeds
+            num += 2*no_seeds
         else:
-            num += 10
+            num += 2
     return num
 
 def create_cr_reruns(
@@ -101,7 +101,7 @@ if __name__ == "__main__":
     source_folder = args.sf
     goal_folder = args.gf
     seeds = [12345,25,42,45451,97,13,27,39,41,53]
-    methods = ["redlineing"]
+    methods = ["moo"]
     datasets = ["german","adult","compass","lawschool"]
     #datasets = ["german"]
     sfs = ["personal_status", "sex", "race", "race"]

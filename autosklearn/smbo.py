@@ -528,8 +528,8 @@ class AutoMLSMBO:
                 for config in self.smac_scenario_args["init_config"]:
                     config['feature_preprocessor:__choice__'] = "CorrelationRemover"
                     if "seeds" in self.smac_scenario_args:
-                        for i in range(1,11):
-                            config['feature_preprocessor:CorrelationRemover:alpha'] = i*0.1
+                        for i in range(1,2):
+                            config['feature_preprocessor:CorrelationRemover:alpha'] = 1/i
                             #these righ now does not help
                             if (config['classifier:random_forest:bootstrap'] == "True" or config['classifier:random_forest:bootstrap']==True):
                                 for j in self.smac_scenario_args["seeds"]:
