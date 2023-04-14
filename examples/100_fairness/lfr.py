@@ -19,17 +19,17 @@ import autosklearn.metrics
 import shutil
 
 # TODO change to new location if it is avaible
-import set_fair_params
+import utils_fairlearn
 import json
 from collections import defaultdict
 
 
 def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcount, under_folder):
-    X, y = set_fair_params.load_data(dataset)
+    X, y = utils_fairlearn.load_data(dataset)
 
     # ==========================
 
-    fair_metric = set_fair_params.set_fair_metric(sf, fairness_constrain)
+    fair_metric = utils_fairlearn.set_fair_metric(sf, fairness_constrain)
     X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(
         X, y, random_state=1
     )
@@ -40,9 +40,9 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     # Build and fit a classifier
     # ==========================
 
-    fair_metric = set_fair_params.set_fair_metric(sf, fairness_constrain)
-    set_fair_params.add_LFR(sf)
-    set_fair_params.add_no_preprocessor()
+    fair_metric = utils_fairlearn.set_fair_metric(sf, fairness_constrain)
+    utils_fairlearn.add_LFR(sf)
+    utils_fairlearn.add_no_preprocessor()
 
     ############################################################################
     # Build and fit a classifier
@@ -88,7 +88,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     # Compute the two competing metrics
     # =================================
     sensitive_features = X_test[sf]
-    #set_fair_params.save_pareto( automl,
+    #utils_fairlearn.save_pareto( automl,
     #X_test,
     #y_test,
     #sensitive_features,

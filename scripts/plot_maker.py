@@ -228,7 +228,7 @@ def  load_data_particully(filepath , runetime , datasets = ["german"], constrain
                     data[constrain][dataset][seed][method]["points"] = []
                     data[constrain][dataset][seed][method]["configs"] = []
                    
-                    runetime_folder = "same_hyperparatemer"  if method == "cr" else runetime
+                    runetime_folder = "same_hyperparameter"  if method == "cr" else runetime
                     
                     file  = "{}/{}/{}/runhistory.json".format(seed_path,method,runetime_folder)
 
@@ -540,7 +540,7 @@ def right_alpha(data, alpha_cr):
             continue
         if alpha_cr == "all":
             points.append(np.array(data['points'][idx:(idx+1)]))
-        if alpha_cr == "best":
+        elif alpha_cr == "best":
             h_points.append(np.array(data['points'][idx:(idx+1)]))
             if len(h_points)==10:
                 idx_best = np.argmin(np.squeeze(np.stack(h_points, axis=0)),axis=0)[1]#
@@ -624,7 +624,7 @@ def make_difference_plot(data, alpha_cr):
                 #lfr_pf = []
                 max_len, max_len_cr, max_len_rl = 0,0,0
                 for seed in data[constrain][dataset].keys():
-                    seed = "42" 
+                    #seed = "42" 
                     moo_pf.append(np.array(data[constrain][dataset][seed]['moo']['pareto_set']))
                     cr_front = right_alpha(data[constrain][dataset][seed]['cr'], alpha_cr)
                     cr_pf.append(np.array(cr_front))
@@ -641,9 +641,27 @@ def make_difference_plot(data, alpha_cr):
                     #plot(data[constrain][dataset][seed]['cr']['points'], ax=ax, **styles["cr_points"], alpha = alpha)
                     #pareto_plot(data[constrain][dataset][seed]['moo']['pareto_set'], ax=ax, **styles["moo_pareto"])
                     #pareto_plot(pd.DataFrame(cr_pf[-1]), ax=ax, **styles["cr_pareto"])
-
-                    plot_arrows(data[constrain][dataset][seed]['moo']['pareto_set'],cr_pf[-1],ax)
-            
+                    
+                    for i in range(0,100):
+                        indexes = [(j*100) + i  for j in range(0,len(data[constrain][dataset][seed]['moo']['pareto_set']))]
+                        plot_arrows(data[constrain][dataset][seed]['moo']['pareto_set'],cr_pf[-1][indexes,:],ax)
+                    cr = pd.DataFrame(cr_pf[-1])
+                    local_min_x = min(min(data[constrain][dataset][seed]['moo']['pareto_set'][0]), min(cr[0]))
+                    local_min_y = min(min(data[constrain][dataset][seed]['moo']['pareto_set'][1]), min(cr[1]))
+                    local_max_x = max(max(data[constrain][dataset][seed]['moo']['pareto_set'][0]), max(cr[0]))
+                    local_max_y = max(max(data[constrain][dataset][seed]['moo']['pareto_set'][1]), max(cr[1]))
+                    #local_min_x = min(min(moo_points[0]), min(cr_points[0]), min(redlineing_points[0]))
+                    #local_min_y = min(min(moo_points[1]), min(cr_points[1]), min(redlineing_points[1]))
+                    #local_max_x = max(max(moo_points[0]), max(cr_points[0]), max(redlineing_points[0]))
+                    #local_max_y = max(max(moo_points[1]), max(cr_points[1]), max(redlineing_points[1]))
+                    global_min_y = local_min_y if local_min_y < global_min_y  else global_min_y
+                    global_min_x = local_min_x if local_min_x < global_min_x  else global_min_x
+                    global_max_y = local_max_y if local_max_y > global_max_y  else global_max_y
+                    global_max_x = local_max_x if local_max_x > global_max_x  else global_max_x
+                dx = abs(global_max_x - global_min_x) if abs(global_max_x - global_min_x) > 0 else 0.01
+                ax.set_xlim(max(global_min_x - dx * plot_offset,0), global_max_x + dx * plot_offset)
+                dy = abs(global_max_y - global_min_y)
+                ax.set_ylim(max(global_min_y - dy*plot_offset,0), global_max_y +  dy * plot_offset)
                 for  i in range(len(moo_pf)):
                     #moo
                     diff = max_len-len(moo_pf[i]) 
@@ -682,4 +700,4 @@ def make_difference_plot(data, alpha_cr):
 if __name__ == "__main__":
     #data = load_data("/home/till/Documents/auto-sklearn/tmp/", "200timesstrat")
     data = load_data_particully("/home/till/Documents/auto-sklearn/tmp/cross_val/", "200timesstrat", datasets = ["german"], constrains = ["demographic_parity"], seeds= ["42"])
-    make_difference_plot(data,0.3)
+    make_difference_plot(data,"all")

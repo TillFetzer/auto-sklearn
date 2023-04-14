@@ -19,10 +19,14 @@ sf = sfs[int(idx/(len(seeds)*len(methods)))%len(datasets)]
 method = methods[int(idx/len(seeds))%len(methods)]
 seed = seeds[idx%len(seeds)]
 fairness_constrains = fairness_constrains[int(idx/(len(seeds)*len(methods)*len(datasets)))]
+if dataset == "adult" and fairness_constrains == "consistency_score":
+    runcount = 150
+else: 
+    runcount = 200
 
 
-print(dataset)
-print(method)
-print(seed)
-print(fairness_constrains)
-#run_experiment(datasets =[dataset], fairness_constrains=[fairness_constrains], methods=[method], file="/work/dlclarge2/fetzert-MySpace/autosklearn", seeds= [seed], sf=[sf] ,runtime = 200000, runcount=200, under_folder=under_folder)
+#print(dataset)
+#print(method)
+#print(seed)
+#print(fairness_constrains)
+run_experiment(datasets =[dataset], fairness_constrains=[fairness_constrains], methods=[method], file="/work/dlclarge2/fetzert-MySpace/autosklearn", seeds= [seed], sf=[sf] ,runtime = 200000, runcount=runcount, under_folder=under_folder)

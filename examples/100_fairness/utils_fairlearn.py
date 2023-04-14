@@ -34,7 +34,7 @@ from pprint import pprint
 from sklearn.model_selection import train_test_split
 from ConfigSpace.configuration_space import Configuration
 def stratified_split(
-    *x, on, size, seed=1, ignore_missing=False
+    *x, on, size,columns, seed=1, ignore_missing=False
 ):
     # First we get the groups in the stratification, we need to make sure each of them exists
     # in the output
@@ -56,7 +56,7 @@ def stratified_split(
 
     # We split everything but also make sure to split the stratification column so
     # we can validate it
-    *splits, sleft, sright = train_test_split(
+    X_train , X_test, y_train, y_test, _, _,sright, sleft = train_test_split(
         *x,
         on,
         train_size=size,
@@ -71,8 +71,10 @@ def stratified_split(
             f"\nbefore {sright.value_counts()}"
             f"\nafter {sleft.value_counts()}"
         )
-
-    return splits
+    # that can outsorced in another script.
+    X_train, y_train = pd.DataFrame(X_train, columns=columns), pd.DataFrame(y_train)
+    X_test, y_test = pd.DataFrame(X_test, columns=columns), pd.DataFrame(y_test)
+    return X_train , X_test, y_train, y_test
 
 def load_data(name):
     print(name)
@@ -296,7 +298,7 @@ class LFR(AutoSklearnPreprocessingAlgorithm):
             setattr(self, key, val)
 
     @classmethod
-    def set_fair_params(cls, index_sf):
+    def utils_fairlearn(cls, index_sf):
         cls.index_sf = index_sf
 
     def fit(self, X, y=None):
@@ -420,7 +422,7 @@ class SensitiveAtributeRemover(AutoSklearnPreprocessingAlgorithm):
         """This preprocessors only remove the sensitive attributes"""
 
     @classmethod
-    def set_fair_params(cls, index_sf):
+    def utils_fairlearn(cls, index_sf):
         cls.index_sf = index_sf
 
     def fit(self, X, Y=None):
@@ -467,7 +469,7 @@ class CorrelationRemover(AutoSklearnPreprocessingAlgorithm):
             setattr(self, key, val)
 
     @classmethod
-    def set_fair_params(cls, index_sf):
+    def utils_fairlearn(cls, index_sf):
         cls.index_sf.append(index_sf)
 
     def fit(self, X, y=None):
@@ -517,132 +519,132 @@ class CorrelationRemover(AutoSklearnPreprocessingAlgorithm):
 
 def set_fairlearn_attributes(index_sf, metric_name):
 
-    classification.grid_search_decision_tree.GridSearch_DecisionTree.set_fair_params(
+    classification.grid_search_decision_tree.GridSearch_DecisionTree.utils_fairlearn(
         index_sf, metric_name
     )
-    classification.grid_search_adaboost.GridSearch_AdaboostClassifier.set_fair_params(
+    classification.grid_search_adaboost.GridSearch_AdaboostClassifier.utils_fairlearn(
         index_sf, metric_name
     )
-    classification.grid_search_bernoulli_nb.GridSearch_BernoulliNB.set_fair_params(
+    classification.grid_search_bernoulli_nb.GridSearch_BernoulliNB.utils_fairlearn(
         index_sf, metric_name
     )
-    classification.grid_search_gaussian_nb.GridSearch_GaussianNB.set_fair_params(
+    classification.grid_search_gaussian_nb.GridSearch_GaussianNB.utils_fairlearn(
         index_sf, metric_name
     )
-    # classification.grid_search_lda.GridSearch_LDA.set_fair_params(index_sf, metric_name)
-    classification.grid_search_liblinear_svc.GridSearch_LibLinear_SVC.set_fair_params(
+    # classification.grid_search_lda.GridSearch_LDA.utils_fairlearn(index_sf, metric_name)
+    classification.grid_search_liblinear_svc.GridSearch_LibLinear_SVC.utils_fairlearn(
         index_sf, metric_name
     )
-    classification.grid_search_libsvm_svc.GridSearch_LibSVM_SVC.set_fair_params(
+    classification.grid_search_libsvm_svc.GridSearch_LibSVM_SVC.utils_fairlearn(
         index_sf, metric_name
     )
-    classification.grid_search_multinomial_nb.GridSearch_MultinomialNB.set_fair_params(
+    classification.grid_search_multinomial_nb.GridSearch_MultinomialNB.utils_fairlearn(
         index_sf, metric_name
     )
-    # classification.grid_search_qda.GridSearch_QDA.set_fair_params(index_sf, metric_name)
+    # classification.grid_search_qda.GridSearch_QDA.utils_fairlearn(index_sf, metric_name)
 
-    classification.exponentiated_gradient_decision_tree.ExponentiatedGradient_DecisionTree.set_fair_params(
+    classification.exponentiated_gradient_decision_tree.ExponentiatedGradient_DecisionTree.utils_fairlearn(
         index_sf, metric_name
     )
-    classification.exponentiated_gradient_adaboost.ExponentiatedGradient_AdaboostClassifier.set_fair_params(
+    classification.exponentiated_gradient_adaboost.ExponentiatedGradient_AdaboostClassifier.utils_fairlearn(
         index_sf, metric_name
     )
-    classification.exponentiated_gradient_bernoulli_nb.ExponentiatedGradient_BernoulliNB.set_fair_params(
+    classification.exponentiated_gradient_bernoulli_nb.ExponentiatedGradient_BernoulliNB.utils_fairlearn(
         index_sf, metric_name
     )
-    classification.exponentiated_gradient_gaussian_nb.ExponentiatedGradient_GaussianNB.set_fair_params(
+    classification.exponentiated_gradient_gaussian_nb.ExponentiatedGradient_GaussianNB.utils_fairlearn(
         index_sf, metric_name
     )
-    # classification.exponentiated_gradient_lda.ExponentiatedGradient_LDA.set_fair_params(index_sf, metric_name)
-    classification.exponentiated_gradient_liblinear_svc.ExponentiatedGradient_LibLinear_SVC.set_fair_params(
+    # classification.exponentiated_gradient_lda.ExponentiatedGradient_LDA.utils_fairlearn(index_sf, metric_name)
+    classification.exponentiated_gradient_liblinear_svc.ExponentiatedGradient_LibLinear_SVC.utils_fairlearn(
         index_sf, metric_name
     )
-    classification.exponentiated_gradient_libsvm_svc.ExponentiatedGradient_LibSVM_SVC.set_fair_params(
+    classification.exponentiated_gradient_libsvm_svc.ExponentiatedGradient_LibSVM_SVC.utils_fairlearn(
         index_sf, metric_name
     )
-    classification.exponentiated_gradient_multinomial_nb.ExponentiatedGradient_MultinomialNB.set_fair_params(
+    classification.exponentiated_gradient_multinomial_nb.ExponentiatedGradient_MultinomialNB.utils_fairlearn(
         index_sf, metric_name
     )
-    # classification.exponentiated_gradient_qda.ExponentiatedGradient_QDA.set_fair_params(index_sf, metric_name)
+    # classification.exponentiated_gradient_qda.ExponentiatedGradient_QDA.utils_fairlearn(index_sf, metric_name)
 
-    classification.threshold_optimizer_decision_tree.ThresholdOptimizer_DecisionTree.set_fair_params(
+    classification.threshold_optimizer_decision_tree.ThresholdOptimizer_DecisionTree.utils_fairlearn(
         index_sf, metric_name
     )
-    classification.threshold_optimizer_adaboost.ThresholdOptimizer_AdaboostClassifier.set_fair_params(
+    classification.threshold_optimizer_adaboost.ThresholdOptimizer_AdaboostClassifier.utils_fairlearn(
         index_sf, metric_name
     )
-    classification.threshold_optimizer_bernoulli_nb.ThresholdOptimizer_BernoulliNB.set_fair_params(
+    classification.threshold_optimizer_bernoulli_nb.ThresholdOptimizer_BernoulliNB.utils_fairlearn(
         index_sf, metric_name
     )
-    classification.threshold_optimizer_gaussian_nb.ThresholdOptimizer_GaussianNB.set_fair_params(
+    classification.threshold_optimizer_gaussian_nb.ThresholdOptimizer_GaussianNB.utils_fairlearn(
         index_sf, metric_name
     )
-    # classification.threshold_optimizer_lda.ThresholdOptimizer_LDA.set_fair_params(index_sf, metric_name)
-    classification.threshold_optimizer_liblinear_svc.ThresholdOptimizer_LibLinear_SVC.set_fair_params(
+    # classification.threshold_optimizer_lda.ThresholdOptimizer_LDA.utils_fairlearn(index_sf, metric_name)
+    classification.threshold_optimizer_liblinear_svc.ThresholdOptimizer_LibLinear_SVC.utils_fairlearn(
         index_sf, metric_name
     )
-    classification.threshold_optimizer_libsvm_svc.ThresholdOptimizer_LibSVM_SVC.set_fair_params(
+    classification.threshold_optimizer_libsvm_svc.ThresholdOptimizer_LibSVM_SVC.utils_fairlearn(
         index_sf, metric_name
     )
-    classification.threshold_optimizer_multinomial_nb.ThresholdOptimizer_MultinomialNB.set_fair_params(
+    classification.threshold_optimizer_multinomial_nb.ThresholdOptimizer_MultinomialNB.utils_fairlearn(
         index_sf, metric_name
     )
-    # classification.threshold_optimizer_qda.ThresholdOptimizer_QDA.set_fair_params(index_sf, metric_name)
-    classification.threshold_optimizer_decision_tree.ThresholdOptimizer_DecisionTree.set_fair_params(
-        index_sf, metric_name
-    )
-
-    classification.gs_threshold_optimizer_decision_tree.GS_ThresholdOptimizer_DecisionTree.set_fair_params(
-        index_sf, metric_name
-    )
-    classification.gs_threshold_optimizer_adaboost.GS_ThresholdOptimizer_AdaboostClassifier.set_fair_params(
-        index_sf, metric_name
-    )
-    classification.gs_threshold_optimizer_bernoulli_nb.GS_ThresholdOptimizer_BernoulliNB.set_fair_params(
-        index_sf, metric_name
-    )
-    classification.gs_threshold_optimizer_gaussian_nb.GS_ThresholdOptimizer_GaussianNB.set_fair_params(
-        index_sf, metric_name
-    )
-    # classification.gs_threshold_optimizer_lda.GS_ThresholdOptimizer_LDA.set_fair_params(index_sf, metric_name)
-    classification.gs_threshold_optimizer_liblinear_svc.GS_ThresholdOptimizer_LibLinear_SVC.set_fair_params(
-        index_sf, metric_name
-    )
-    classification.gs_threshold_optimizer_libsvm_svc.GS_ThresholdOptimizer_LibSVM_SVC.set_fair_params(
-        index_sf, metric_name
-    )
-    classification.gs_threshold_optimizer_multinomial_nb.GS_ThresholdOptimizer_MultinomialNB.set_fair_params(
-        index_sf, metric_name
-    )
-    # classification.gs_threshold_optimizer_qda.GS_ThresholdOptimizer_QDA.set_fair_params(index_sf, metric_name)
-    classification.gs_threshold_optimizer_decision_tree.GS_ThresholdOptimizer_DecisionTree.set_fair_params(
+    # classification.threshold_optimizer_qda.ThresholdOptimizer_QDA.utils_fairlearn(index_sf, metric_name)
+    classification.threshold_optimizer_decision_tree.ThresholdOptimizer_DecisionTree.utils_fairlearn(
         index_sf, metric_name
     )
 
-    classification.exg_threshold_optimizer_decision_tree.EXG_ThresholdOptimizer_DecisionTree.set_fair_params(
+    classification.gs_threshold_optimizer_decision_tree.GS_ThresholdOptimizer_DecisionTree.utils_fairlearn(
         index_sf, metric_name
     )
-    classification.exg_threshold_optimizer_adaboost.EXG_ThresholdOptimizer_AdaboostClassifier.set_fair_params(
+    classification.gs_threshold_optimizer_adaboost.GS_ThresholdOptimizer_AdaboostClassifier.utils_fairlearn(
         index_sf, metric_name
     )
-    classification.exg_threshold_optimizer_bernoulli_nb.EXG_ThresholdOptimizer_BernoulliNB.set_fair_params(
+    classification.gs_threshold_optimizer_bernoulli_nb.GS_ThresholdOptimizer_BernoulliNB.utils_fairlearn(
         index_sf, metric_name
     )
-    classification.exg_threshold_optimizer_gaussian_nb.EXG_ThresholdOptimizer_GaussianNB.set_fair_params(
+    classification.gs_threshold_optimizer_gaussian_nb.GS_ThresholdOptimizer_GaussianNB.utils_fairlearn(
         index_sf, metric_name
     )
-    # classification.exg_threshold_optimizer_lda.EXG_ThresholdOptimizer_LDA.set_fair_params(index_sf, metric_name)
-    classification.exg_threshold_optimizer_liblinear_svc.EXG_ThresholdOptimizer_LibLinear_SVC.set_fair_params(
+    # classification.gs_threshold_optimizer_lda.GS_ThresholdOptimizer_LDA.utils_fairlearn(index_sf, metric_name)
+    classification.gs_threshold_optimizer_liblinear_svc.GS_ThresholdOptimizer_LibLinear_SVC.utils_fairlearn(
         index_sf, metric_name
     )
-    classification.exg_threshold_optimizer_libsvm_svc.EXG_ThresholdOptimizer_LibSVM_SVC.set_fair_params(
+    classification.gs_threshold_optimizer_libsvm_svc.GS_ThresholdOptimizer_LibSVM_SVC.utils_fairlearn(
         index_sf, metric_name
     )
-    classification.exg_threshold_optimizer_multinomial_nb.EXG_ThresholdOptimizer_MultinomialNB.set_fair_params(
+    classification.gs_threshold_optimizer_multinomial_nb.GS_ThresholdOptimizer_MultinomialNB.utils_fairlearn(
         index_sf, metric_name
     )
-    # classification.exg_threshold_optimizer_qda.EXG_ThresholdOptimizer_QDA.set_fair_params(index_sf, metric_name)
-    classification.exg_threshold_optimizer_decision_tree.EXG_ThresholdOptimizer_DecisionTree.set_fair_params(
+    # classification.gs_threshold_optimizer_qda.GS_ThresholdOptimizer_QDA.utils_fairlearn(index_sf, metric_name)
+    classification.gs_threshold_optimizer_decision_tree.GS_ThresholdOptimizer_DecisionTree.utils_fairlearn(
+        index_sf, metric_name
+    )
+
+    classification.exg_threshold_optimizer_decision_tree.EXG_ThresholdOptimizer_DecisionTree.utils_fairlearn(
+        index_sf, metric_name
+    )
+    classification.exg_threshold_optimizer_adaboost.EXG_ThresholdOptimizer_AdaboostClassifier.utils_fairlearn(
+        index_sf, metric_name
+    )
+    classification.exg_threshold_optimizer_bernoulli_nb.EXG_ThresholdOptimizer_BernoulliNB.utils_fairlearn(
+        index_sf, metric_name
+    )
+    classification.exg_threshold_optimizer_gaussian_nb.EXG_ThresholdOptimizer_GaussianNB.utils_fairlearn(
+        index_sf, metric_name
+    )
+    # classification.exg_threshold_optimizer_lda.EXG_ThresholdOptimizer_LDA.utils_fairlearn(index_sf, metric_name)
+    classification.exg_threshold_optimizer_liblinear_svc.EXG_ThresholdOptimizer_LibLinear_SVC.utils_fairlearn(
+        index_sf, metric_name
+    )
+    classification.exg_threshold_optimizer_libsvm_svc.EXG_ThresholdOptimizer_LibSVM_SVC.utils_fairlearn(
+        index_sf, metric_name
+    )
+    classification.exg_threshold_optimizer_multinomial_nb.EXG_ThresholdOptimizer_MultinomialNB.utils_fairlearn(
+        index_sf, metric_name
+    )
+    # classification.exg_threshold_optimizer_qda.EXG_ThresholdOptimizer_QDA.utils_fairlearn(index_sf, metric_name)
+    classification.exg_threshold_optimizer_decision_tree.EXG_ThresholdOptimizer_DecisionTree.utils_fairlearn(
         index_sf, metric_name
     )
 
@@ -651,7 +653,7 @@ def add_correlation_remover(sf):
     autosklearn.pipeline.components.feature_preprocessing.add_preprocessor(
         CorrelationRemover
     )
-    CorrelationRemover.set_fair_params(sf)
+    CorrelationRemover.utils_fairlearn(sf)
 
 def add_no_preprocessor():
     autosklearn.pipeline.components.data_preprocessing.add_preprocessor(
@@ -664,9 +666,9 @@ def add_sensitive_remover(index_sf):
     autosklearn.pipeline.components.feature_preprocessing.add_preprocessor(
         SensitiveAtributeRemover
     )
-    SensitiveAtributeRemover.set_fair_params(index_sf)
+    SensitiveAtributeRemover.utils_fairlearn(index_sf)
 
 
 def add_LFR(index_sf):
     autosklearn.pipeline.components.feature_preprocessing.add_preprocessor(LFR)
-    LFR.set_fair_params(index_sf)
+    LFR.utils_fairlearn(index_sf)

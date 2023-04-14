@@ -19,30 +19,28 @@ import autosklearn.metrics
 import shutil
 
 # TODO change to new location if it is avaible
-import set_fair_params
+import utils_fairlearn
 import json
 from collections import defaultdict
 
 
 def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcount, under_folder):
-    X, y = set_fair_params.load_data(dataset)
-
+    X, y = utils_fairlearn.load_data(dataset)
+   
     # ==========================
     on = pd.concat([X[sf], y],axis=1)
-    X_train , X_test, y_train, y_test, _, _ = set_fair_params.stratified_split(
-        *(X.to_numpy(), y.to_numpy(), X[sf].to_numpy()), on = on ,size=0.8,  seed=seed
+    X_train , X_test, y_train, y_test= utils_fairlearn.stratified_split(
+        *(X.to_numpy(), y.to_numpy(), X[sf].to_numpy()),columns=X.columns,  on = on ,size=0.8,  seed=seed
     )
 
-    # that can outsorced in another script.
-    X_train, y_train = pd.DataFrame(X_train, columns=X.columns), pd.DataFrame(y_train)
-    X_test, y_test = pd.DataFrame(X_test, columns=X.columns), pd.DataFrame(y_test)
+   
     ############################################################################
     # Build and fit a classifier
     # ==========================
 
-    fair_metric = set_fair_params.set_fair_metric(sf, fairness_constrain)
-    set_fair_params.add_sensitive_remover(X.columns.get_loc(sf))
-    set_fair_params.add_no_preprocessor()
+    fair_metric = utils_fairlearn.set_fair_metric(sf, fairness_constrain)
+    utils_fairlearn.add_sensitive_remover(X.columns.get_loc(sf))
+    utils_fairlearn.add_no_preprocessor()
 
     ############################################################################
     # Build and fit a classifier
@@ -88,7 +86,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     # Compute the two competing metrics
     # =================================
     #sensitive_features = X_test[sf]
-   # set_fair_params.save_pareto(
+   # utils_fairlearn.save_pareto(
     #    automl,
     #    X_test,
     #    y_test,

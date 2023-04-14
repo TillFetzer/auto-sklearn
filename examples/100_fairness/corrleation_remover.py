@@ -15,7 +15,7 @@ import shutil
 import pandas as pd
 
 # TODO change to new location if it is avaible
-import set_fair_params
+import utils_fairlearn
 
 # logging.basicConfig(filename="/home/till/Documents/loogging.txt")
 
@@ -35,29 +35,26 @@ def run_experiment(
     runcount=None, 
     under_folder="no_name", 
     configs = None):
-    X, y = set_fair_params.load_data(dataset)
-    # set_fair_params.set_fairlearn_attributes(X.columns.get_loc("sex"), "sex", "DemographicParity")
+    X, y = utils_fairlearn.load_data(dataset)
+    # utils_fairlearn.set_fairlearn_attributes(X.columns.get_loc("sex"), "sex", "DemographicParity")
     # Change the target to align with scikit-learn's convention that
     # ``1`` is the minority class. In this example it is predicting
     # that a credit is "bad", i.e. that it will default.
     on = pd.concat([X[sf], y],axis=1)
-    X_train , X_test, y_train, y_test, _, _ = set_fair_params.stratified_split(
-        *(X.to_numpy(), y.to_numpy(), X[sf].to_numpy()), on = on ,size=0.8,  seed=seed
+    X_train , X_test, y_train, y_test = utils_fairlearn.stratified_split(
+        *(X.to_numpy(), y.to_numpy(), X[sf].to_numpy()),columns=X.columns, on = on ,size=0.8,  seed=seed
     )
-    # that can outsorced in another script.
-        # that can outsorced in another script.
-    X_train, y_train = pd.DataFrame(X_train, columns=X.columns), pd.DataFrame(y_train)
-    X_test, y_test = pd.DataFrame(X_test, columns=X.columns), pd.DataFrame(y_test)
+   
     ############################################################################
     # Build and fit a classifier
     # ==========================
     if runcount:
-        scenario_args = {"runcount_limit": runcount, "init_config": configs} if configs  else {"runcount_limit": runcount}
+        scenario_args = {"runcount_limit": runcount, "init_config": configs, "seeds":  [1,2,3,4,5]} if configs  else {"runcount_limit": runcount}
         #these only for structure in the folders
-        runcount = "same_hyperparameter" if configs else str(runcount) + "strat"
-        fair_metric = set_fair_params.set_fair_metric(sf, fairness_constrain)
-        set_fair_params.add_no_preprocessor()
-        set_fair_params.add_correlation_remover(sf)
+        runcount = "white_line" if configs else str(runcount) + "strat"
+        fair_metric = utils_fairlearn.set_fair_metric(sf, fairness_constrain)
+        utils_fairlearn.add_no_preprocessor()
+        utils_fairlearn.add_correlation_remover(sf)
     else: 
         runcount = runtime
 

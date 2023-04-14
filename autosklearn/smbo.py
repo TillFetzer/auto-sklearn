@@ -527,16 +527,24 @@ class AutoMLSMBO:
                 RandomForest.activate_random_seed()
                 for config in self.smac_scenario_args["init_config"]:
                     config['feature_preprocessor:__choice__'] = "CorrelationRemover"
-                    for i in range(1,11):
-                        config['feature_preprocessor:CorrelationRemover:alpha'] = i*0.1
-                        if config['classifier:random_forest:bootstrap'] == "True" or config['classifier:random_forest:bootstrap']:
-                            for j in [1,2,3,4,5,6,7,8,9,10]:
-                                config['classifier:random_forest:random_state_forest'] = j
+                    if "seeds" in self.smac_scenario_args:
+                        for i in range(1,11):
+                            config['feature_preprocessor:CorrelationRemover:alpha'] = i*0.1
+                            #these righ now does not help
+                            if (config['classifier:random_forest:bootstrap'] == "True" or config['classifier:random_forest:bootstrap']):
+                                for j in self.smac_scenario_args["seeds"]:
+                                    config['classifier:random_forest:random_state_forest'] = j
+                                    metalearning_configurations.append(Configuration(self.config_space,config))
+                            else:
+                                # has no impact if bootstrap is false or only 
+                                config['classifier:random_forest:random_state_forest'] = 1
                                 metalearning_configurations.append(Configuration(self.config_space,config))
-                        else:
-                            # has no impact if bootstrap is false
-                            config['classifier:random_forest:random_state_forest'] = 1
-                            metalearning_configurations.append(Configuration(self.config_space,config))
+                    else:
+                        config['feature_preprocessor:CorrelationRemover:alpha'] = 0.0
+                        config['classifier:random_forest:random_state_forest'] = 1
+                        metalearning_configurations.append(Configuration(self.config_space,config))
+
+
             scenario_dict.update(self.smac_scenario_args)
             
         smac_args = {
