@@ -33,11 +33,11 @@ def pareto_set(all_costs):
     #    pareto_set =  pareto_set.append([[2, pareto_set[1][0]]])
     return pareto_set, pareto_config
 
-def calc_configs(configs):
+def calc_configs(configs,no_seeds):
     num = 1 #for init
     for config in configs:
-        if config['classifier:random_forest:bootstrap'] == "True" or config['classifier:random_forest:bootstrap']:
-            num += 100
+        if config['classifier:random_forest:bootstrap'] == "True" or config['classifier:random_forest:bootstrap'] == True:
+            num += 10*no_seeds
         else:
             num += 10
     return num
@@ -73,7 +73,7 @@ goal_folder = "base"
             data['configs'].append(config)
     data['points'] = pd.DataFrame(data['points'])
     data['pareto_set'], data['pareto_config']  = pareto_set(data) 
-    num_configs = calc_configs(data['pareto_config'])
+    num_configs = calc_configs(data['pareto_config'], 5)
     corrleation_remover.run_experiment(
         dataset,
         constrain, sf,  
@@ -101,7 +101,7 @@ if __name__ == "__main__":
     source_folder = args.sf
     goal_folder = args.gf
     seeds = [12345,25,42,45451,97,13,27,39,41,53]
-    methods = ["moo"]
+    methods = ["redlineing"]
     datasets = ["german","adult","compass","lawschool"]
     #datasets = ["german"]
     sfs = ["personal_status", "sex", "race", "race"]
@@ -121,6 +121,6 @@ if __name__ == "__main__":
         seed=seed, 
         method=method, 
         runetime="200timesstrat",
-        goal_folder = goal_folder
+       goal_folder = goal_folder
       )
  

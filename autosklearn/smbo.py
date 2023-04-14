@@ -531,7 +531,7 @@ class AutoMLSMBO:
                         for i in range(1,11):
                             config['feature_preprocessor:CorrelationRemover:alpha'] = i*0.1
                             #these righ now does not help
-                            if (config['classifier:random_forest:bootstrap'] == "True" or config['classifier:random_forest:bootstrap']):
+                            if (config['classifier:random_forest:bootstrap'] == "True" or config['classifier:random_forest:bootstrap']==True):
                                 for j in self.smac_scenario_args["seeds"]:
                                     config['classifier:random_forest:random_state_forest'] = j
                                     metalearning_configurations.append(Configuration(self.config_space,config))

@@ -605,11 +605,13 @@ def make_difference_plot(data, alpha_cr):
             global_max_y = 0
             global_min_y = 1
             for j,dataset in enumerate(data[constrain].keys()):
-                dataset = "german"
+                #dataset = "german"
                 print(dataset)
                 global_min_x = 1
                 global_max_x = 0
-                if len(data) ==1:
+                global_max_y = 0
+                global_min_y = 1
+                if len(data[constrain].keys()) ==1:
                  ax= axis 
                 else:
                     if len(data.keys()) == 1:
@@ -642,8 +644,8 @@ def make_difference_plot(data, alpha_cr):
                     #pareto_plot(data[constrain][dataset][seed]['moo']['pareto_set'], ax=ax, **styles["moo_pareto"])
                     #pareto_plot(pd.DataFrame(cr_pf[-1]), ax=ax, **styles["cr_pareto"])
                     
-                    for i in range(0,100):
-                        indexes = [(j*100) + i  for j in range(0,len(data[constrain][dataset][seed]['moo']['pareto_set']))]
+                    for i in range(0,10):
+                        indexes = [(j*10) + i  for j in range(0,len(data[constrain][dataset][seed]['moo']['pareto_set']))]
                         plot_arrows(data[constrain][dataset][seed]['moo']['pareto_set'],cr_pf[-1][indexes,:],ax)
                     cr = pd.DataFrame(cr_pf[-1])
                     local_min_x = min(min(data[constrain][dataset][seed]['moo']['pareto_set'][0]), min(cr[0]))
@@ -699,5 +701,5 @@ def make_difference_plot(data, alpha_cr):
 
 if __name__ == "__main__":
     #data = load_data("/home/till/Documents/auto-sklearn/tmp/", "200timesstrat")
-    data = load_data_particully("/home/till/Documents/auto-sklearn/tmp/cross_val/", "200timesstrat", datasets = ["german"], constrains = ["demographic_parity"], seeds= ["42"])
+    data = load_data_particully("/home/till/Desktop/cross_val/", "200timesstrat", datasets = ["german","adult"], constrains = ["equalized_odds"], seeds= ["39"])
     make_difference_plot(data,"all")
