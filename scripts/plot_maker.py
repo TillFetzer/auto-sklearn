@@ -196,6 +196,7 @@ def load_data(filepath, runetime):
                         try:
                             if d[1][2]["__enum__"] != "StatusType.SUCCESS":
                                 continue
+                           
                             point = d[1][0]
                             config = ds["configs"][str(d[0][0])]
 
@@ -203,6 +204,7 @@ def load_data(filepath, runetime):
                         #these happened also for sucessfull runs for example timeout
                         except KeyError:
                             continue 
+                        
                         data[constrain][dataset][seed][method]['points'].append(point)
                         data[constrain][dataset][seed][method]['configs'].append(config)
                     data[constrain][dataset][seed][method]['points'] = pd.DataFrame(data[constrain][dataset][seed][method]['points'])
@@ -223,8 +225,8 @@ def  load_data_particully(filepath , runetime , datasets = ["german"], constrain
                 data[constrain][dataset][seed] = defaultdict()
                 seed_path = "{}/{}".format(dataset_path, seed)
                 for method in os.listdir(seed_path):
-                    print(method)
-                    method = 'moo'
+                    #print(method)
+                    #method = 'moo'
                     data[constrain][dataset][seed][method] = defaultdict()
                     data[constrain][dataset][seed][method]["points"] = []
                     data[constrain][dataset][seed][method]["configs"] = []
@@ -232,12 +234,19 @@ def  load_data_particully(filepath , runetime , datasets = ["german"], constrain
                     runetime_folder = "same_hyperparameter"  if method == "cr" else runetime
                     
                     file  = "{}/{}/{}/runhistory.json".format(seed_path,method,runetime_folder)
+                    try:
+                        with open(file) as f:
+                            ds = json.load(f)
+                    except:
+                        file  = "{}/{}/{}/runhistory.json".format(seed_path,method,"white_line")
+                        with open(file) as f:
+                            ds = json.load(f)
 
-                    with open(file) as f:
-                        ds = json.load(f)
                     for d in ds["data"]:
                         try:
                             if d[1][2]["__enum__"] != "StatusType.SUCCESS":
+                                continue
+                            if method == "cr" and ds["configs"][str(d[0][1])] != "Initial design":
                                 continue
                             point = d[1][0]
                             config = ds["configs"][str(d[0][0])]
@@ -644,9 +653,10 @@ def make_difference_plot(data, alpha_cr):
                     #plot(data[constrain][dataset][seed]['cr']['points'], ax=ax, **styles["cr_points"], alpha = alpha)
                     #pareto_plot(data[constrain][dataset][seed]['moo']['pareto_set'], ax=ax, **styles["moo_pareto"])
                     #pareto_plot(pd.DataFrame(cr_pf[-1]), ax=ax, **styles["cr_pareto"])
-                    
-                    for i in range(0,10):
-                        indexes = [(j*10) + i  for j in range(0,len(data[constrain][dataset][seed]['moo']['pareto_set']))]
+                    #variants = max(cr_front
+                    variants = 10
+                    for i in range(0,variants):
+                        indexes = [(j*variants) + i  for j in range(0,len(data[constrain][dataset][seed]['moo']['pareto_set']))]
                         plot_arrows(data[constrain][dataset][seed]['moo']['pareto_set'],cr_pf[-1][indexes,:],ax)
                     cr = pd.DataFrame(cr_pf[-1])
                     local_min_x = min(min(data[constrain][dataset][seed]['moo']['pareto_set'][0]), min(cr[0]))
@@ -701,6 +711,11 @@ def make_difference_plot(data, alpha_cr):
 
 
 if __name__ == "__main__":
+
     #data = load_data("/home/till/Documents/auto-sklearn/tmp/", "200timesstrat")
-    data = load_data_particully("/home/till/Desktop/cross_val/", "200timesstrat", datasets = ["adult"], constrains = ["demographic_parity"], seeds= ["39"])
+    data = load_data_particully("/home/till/Desktop/cross_val/", "200timesstrat",
+     datasets = ["adult","german","lawschool","german"],
+    constrains = ["demographic_parity"],
+    #[25,42,45451, 97,13,27,39,41,53]
+    seeds= ["25"])
     make_difference_plot(data,"all")
