@@ -8,7 +8,7 @@ args=parser.parse_args()
 idx = args.idx
 under_folder = args.uf
 seeds = [12345,25,42,45451, 97,13,27,39,41,53]
-methods = ["moo"]
+methods = ["moo+cr"]
 datasets = ["german","adult","compass","lawschool"]
 #datasets = ["german"]
 sfs = ["personal_status", "sex", "race", "race"]
@@ -25,8 +25,8 @@ else:
     runcount = 200
 
 
-#print(dataset)
-#print(method)
-#print(seed)
-#print(fairness_constrains)
-run_experiment(datasets =[dataset], fairness_constrains=[fairness_constrains], methods=[method], file="/work/dlclarge2/fetzert-MySpace/autosklearn", seeds= [seed], sf=[sf] ,runtime = 200000, runcount=runcount, under_folder=under_folder)
+print(dataset)
+print(method)
+print(seed)
+print(fairness_constrains)
+#run_experiment(datasets =[dataset], fairness_constrains=[fairness_constrains], methods=[method], file="/work/dlclarge2/fetzert-MySpace/autosklearn", seeds= [seed], sf=[sf] ,runtime = 200000, runcount=runcount, under_folder=under_folder)

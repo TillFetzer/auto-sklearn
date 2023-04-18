@@ -13,7 +13,7 @@ from collections import defaultdict
 from autosklearn.util.multiobjective import pareto_front
 import numpy as np 
 import copy
-
+from statistics import mean
 from eaf import get_empirical_attainment_surface, EmpiricalAttainmentFuncPlot
 
 
@@ -213,7 +213,12 @@ def load_data(filepath, runetime):
     return data
 
 
-def  load_data_particully(filepath , runetime , datasets = ["german"], constrains = ["demographic_parity"], seeds= [42]):
+def  load_data_particully(filepath , 
+    runetime, 
+    datasets = ["german"], 
+    constrains = ["demographic_parity"], 
+    seeds= [42], 
+    folders = ["same_hyperparameter","hopefully_last_ruhopefully_last_run", "white_line"]):
     data = defaultdict()
     for constrain in constrains:
         data[constrain] = defaultdict()
@@ -225,47 +230,49 @@ def  load_data_particully(filepath , runetime , datasets = ["german"], constrain
                 data[constrain][dataset][seed] = defaultdict()
                 seed_path = "{}/{}".format(dataset_path, seed)
                 for method in os.listdir(seed_path):
-                    #print(method)
-                    #method = 'moo'
-                    data[constrain][dataset][seed][method] = defaultdict()
-                    data[constrain][dataset][seed][method]["points"] = []
-                    data[constrain][dataset][seed][method]["configs"] = []
-                   
-                    runetime_folder = "same_hyperparameter"  if method == "cr" else runetime
+                    points = []
+                    configs = []
+                    for rf_seed in os.listdir(method):
+                        
+                        #print(method)
+                        #method = 'moo'
+                        data[constrain][dataset][seed][method] = defaultdict()
+                        data[constrain][dataset][seed][method]["points"] = []
+                        data[constrain][dataset][seed][method]["configs"] = []
                     
-                    file  = "{}/{}/{}/runhistory.json".format(seed_path,method,runetime_folder)
-                    try:
-                        with open(file) as f:
-                            ds = json.load(f)
-                    except:
-                        try:
-                            file  = "{}/{}/{}/runhistory.json".format(seed_path,method,"hopefully_last_ruhopefully_last_run")
-                            with open(file) as f:
-                                ds = json.load(f)
-                        except:
-                            file  = "{}/{}/{}/runhistory.json".format(seed_path,method,"white_line")
-                            with open(file) as f:
-                                ds = json.load(f)
+                        runetime_folders = folders  if method == "cr" else [runetime]
+                        for runetime_folder in runetime_folders:
+                            file  = "{}/{}/{}/{}/runhistory.json".format(seed_path,method,runetime_folder,rf_seed)
+                            try:
+                                with open(file) as f:
+                                    ds = json.load(f)
+                                break
+                            except:
+                                pass
 
-                    for d in ds["data"]:
-                        try:
-                            if d[1][2]["__enum__"] != "StatusType.SUCCESS":
-                                continue
-                            if method == "cr" and ds['config_origins'][str(d[0][0])] != "Initial design":
-                                continue
-                            point = d[1][0]
-                            config = ds["configs"][str(d[0][0])]
+                        for d in ds["data"]:
+                            ps = []
+                            cs = []
+                            try:
+                                if d[1][2]["__enum__"] != "StatusType.SUCCESS":
+                                    continue
+                                if method == "cr" and ds['config_origins'][str(d[0][0])] != "Initial design":
+                                    continue
+                                point = d[1][0]
+                                config = ds["configs"][str(d[0][0])]
 
-                        #if run was not sucessfull no train loss is generated
-                        #these happened also for sucessfull runs for example timeout
-                        except KeyError:
-                            continue 
-                        #if method == "cr" and (config['classifier:random_forest:bootstrap'] == "True" or config['classifier:random_forest:bootstrap']==True):
-                        #    data[constrain][dataset][seed][method]['points'].extend([point]*2)
-                        #    data[constrain][dataset][seed][method]['configs'].extend([config]*2)
-                        data[constrain][dataset][seed][method]['points'].append(point)
-                        data[constrain][dataset][seed][method]['configs'].append(config)
+                            #if run was not sucessfull no train loss is generated
+                            #these happened also for sucessfull runs for example timeout
+                            except KeyError:
+                                continue 
+                            ps.append(point)
+                            cs.append(config)
+                        points.append(ps)
+                        configs.append(cs)
+                    points = pd.DataFrame(points)
+                    data[constrain][dataset][seed][method]['points'].append([mean(points[0]), mean(points[1])]) #mean could be other name
                     data[constrain][dataset][seed][method]['points'] = pd.DataFrame(data[constrain][dataset][seed][method]['points'])
+                    data[constrain][dataset][seed][method]['configs'].append(configs[0])
                     data[constrain][dataset][seed][method]['pareto_set'], data[constrain][dataset][seed][method]['pareto_config']   = pareto_set(data[constrain][dataset][seed][method])
                     #print("file:{},pareto_set:{}".format(file, data[constrain][dataset][seed][method]['points']))
     return data
@@ -760,4 +767,4 @@ if __name__ == "__main__":
     constrains = ["error_rate_difference"],
     #[12345, 25,42,45451, 97,13,27,39,41,53]
     seeds= ["41"])
-    make_difference_plot(data,0.5)
+    make_difference_plot(data,"best_alpha")
