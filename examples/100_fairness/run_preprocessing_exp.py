@@ -118,6 +118,6 @@ if __name__ == "__main__":
         method=method, 
         runetime="200timesstrat",
        goal_folder = goal_folder,
-       rf_seed
+       rf_seed = rf_seed
       )
  
