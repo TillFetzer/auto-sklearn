@@ -105,19 +105,20 @@ if __name__ == "__main__":
     sf = sfs[int(idx/(len(seeds)*len(methods)*len(rf_seeds)))%len(datasets)]
     method = methods[int(idx/(len(seeds)*len(rf_seeds)))%len(methods)]
     seed = seeds[int(idx/len(rf_seeds))%len(seeds)]
-    fairness_constrains = fairness_constrains[int(idx/(len(seeds)*len(methods)*len(datasets)))]
+    fairness_constrains = fairness_constrains[int(idx/(len(seeds)*len(methods)*len(datasets)*len(rf_seeds)))]
     rf_seed = rf_seeds[idx%len(rf_seeds)]
     print(fairness_constrains)
     print(dataset)
     print(seed)
-    data = create_cr_reruns(
-        source_folder= source_folder, 
-        dataset=dataset, 
-        constrain=fairness_constrains, 
-        seed=seed, 
-        method=method, 
-        runetime="200timesstrat",
-       goal_folder = goal_folder,
-       rf_seed = rf_seed
-      )
+    print(rf_seed)
+    #data = create_cr_reruns(
+    #    source_folder= source_folder, 
+    #    dataset=dataset, 
+    #    constrain=fairness_constrains, 
+     #   seed=seed, 
+    #    method=method, 
+    #    runetime="200timesstrat",
+    #   goal_folder = goal_folder,
+    #   rf_seed = rf_seed
+    #  )
  

@@ -52,7 +52,7 @@ def run_experiment(
     if runcount:
         scenario_args = {"runcount_limit": runcount, "init_config": configs, "seeds":  [rf_seed]} if configs  else {"runcount_limit": runcount}
         #these only for structure in the folders
-        runcount = "white_line" if configs else str(runcount) + "strat"
+        runcount = "one_rf_seed" if configs else str(runcount) + "strat"
         fair_metric = utils_fairlearn.set_fair_metric(sf, fairness_constrain)
         utils_fairlearn.add_no_preprocessor()
         utils_fairlearn.add_correlation_remover(sf)

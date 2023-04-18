@@ -528,7 +528,7 @@ class AutoMLSMBO:
                 for config in self.smac_scenario_args["init_config"]:
                     config['feature_preprocessor:__choice__'] = "CorrelationRemover"
                     if "seeds" in self.smac_scenario_args:
-                        for i in range(1,10):
+                        for i in range(1,11):
                             config['feature_preprocessor:CorrelationRemover:alpha'] = i*0.1
                             #these righ now does not help
                          
