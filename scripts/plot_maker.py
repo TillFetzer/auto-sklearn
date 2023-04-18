@@ -238,15 +238,20 @@ def  load_data_particully(filepath , runetime , datasets = ["german"], constrain
                         with open(file) as f:
                             ds = json.load(f)
                     except:
-                        file  = "{}/{}/{}/runhistory.json".format(seed_path,method,"white_line")
-                        with open(file) as f:
-                            ds = json.load(f)
+                        try:
+                            file  = "{}/{}/{}/runhistory.json".format(seed_path,method,"hopefully_last_ruhopefully_last_run")
+                            with open(file) as f:
+                                ds = json.load(f)
+                        except:
+                            file  = "{}/{}/{}/runhistory.json".format(seed_path,method,"white_line")
+                            with open(file) as f:
+                                ds = json.load(f)
 
                     for d in ds["data"]:
                         try:
                             if d[1][2]["__enum__"] != "StatusType.SUCCESS":
                                 continue
-                            if method == "cr" and ds["configs"][str(d[0][1])] != "Initial design":
+                            if method == "cr" and ds['config_origins'][str(d[0][0])] != "Initial design":
                                 continue
                             point = d[1][0]
                             config = ds["configs"][str(d[0][0])]
@@ -255,6 +260,9 @@ def  load_data_particully(filepath , runetime , datasets = ["german"], constrain
                         #these happened also for sucessfull runs for example timeout
                         except KeyError:
                             continue 
+                        #if method == "cr" and (config['classifier:random_forest:bootstrap'] == "True" or config['classifier:random_forest:bootstrap']==True):
+                        #    data[constrain][dataset][seed][method]['points'].extend([point]*2)
+                        #    data[constrain][dataset][seed][method]['configs'].extend([config]*2)
                         data[constrain][dataset][seed][method]['points'].append(point)
                         data[constrain][dataset][seed][method]['configs'].append(config)
                     data[constrain][dataset][seed][method]['points'] = pd.DataFrame(data[constrain][dataset][seed][method]['points'])
@@ -387,8 +395,7 @@ def plots_we(pf, ax, color):
     
 def make_plot_3(data):
     sns.set_context("paper", font_scale=0.6)
-    load_data()
-    #TODO set on big monitor
+    #load_data()
     figsize = (27,10)
     dpi = 300
     main_size = 20
@@ -448,8 +455,8 @@ def make_plot_3(data):
             max_len, max_len_cr, max_len_rl = 0,0,0
             for seed in data[constrain][dataset].keys():
                 moo_pf.append(np.array(data[constrain][dataset][seed]['moo']['points']))
-                cr_pf.append(np.array(data[constrain][dataset][seed]['cr']['points']))
-                redlineing_pf.append(np.array(data[constrain][dataset][seed]['redlineing']['points']))
+                cr_pf.append(np.array(data[constrain][dataset][seed]['moo_cv']['points']))
+                #redlineing_pf.append(np.array(data[constrain][dataset][seed]['redlineing']['points']))
                 #lfr_pf.append(np.array(data[constrain][dataset][seed]['lfr']['points']))
                 #seed = "25" 
                 #moo
@@ -458,14 +465,14 @@ def make_plot_3(data):
                 plot(data[constrain][dataset][seed]['moo']['points'], ax=ax, **styles["moo_points"], alpha = alpha)
 
                 #cr 
-                length = len(data[constrain][dataset][seed]['cr']['points'])
+                length = len(data[constrain][dataset][seed]['moo_cv']['points'])
                 max_len= length if max_len < length else max_len
-                plot(data[constrain][dataset][seed]['cr']['points'], ax=ax, **styles["cr_points"], alpha = alpha)
+                plot(data[constrain][dataset][seed]['moo_cv']['points'], ax=ax, **styles["cr_points"], alpha = alpha)
 
                 #redelineing
-                length = len(data[constrain][dataset][seed]['redlineing']['points'])
-                max_len= length if max_len < length else max_len
-                plot(data[constrain][dataset][seed]['redlineing']['points'], ax=ax, **styles["redlineing_points"], alpha = alpha)
+                #length = len(data[constrain][dataset][seed]['redlineing']['points'])
+                #max_len= length if max_len < length else max_len
+                #plot(data[constrain][dataset][seed]['redlineing']['points'], ax=ax, **styles["redlineing_points"], alpha = alpha)
                
                 ##lfr
                 #length = len(data[constrain][dataset][seed]['lfr']['points'])
@@ -483,9 +490,9 @@ def make_plot_3(data):
                     cr_pf[i] = np.vstack((cr_pf[i], [cr_pf[i][-1]]*(diff)))
 
                 #redliening
-                diff = max_len-len(redlineing_pf[i]) 
-                if diff:
-                    redlineing_pf[i] = np.vstack((redlineing_pf[i], [redlineing_pf[i][-1]]*(diff)))
+                #diff = max_len-len(redlineing_pf[i]) 
+                #if diff:
+                #    redlineing_pf[i] = np.vstack((redlineing_pf[i], [redlineing_pf[i][-1]]*(diff)))
 
 
             #moo_points = data[constrain][dataset][seed]['moo']['points']
@@ -499,14 +506,14 @@ def make_plot_3(data):
             #moo_pf = np.vstack(moo_pf)
             #t = copy.deepcopy(ax)
             #_, ax = plt.subplots(ax)
-            # 
-            pf = [np.stack(moo_pf, axis=0),np.stack(cr_pf, axis=0),np.stack(redlineing_pf,axis=0)]
-            #
-            plots_we(pf, ax, [styles["moo_points"]['color'],styles["cr_points"]['color'], styles["redlineing_points"]['color']])
+            # ,np.stack(redlineing_pf,axis=0)
+            pf = [np.stack(moo_pf, axis=0),np.stack(cr_pf, axis=0)]
+            # , styles["redlineing_points"]['color']
+            plots_we(pf, ax, [styles["moo_points"]['color'],styles["cr_points"]['color']])
             ax.tick_params(axis="both", which="major", labelsize=tick_size)
-    legend_elements = [Line2D([0], [0], color="red", lw=4, label='moo without preprocessing'),
-                   Line2D([0], [0], color="blue", lw=4, label='moo with correlation remover'),
-                    Line2D([0], [0], color="green", lw=4, label='moo without SA and corrleation remover'),
+    legend_elements = [Line2D([0], [0], color="red", lw=4, label='moo'),
+                   Line2D([0], [0], color="blue", lw=4, label='moo with cross-validation'),
+                   # Line2D([0], [0], color="green", lw=4, label='moo without SA and corrleation remover'),
                     #Line2D([0], [0], color=c_color, lw=4, label='moo with learned fair represenation')
                     ]
     fig.tight_layout(rect=[0.03, 0.05, 1, 1], pad = 5)
@@ -541,6 +548,7 @@ def plot_arrows(
 
 def right_alpha(data, alpha_cr):
     points = []
+    configs = []
     h_points = []
     
     for idx, conf in enumerate(data["configs"]):
@@ -549,7 +557,8 @@ def right_alpha(data, alpha_cr):
         if conf['feature_preprocessor:CorrelationRemover:alpha'] == 0.0:
             continue
         if alpha_cr == "all":
-            points.append(np.array(data['points'][idx:(idx+1)]))
+            
+            return data['points'][1:], pd.DataFrame(data["configs"][1:])
         elif alpha_cr == "best":
             h_points.append(np.array(data['points'][idx:(idx+1)]))
             if len(h_points)==10:
@@ -560,13 +569,45 @@ def right_alpha(data, alpha_cr):
             # because  
             if conf['feature_preprocessor:CorrelationRemover:alpha'] == int(alpha_cr/0.1)*0.1:        
                 points.append(np.array(data['points'][idx:(idx+1)]))
+                configs.append(data['configs'][idx:(idx+1)][0])
     
     try:
         points = np.stack(points, axis=0)
     except:
         print()
     points = np.squeeze(points)
-    return points
+    return points, pd.DataFrame(configs)
+import itertools
+def calc_index(conf):
+    # in: conf, num of points on pareto
+    # do: but the right points on the pareto
+    # out: give the indexies back.
+    similar_rows = []
+    groups = {}
+    for idx, row in conf.iterrows():
+        hyperparams = tuple(row.drop(["classifier:random_forest:random_state_forest", "feature_preprocessor:CorrelationRemover:alpha"]))
+        if hyperparams not in groups:
+            groups[hyperparams] = [idx]
+        else:
+            groups[hyperparams].append(idx)
+    similar_rows = [value for value in groups.values()]
+    max_len = max(len(lst) for lst in similar_rows)
+    for lst in similar_rows:
+        if len(lst) < max_len:
+            lst.extend([lst[-1]] * (max_len - len(lst)))
+
+    result = []
+    for i, hyperparams in enumerate(groups.keys()):
+        row_indices = similar_rows[i]
+        row_indices = [row_indices[0]] + [idx for idx in row_indices if idx != row_indices[0]]
+        row_indices.extend([row_indices[-1]] * (max_len - len(row_indices)))
+        result.append(row_indices)
+    result = list(map(list, zip(*result)))
+
+    return result
+
+
+
 
 
 
@@ -596,7 +637,7 @@ def make_difference_plot(data, alpha_cr):
         )
         
         fig.supxlabel("error",fontsize=label_size)
-        fig.supylabel("1-demographic_parity", fontsize=label_size)
+        fig.supylabel("error_rate_difference", fontsize=label_size)
         def rgb(r: int, g: int, b: int) -> str:
             return "#%02x%02x%02x" % (r, g, b)
 
@@ -622,7 +663,7 @@ def make_difference_plot(data, alpha_cr):
                 global_max_y = 0
                 global_min_y = 1
                 if len(data[constrain].keys()) ==1:
-                 ax= axis 
+                    ax= axis 
                 else:
                     if len(data.keys()) == 1:
                         ax = axis[j]
@@ -638,7 +679,7 @@ def make_difference_plot(data, alpha_cr):
                 for seed in data[constrain][dataset].keys():
                     #seed = "42" 
                     moo_pf.append(np.array(data[constrain][dataset][seed]['moo']['pareto_set']))
-                    cr_front = right_alpha(data[constrain][dataset][seed]['cr'], alpha_cr)
+                    cr_front, conf = right_alpha(data[constrain][dataset][seed]['cr'], alpha_cr)
                     cr_pf.append(np.array(cr_front))
                     #lfr_pf.append(np.array(data[constrain][dataset][seed]['lfr']['points']))
                     
@@ -654,10 +695,11 @@ def make_difference_plot(data, alpha_cr):
                     #pareto_plot(data[constrain][dataset][seed]['moo']['pareto_set'], ax=ax, **styles["moo_pareto"])
                     #pareto_plot(pd.DataFrame(cr_pf[-1]), ax=ax, **styles["cr_pareto"])
                     #variants = max(cr_front
-                    variants = 10
-                    for i in range(0,variants):
-                        indexes = [(j*variants) + i  for j in range(0,len(data[constrain][dataset][seed]['moo']['pareto_set']))]
-                        plot_arrows(data[constrain][dataset][seed]['moo']['pareto_set'],cr_pf[-1][indexes,:],ax)
+                    
+                    indecies = calc_index(conf)
+                    for index in indecies:
+                        #indexes = [(j*(seeds+diff_alphas)) + i  for j in range(0,len(data[constrain][dataset][seed]['moo']['pareto_set']))]
+                        plot_arrows(data[constrain][dataset][seed]['moo']['pareto_set'],cr_pf[-1][index,:],ax)
                     cr = pd.DataFrame(cr_pf[-1])
                     local_min_x = min(min(data[constrain][dataset][seed]['moo']['pareto_set'][0]), min(cr[0]))
                     local_min_y = min(min(data[constrain][dataset][seed]['moo']['pareto_set'][1]), min(cr[1]))
@@ -712,10 +754,10 @@ def make_difference_plot(data, alpha_cr):
 
 if __name__ == "__main__":
 
-    #data = load_data("/home/till/Documents/auto-sklearn/tmp/", "200timesstrat")
+    #data = load_data("/home/till/Desktop/diff_cross_val/", "200timesstrat")
     data = load_data_particully("/home/till/Desktop/cross_val/", "200timesstrat",
-     datasets = ["adult","german","lawschool","german"],
-    constrains = ["demographic_parity"],
-    #[25,42,45451, 97,13,27,39,41,53]
-    seeds= ["25"])
-    make_difference_plot(data,"all")
+    datasets = ["adult","compass","lawschool","german"],
+    constrains = ["error_rate_difference"],
+    #[12345, 25,42,45451, 97,13,27,39,41,53]
+    seeds= ["41"])
+    make_difference_plot(data,0.5)

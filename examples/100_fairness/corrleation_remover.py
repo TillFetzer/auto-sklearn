@@ -34,7 +34,8 @@ def run_experiment(
     seed, 
     runcount=None, 
     under_folder="no_name", 
-    configs = None):
+    configs = None,
+    rf_seed = None):
     X, y = utils_fairlearn.load_data(dataset)
     # utils_fairlearn.set_fairlearn_attributes(X.columns.get_loc("sex"), "sex", "DemographicParity")
     # Change the target to align with scikit-learn's convention that
@@ -49,7 +50,7 @@ def run_experiment(
     # Build and fit a classifier
     # ==========================
     if runcount:
-        scenario_args = {"runcount_limit": runcount, "init_config": configs, "seeds":  [1,2,3,4,5]} if configs  else {"runcount_limit": runcount}
+        scenario_args = {"runcount_limit": runcount, "init_config": configs, "seeds":  [rf_seed]} if configs  else {"runcount_limit": runcount}
         #these only for structure in the folders
         runcount = "white_line" if configs else str(runcount) + "strat"
         fair_metric = utils_fairlearn.set_fair_metric(sf, fairness_constrain)
@@ -61,7 +62,10 @@ def run_experiment(
     ############################################################################
     # Build and fit a classifier
     # ==========================train_ev
-    tmp =  file + "/{}/{}/{}/{}/cr/{}".format(under_folder, fairness_constrain, dataset, seed, runcount)
+    if rf_seed:
+        tmp =  file + "/{}/{}/{}/{}/cr/{}/{}".format(under_folder, fairness_constrain, dataset, seed, runcount, rf_seed)
+    else:
+        tmp =  file + "/{}/{}/{}/{}/cr/{}".format(under_folder, fairness_constrain, dataset, seed, runcount)
     automl = autosklearn.classification.AutoSklearnClassifier(
         time_left_for_this_task=runtime,
         memory_limit=13000,

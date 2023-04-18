@@ -33,14 +33,6 @@ def pareto_set(all_costs):
     #    pareto_set =  pareto_set.append([[2, pareto_set[1][0]]])
     return pareto_set, pareto_config
 
-def calc_configs(configs,no_seeds):
-    num = 1 #for init
-    for config in configs:
-        if config['classifier:random_forest:bootstrap'] == "True" or config['classifier:random_forest:bootstrap'] == True:
-            num += 2*no_seeds
-        else:
-            num += 2
-    return num
 
 def create_cr_reruns(
 source_folder= "/home/till/Documents/auto-sklearn/tmp", 
@@ -49,7 +41,8 @@ constrain="consistency_score",
 seed=13, 
 method="moo", 
 runetime="200timesstrat",
-goal_folder = "base"
+goal_folder = "base",
+rf_seed = 1
 ):
     data = defaultdict()   
     data["points"] = []
@@ -73,7 +66,7 @@ goal_folder = "base"
             data['configs'].append(config)
     data['points'] = pd.DataFrame(data['points'])
     data['pareto_set'], data['pareto_config']  = pareto_set(data) 
-    num_configs = calc_configs(data['pareto_config'], 5)
+    num_configs = len(data['pareto_config'])*10 +1
     corrleation_remover.run_experiment(
         dataset,
         constrain, sf,  
@@ -82,7 +75,8 @@ goal_folder = "base"
         seed, 
         num_configs, #these stops it
         goal_folder,
-        configs = data["pareto_config"])
+        configs = data["pareto_config"],
+        rf_seed = rf_seed)
                   
 
 
@@ -106,11 +100,13 @@ if __name__ == "__main__":
     #datasets = ["german"]
     sfs = ["personal_status", "sex", "race", "race"]
     fairness_constrains=["demographic_parity","equalized_odds", "error_rate_difference", "consistency_score"]
-    dataset = datasets[int(idx/(len(seeds)*len(methods)))%len(datasets)]
-    sf = sfs[int(idx/(len(seeds)*len(methods)))%len(datasets)]
-    method = methods[int(idx/len(seeds))%len(methods)]
-    seed = seeds[idx%len(seeds)]
+    rf_seeds = [1,2,3,4,5]
+    dataset = datasets[int(idx/(len(seeds)*len(methods)*len(rf_seeds)))%len(datasets)]
+    sf = sfs[int(idx/(len(seeds)*len(methods)*len(rf_seeds)))%len(datasets)]
+    method = methods[int(idx/(len(seeds)*len(rf_seeds)))%len(methods)]
+    seed = seeds[int(idx/len(rf_seeds))%len(seeds)]
     fairness_constrains = fairness_constrains[int(idx/(len(seeds)*len(methods)*len(datasets)))]
+    rf_seed = rf_seeds[idx%len(rf_seeds)]
     print(fairness_constrains)
     print(dataset)
     print(seed)
@@ -121,6 +117,7 @@ if __name__ == "__main__":
         seed=seed, 
         method=method, 
         runetime="200timesstrat",
-       goal_folder = goal_folder
+       goal_folder = goal_folder,
+       rf_seed
       )
  
