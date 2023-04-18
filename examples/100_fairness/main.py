@@ -12,17 +12,15 @@ methods = ["moo+cr"]
 datasets = ["german","adult","compass","lawschool"]
 #datasets = ["german"]
 sfs = ["personal_status", "sex", "race", "race"]
-fairness_constrains=["demographic_parity","equalized_odds", "error_rate_difference", "consistency_score"]
+fairness_constrains=["demographic_parity","equalized_odds","consistency_score", "error_rate_difference", ]
 
 dataset = datasets[int(idx/(len(seeds)*len(methods)))%len(datasets)]
 sf = sfs[int(idx/(len(seeds)*len(methods)))%len(datasets)]
 method = methods[int(idx/len(seeds))%len(methods)]
 seed = seeds[idx%len(seeds)]
 fairness_constrains = fairness_constrains[int(idx/(len(seeds)*len(methods)*len(datasets)))]
-if dataset == "adult" and fairness_constrains == "consistency_score":
-    runcount = 150
-else: 
-    runcount = 200
+
+runcount = 200
 
 
 print(dataset)
