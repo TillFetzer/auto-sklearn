@@ -523,9 +523,9 @@ class AutoMLSMBO:
                     )
             metalearning_configurations = []
             if "init_config" in self.smac_scenario_args:
-                metalearning_configurations =  self.smac_scenario_args["init_config"]
+                #metalearning_configurations =  self.smac_scenario_args["init_config"]
                 for config in self.smac_scenario_args["init_config"]:
-                     metalearning_configurations.append(Configuration(self.config_space,config))
+                    metalearning_configurations.append(Configuration(self.config_space,config))
 
 
             scenario_dict.update(self.smac_scenario_args)
