@@ -83,7 +83,7 @@ rf_seed = 1
             conf1['feature_preprocessor:CorrelationRemover:alpha'] = i*0.1
             #these righ now does not help            
             conf1['classifier:random_forest:random_state_forest'] = rf_seed    
-            cr_configs.append(conf)
+            cr_configs.append(conf1)
                 
     #num_configs = len(data['pareto_config'])*10 + 1
     tmp =  "{}/{}/{}/{}/{}/cr/{}/{}/del/".format(source_folder,goal_folder,constrain,dataset,seed,"one_rf_seed", rf_seed)
