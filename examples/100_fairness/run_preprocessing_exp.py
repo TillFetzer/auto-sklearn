@@ -79,9 +79,10 @@ rf_seed = 1
         conf = copy.deepcopy(config)
         conf['feature_preprocessor:__choice__'] = "CorrelationRemover"           
         for i in range(1,11):
-            conf['feature_preprocessor:CorrelationRemover:alpha'] = i*0.1
+            conf1 = copy.deepcopy(conf)
+            conf1['feature_preprocessor:CorrelationRemover:alpha'] = i*0.1
             #these righ now does not help            
-            conf['classifier:random_forest:random_state_forest'] = rf_seed    
+            conf1['classifier:random_forest:random_state_forest'] = rf_seed    
             cr_configs.append(conf)
                 
     #num_configs = len(data['pareto_config'])*10 + 1
