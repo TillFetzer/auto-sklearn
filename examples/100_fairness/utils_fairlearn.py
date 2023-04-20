@@ -255,17 +255,6 @@ def set_fair_metric(sf, metric):
             needs_threshold=False,
             sensitive_features=sf,
         )
-     if metric == "":
-        return autosklearn.metrics.make_scorer(
-            name="equalized_odds_difference",
-            score_func=equalized_odds_difference,
-            optimum=0,
-            greater_is_better=False,
-            needs_proba=False,
-            needs_X=True,
-            needs_threshold=False,
-            sensitive_features=sf,
-        )
     if metric == "equalized_odds":
         return autosklearn.metrics.make_scorer(
             name="equalized_odds_difference",
