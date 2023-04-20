@@ -216,6 +216,11 @@ def consistency_score(solution, prediction, X_data):
     from aif360.sklearn.metrics import consistency_score
 
     return consistency_score(X_data, prediction)
+def equalized_odds_difference(solution, prediction, X_data, sensitive_features):
+    sf = X_data[sensitive_features]
+    return fairlearn.metrics.equal_opportunity_difference(
+        solution, prediction, sensitive_features=sf
+    )
 
 def error_rate_difference(solution, prediction, X_data, sensitive_features):
     sf = X_data[sensitive_features] 
@@ -225,6 +230,7 @@ def error_rate_difference(solution, prediction, X_data, sensitive_features):
         (1 - sklearn.metrics.accuracy_score(solution[(sf[sf[sensitive_features] == 0]).index.tolist()], prediction[(sf[sf[sensitive_features] == 0]).index.tolist()]))
     -   (1 - sklearn.metrics.accuracy_score(solution[(sf[sf[sensitive_features] == 1]).index.tolist()], prediction[(sf[sf[sensitive_features] == 1]).index.tolist()]))
     )
+def equal_opportunity_difference()
 
 def set_fair_metric(sf, metric):
     if metric == "demographic_parity":
