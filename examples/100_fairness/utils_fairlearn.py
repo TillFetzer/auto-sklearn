@@ -216,7 +216,8 @@ def consistency_score(solution, prediction, X_data):
     from aif360.sklearn.metrics import consistency_score
 
     return consistency_score(X_data, prediction)
-def equalized_odds_difference(solution, prediction, X_data, sensitive_features):
+
+def equal_opportunity_difference(solution, prediction, X_data, sensitive_features):
     sf = X_data[sensitive_features]
     return fairlearn.metrics.equal_opportunity_difference(
         solution, prediction, sensitive_features=sf
@@ -230,13 +231,34 @@ def error_rate_difference(solution, prediction, X_data, sensitive_features):
         (1 - sklearn.metrics.accuracy_score(solution[(sf[sf[sensitive_features] == 0]).index.tolist()], prediction[(sf[sf[sensitive_features] == 0]).index.tolist()]))
     -   (1 - sklearn.metrics.accuracy_score(solution[(sf[sf[sensitive_features] == 1]).index.tolist()], prediction[(sf[sf[sensitive_features] == 1]).index.tolist()]))
     )
-def equal_opportunity_difference()
 
 def set_fair_metric(sf, metric):
     if metric == "demographic_parity":
         return autosklearn.metrics.make_scorer(
             name="demographic_parity_difference",
             score_func=demographic_parity_difference,
+            optimum=0,
+            greater_is_better=False,
+            needs_proba=False,
+            needs_X=True,
+            needs_threshold=False,
+            sensitive_features=sf,
+        )
+    if metric == "equal_opportunity_difference":
+        return autosklearn.metrics.make_scorer(
+            name="equal_opportunity_difference",
+            score_func=equal_opportunity_difference,
+            optimum=0,
+            greater_is_better=False,
+            needs_proba=False,
+            needs_X=True,
+            needs_threshold=False,
+            sensitive_features=sf,
+        )
+     if metric == "":
+        return autosklearn.metrics.make_scorer(
+            name="equalized_odds_difference",
+            score_func=equalized_odds_difference,
             optimum=0,
             greater_is_better=False,
             needs_proba=False,
