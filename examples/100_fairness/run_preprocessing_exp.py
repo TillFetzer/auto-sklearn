@@ -14,6 +14,7 @@ import corrleation_remover
 import argparse, sys
 from autosklearn.pipeline.components.classification.random_forest import RandomForest
 from ConfigSpace.configuration_space import Configuration
+import copy
 def pareto_set(all_costs):
     confs = all_costs["configs"]
     all_costs = np.array(all_costs["points"])
@@ -75,12 +76,13 @@ rf_seed = 1
     RandomForest.activate_random_seed()
     cr_configs = []
     for config in data["pareto_config"]:
-        config['feature_preprocessor:__choice__'] = "CorrelationRemover"           
+        conf = copy.deepcopy(config)
+        conf['feature_preprocessor:__choice__'] = "CorrelationRemover"           
         for i in range(1,11):
-            config['feature_preprocessor:CorrelationRemover:alpha'] = i*0.1
+            conf['feature_preprocessor:CorrelationRemover:alpha'] = i*0.1
             #these righ now does not help            
-            config['classifier:random_forest:random_state_forest'] = rf_seed    
-            cr_configs.append(config)
+            conf['classifier:random_forest:random_state_forest'] = rf_seed    
+            cr_configs.append(conf)
                 
     #num_configs = len(data['pareto_config'])*10 + 1
     tmp =  "{}/{}/{}/{}/{}/cr/{}/{}/del/".format(source_folder,goal_folder,constrain,dataset,seed,"one_rf_seed", rf_seed)
@@ -90,7 +92,7 @@ rf_seed = 1
         if len(os.listdir(tmp)) == 0:
             return
         data_2["points"], data_2["configs"] = load_config(tmp + "smac3-output/run_{}/runhistory.json".format(seed))
-        cr_configs = cr_configs[len(data_2['configs']):]
+        cr_configs = cr_configs[(len(data_2['configs'])-1):]
 
     num_configs = len(cr_configs) + 1 
     corrleation_remover.run_experiment(

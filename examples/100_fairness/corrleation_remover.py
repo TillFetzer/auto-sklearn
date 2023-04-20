@@ -69,9 +69,9 @@ def run_experiment(
         tmp =  file + "/{}/{}/{}/{}/cr/{}/del".format(under_folder, fairness_constrain, dataset, seed, runcount)
     if os.path.exists(tmp):
         if rf_seed:
-            tmp =  file + "/{}/{}/{}/{}/cr/{}/{}/2/del".format(under_folder, fairness_constrain, dataset, seed, runcount, rf_seed)
+            tmp =  file + "/{}/{}/{}/{}/cr/{}/{}/2t/del".format(under_folder, fairness_constrain, dataset, seed, runcount, rf_seed)
         else:
-            tmp =  file + "/{}/{}/{}/{}/cr/{}/2/del".format(under_folder, fairness_constrain, dataset, seed, runcount)
+            tmp =  file + "/{}/{}/{}/{}/cr/{}/2t/del".format(under_folder, fairness_constrain, dataset, seed, runcount)
 
 
     automl = autosklearn.classification.AutoSklearnClassifier(
