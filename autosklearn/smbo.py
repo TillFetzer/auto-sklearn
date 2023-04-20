@@ -523,22 +523,9 @@ class AutoMLSMBO:
                     )
             metalearning_configurations = []
             if "init_config" in self.smac_scenario_args:
-                from autosklearn.pipeline.components.classification.random_forest import RandomForest
-                RandomForest.activate_random_seed()
+                metalearning_configurations =  self.smac_scenario_args["init_config"]
                 for config in self.smac_scenario_args["init_config"]:
-                    config['feature_preprocessor:__choice__'] = "CorrelationRemover"
-                    if "seeds" in self.smac_scenario_args:
-                        for i in range(1,11):
-                            config['feature_preprocessor:CorrelationRemover:alpha'] = i*0.1
-                            #these righ now does not help
-                         
-                            for j in self.smac_scenario_args["seeds"]:
-                                config['classifier:random_forest:random_state_forest'] = j
-                                metalearning_configurations.append(Configuration(self.config_space,config))      
-                    else:
-                        config['feature_preprocessor:CorrelationRemover:alpha'] = 0.0
-                        config['classifier:random_forest:random_state_forest'] = 1
-                        metalearning_configurations.append(Configuration(self.config_space,config))
+                     metalearning_configurations.append(Configuration(self.config_space,config))
 
 
             scenario_dict.update(self.smac_scenario_args)

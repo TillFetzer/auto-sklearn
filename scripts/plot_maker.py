@@ -232,48 +232,51 @@ def  load_data_particully(filepath ,
                 for method in os.listdir(seed_path):
                     points = []
                     configs = []
-                    for rf_seed in os.listdir(method):
-                        
-                        #print(method)
-                        #method = 'moo'
-                        data[constrain][dataset][seed][method] = defaultdict()
-                        data[constrain][dataset][seed][method]["points"] = []
-                        data[constrain][dataset][seed][method]["configs"] = []
                     
-                        runetime_folders = folders  if method == "cr" else [runetime]
-                        for runetime_folder in runetime_folders:
-                            file  = "{}/{}/{}/{}/runhistory.json".format(seed_path,method,runetime_folder,rf_seed)
-                            try:
-                                with open(file) as f:
-                                    ds = json.load(f)
-                                break
-                            except:
-                                pass
+                    runetime_folders = folders  if method == "cr" else [runetime]
+                    for runetime_folder in runetime_folders:
+                        method_path = "{}/{}/{}".format(seed_path, method, runetime_folder)
+                        if not(os.path.exists(method_path)):
+                            continue
+                        for rf_seed in os.listdir(method_path):
+                            
+                            #print(method)
+                            #method = 'moo'
+                            data[constrain][dataset][seed][method] = defaultdict()
+                            data[constrain][dataset][seed][method]["points"] = []
+                            data[constrain][dataset][seed][method]["configs"] = []
+                            if rf_seed == "runhistory.json":
+                                file  = "{}/{}/{}/runhistory.json".format(seed_path,method,runetime_folder) 
+                            else:
+                                file  = "{}/{}/{}/{}/runhistory.json".format(seed_path,method,runetime_folder, rf_seed) 
 
-                        for d in ds["data"]:
+                            with open(file) as f:
+                                ds = json.load(f)
                             ps = []
                             cs = []
-                            try:
-                                if d[1][2]["__enum__"] != "StatusType.SUCCESS":
-                                    continue
-                                if method == "cr" and ds['config_origins'][str(d[0][0])] != "Initial design":
-                                    continue
-                                point = d[1][0]
-                                config = ds["configs"][str(d[0][0])]
+                            for d in ds["data"]:
+                                try:
+                                    if d[1][2]["__enum__"] != "StatusType.SUCCESS":
+                                        continue
+                                    if method == "cr" and ds['config_origins'][str(d[0][0])] != "Initial design":
+                                        continue
+                                    point = d[1][0]
+                                    config = ds["configs"][str(d[0][0])]
 
-                            #if run was not sucessfull no train loss is generated
-                            #these happened also for sucessfull runs for example timeout
-                            except KeyError:
-                                continue 
-                            ps.append(point)
-                            cs.append(config)
-                        points.append(ps)
-                        configs.append(cs)
-                    points = pd.DataFrame(points)
-                    data[constrain][dataset][seed][method]['points'].append([mean(points[0]), mean(points[1])]) #mean could be other name
-                    data[constrain][dataset][seed][method]['points'] = pd.DataFrame(data[constrain][dataset][seed][method]['points'])
-                    data[constrain][dataset][seed][method]['configs'].append(configs[0])
-                    data[constrain][dataset][seed][method]['pareto_set'], data[constrain][dataset][seed][method]['pareto_config']   = pareto_set(data[constrain][dataset][seed][method])
+                                #if run was not sucessfull no train loss is generated
+                                #these happened also for sucessfull runs for example timeout
+                                except KeyError:
+                                    continue 
+                                ps.append(point)
+                                cs.append(config)
+                            points.append(ps)
+                            configs.append(cs)
+                    points = np.array(points)
+                    data[constrain][dataset][seed][method]['points']= pd.DataFrame(np.mean(points, axis = 0)) #mean could be other name
+                    #data[constrain][dataset][seed][method]['points'] = pd.DataFrame(data[constrain][dataset][seed][method]['points'])
+                    data[constrain][dataset][seed][method]['configs'] = configs[0]
+                    if method == "moo":
+                        data[constrain][dataset][seed][method]['pareto_set'], data[constrain][dataset][seed][method]['pareto_config']   = pareto_set(data[constrain][dataset][seed][method])
                     #print("file:{},pareto_set:{}".format(file, data[constrain][dataset][seed][method]['points']))
     return data
 
@@ -421,7 +424,7 @@ def make_plot_3(data):
     )
     
     fig.supxlabel("error",fontsize=label_size)
-    fig.supylabel("consistency_score", fontsize=label_size)
+    fig.supylabel("1_demographic_parity", fontsize=label_size)
     def rgb(r: int, g: int, b: int) -> str:
         return "#%02x%02x%02x" % (r, g, b)
 
@@ -644,7 +647,7 @@ def make_difference_plot(data, alpha_cr):
         )
         
         fig.supxlabel("error",fontsize=label_size)
-        fig.supylabel("error_rate_difference", fontsize=label_size)
+        fig.supylabel("1-demographic_parity", fontsize=label_size)
         def rgb(r: int, g: int, b: int) -> str:
             return "#%02x%02x%02x" % (r, g, b)
 
@@ -703,10 +706,13 @@ def make_difference_plot(data, alpha_cr):
                     #pareto_plot(pd.DataFrame(cr_pf[-1]), ax=ax, **styles["cr_pareto"])
                     #variants = max(cr_front
                     
-                    indecies = calc_index(conf)
-                    for index in indecies:
+                    #indecies = calc_index(conf)
+                    #for index in indecies:
                         #indexes = [(j*(seeds+diff_alphas)) + i  for j in range(0,len(data[constrain][dataset][seed]['moo']['pareto_set']))]
-                        plot_arrows(data[constrain][dataset][seed]['moo']['pareto_set'],cr_pf[-1][index,:],ax)
+                    
+                    if len(cr_pf[-1].shape)==1:
+                        cr_pf[-1] = [cr_pf[-1]]
+                    #plot_arrows(data[constrain][dataset][seed]['moo']['pareto_set'],cr_pf[-1],ax)
                     cr = pd.DataFrame(cr_pf[-1])
                     local_min_x = min(min(data[constrain][dataset][seed]['moo']['pareto_set'][0]), min(cr[0]))
                     local_min_y = min(min(data[constrain][dataset][seed]['moo']['pareto_set'][1]), min(cr[1]))
@@ -745,7 +751,7 @@ def make_difference_plot(data, alpha_cr):
                 pf = [np.stack(moo_pf, axis=0), np.stack(cr_pf, axis=0)]
                 #pareto_plot(moo_pf, ax=ax, **styles["moo_pareto"])
                 #pareto_plot(cr_pf, ax=ax, **styles["cr_pareto"])
-                #plots_we(pf, ax, [styles["moo_points"]['color'],styles["cr_points"]['color']])
+                plots_we(pf, ax, [styles["moo_points"]['color'],styles["cr_points"]['color']])
 
                 ax.tick_params(axis="both", which="major", labelsize=tick_size)
         legend_elements = [
@@ -756,15 +762,17 @@ def make_difference_plot(data, alpha_cr):
                         ]
         fig.tight_layout(rect=[0.03, 0.05, 1, 1], pad = 5)
         fig.legend(handles=legend_elements, loc=3,  prop={'size': 16})
-        plt.show()
+        save_folder = "/home/till/Desktop/arrows/{}/seed{}".format(constrain, "all")
+        plt.savefig(save_folder)
 
 
 if __name__ == "__main__":
 
     #data = load_data("/home/till/Desktop/diff_cross_val/", "200timesstrat")
     data = load_data_particully("/home/till/Desktop/cross_val/", "200timesstrat",
-    datasets = ["adult","compass","lawschool","german"],
-    constrains = ["error_rate_difference"],
-    #[12345, 25,42,45451, 97,13,27,39,41,53]
-    seeds= ["41"])
-    make_difference_plot(data,"best_alpha")
+    datasets = ["adult", "compass", "lawschool", "german"],
+    constrains = ["demographic_parity"],
+    folders=["one_rf_seed_1", "one_rf_seed"],
+    #"12345","25","42","45451", "97","13","27","39","41","53"
+    seeds= ["12345","25","42","45451", "97","13","27","39","41","53"])
+    make_difference_plot(data,"best")

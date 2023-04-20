@@ -13,6 +13,7 @@ import autosklearn.classification
 import autosklearn.metrics
 import shutil
 import pandas as pd
+import os
 
 # TODO change to new location if it is avaible
 import utils_fairlearn
@@ -63,14 +64,21 @@ def run_experiment(
     # Build and fit a classifier
     # ==========================train_ev
     if rf_seed:
-        tmp =  file + "/{}/{}/{}/{}/cr/{}/{}".format(under_folder, fairness_constrain, dataset, seed, runcount, rf_seed)
+        tmp =  file + "/{}/{}/{}/{}/cr/{}/{}/del".format(under_folder, fairness_constrain, dataset, seed, runcount, rf_seed)
     else:
-        tmp =  file + "/{}/{}/{}/{}/cr/{}".format(under_folder, fairness_constrain, dataset, seed, runcount)
+        tmp =  file + "/{}/{}/{}/{}/cr/{}/del".format(under_folder, fairness_constrain, dataset, seed, runcount)
+    if os.path.exists(tmp):
+        if rf_seed:
+            tmp =  file + "/{}/{}/{}/{}/cr/{}/{}/2/del".format(under_folder, fairness_constrain, dataset, seed, runcount, rf_seed)
+        else:
+            tmp =  file + "/{}/{}/{}/{}/cr/{}/2/del".format(under_folder, fairness_constrain, dataset, seed, runcount)
+
+
     automl = autosklearn.classification.AutoSklearnClassifier(
         time_left_for_this_task=runtime,
-        memory_limit=13000,
+        memory_limit=130000,
         seed = seed,
-        tmp_folder =  tmp + "/del", 
+        tmp_folder =  tmp, 
          # 3h
         metric=[
             autosklearn.metrics.accuracy,
@@ -103,9 +111,9 @@ def run_experiment(
     ############################################################################
     # Compute the two competing metrics
     # =================================
-    sensitive_features = X_test[sf]
-    shutil.copy(tmp + "/del/smac3-output/run_{}/runhistory.json".format(seed), tmp )
-    shutil.rmtree(tmp + "/del")
+    #sensitive_features = X_test[sf]
+    shutil.copy(tmp + "smac3-output/run_{}/runhistory.json".format(seed), tmp )
+    shutil.rmtree(tmp)
     print(
         "finished correlation remover {}s long on the {} dataset".format(
             runtime, dataset

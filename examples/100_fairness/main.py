@@ -12,7 +12,7 @@ methods = ["moo+cr"]
 datasets = ["german","adult","compass","lawschool"]
 #datasets = ["german"]
 sfs = ["personal_status", "sex", "race", "race"]
-fairness_constrains=["demographic_parity","equalized_odds","consistency_score", "error_rate_difference", ]
+fairness_constrains=["demographic_parity","equalized_odds","consistency_score", "error_rate_difference"]
 
 dataset = datasets[int(idx/(len(seeds)*len(methods)))%len(datasets)]
 sf = sfs[int(idx/(len(seeds)*len(methods)))%len(datasets)]
