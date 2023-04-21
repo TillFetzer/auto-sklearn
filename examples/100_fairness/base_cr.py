@@ -26,7 +26,8 @@ from collections import defaultdict
 
 def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcount, under_folder):
     X, y = utils_fairlearn.load_data(dataset)
-   
+    utils_fairlearn.add_no_preprocessor()
+    utils_fairlearn.add_correlation_remover(sf)
     # ==========================
     on = pd.concat([X[sf], y],axis=1)
     X_train , X_test, y_train, y_test= utils_fairlearn.stratified_split(

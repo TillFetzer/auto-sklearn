@@ -29,6 +29,6 @@ def run_experiment(datasets =["adult"],
                     if method == "lfr":
                         lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder)
                     if method == "moo+cr":
-                        lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder)
+                        base_cr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder)
             print("all runs of {} finished".format(dataset))
     print("finished")

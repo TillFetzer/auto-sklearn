@@ -3,7 +3,7 @@ import corrleation_remover
 import lfr
 import argparse, sys
 import redlineing
-
+import base_cr
 parser=argparse.ArgumentParser()
 
 parser.add_argument("--d", help="datsets",nargs="*")
@@ -39,6 +39,8 @@ for constrain in fairness_constrains:
                 if method == "cr":
                     corrleation_remover.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
                 if method == "lfr":
-                    lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
+                   lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
+                if method == "moo+cr":
+                    base_cr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
         print("all runs of {} finished".format(dataset))
 print("finished")
