@@ -219,7 +219,7 @@ def consistency_score(solution, prediction, X_data):
 
 def equal_opportunity_difference(solution, prediction, X_data, sensitive_features):
     sf = X_data[sensitive_features]
-    return fairlearn.metrics.equal_opportunity_difference(
+    return aif360.sklearn.metrics.equal_opportunity_difference(
         solution, prediction, sensitive_features=sf
     )
 

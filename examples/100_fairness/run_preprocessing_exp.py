@@ -129,7 +129,7 @@ if __name__ == "__main__":
     datasets = ["german","adult","compass","lawschool"]
     #datasets = ["german"]
     sfs = ["personal_status", "sex", "race", "race"]
-    fairness_constrains=["demographic_parity","equalized_odds", "consistency_score", "error_rate_difference"]
+    fairness_constrains=["equal_opportunity_difference"]
     rf_seeds = [1,2,3,4,5]
     dataset = datasets[int(idx/(len(seeds)*len(methods)*len(rf_seeds)))%len(datasets)]
     sf = sfs[int(idx/(len(seeds)*len(methods)*len(rf_seeds)))%len(datasets)]
