@@ -1,3 +1,4 @@
+
 from collections import defaultdict
 import json
 import os
@@ -6,7 +7,7 @@ from run_experiment import run_experiment
 import argparse, sys
 import copy
 parser=argparse.ArgumentParser()
-from jsonmerge import Merger
+#from jsonmerge import Merger
 parser.add_argument("--constrains", type= str, nargs="*", default=[])
 parser.add_argument("--methods",  type= str, nargs="*", default=[])
 parser.add_argument("--tmp", type=str,)
@@ -14,7 +15,7 @@ parser.add_argument("--runtime", type=str)
 args=parser.parse_args()
 
 
-constrains = args.constrains 
+constrains = args.constrains
 methods = args.methods
 filepath = args.tmp
 runtime = args.runtime
@@ -23,6 +24,8 @@ for constrain in constrains:
         data[constrain] = defaultdict()
         constrain_path = "{}{}".format(filepath, constrain)
         for dataset in os.listdir(constrain_path):
+            #if dataset=="lawschool" or  dataset=="compass":
+            #    continue
             data[constrain][dataset] = defaultdict()
             dataset_path = "{}/{}".format(constrain_path, dataset)
             for seed in os.listdir(dataset_path):
@@ -40,12 +43,18 @@ for constrain in constrains:
                         if os.path.exists(file_g):
                             continue
                         file = "{}/{}/{}/{}/del/smac3-output/run_{}/runhistory.json".format(seed_path,method,runetime_folder,rf_seed,seed)
+                        if not(os.path.exists(file)):
+                            print(file)
+                            continue
                         with open(file) as f:
                             f1 = json.load(f)
                         file = "{}/{}/{}/{}/2t/del/smac3-output/run_{}/runhistory.json".format(seed_path,method,runetime_folder,rf_seed, seed)
+                        if not(os.path.exists(file)):
+                            print(file)
+                            continue
                         nn = len(f1["configs"]) + 1
                         with open(file) as f:
-                            f2 = json.load(f)
+                            f2 =  json.load(f)
                             f2["data"].pop(0)
                             f2["config_origins"].pop("1")
                             f2["configs"].pop("1")
@@ -68,10 +77,7 @@ for constrain in constrains:
                         #f1['orgin'].update(f2["orgin"][1:])
                         with open(file_g, "w+") as f:
                             f1 = json.dumps(f1)
-                            f.write(f1)                      
-                        shutil.rmtree("{}/{}/{}/{}/del/".format(seed_path,method,runetime_folder, rf_seed))
-                        shutil.rmtree("{}/{}/{}/{}/2t/del/".format(seed_path,method,runetime_folder, rf_seed))
-
-
-
+                            f.write(f1)
+                        #shutil.rmtree("{}/{}/{}/{}/del/".format(seed_path,method,runetime_folder, rf_seed))
+                        #shutil.rmtree("{}/{}/{}/{}/2t/del/".format(seed_path,method,runetime_folder, rf_seed))
 

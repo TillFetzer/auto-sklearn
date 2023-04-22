@@ -87,10 +87,11 @@ rf_seed = 1
                 
     #num_configs = len(data['pareto_config'])*10 + 1
     tmp =  "{}/{}/{}/{}/{}/cr/{}/{}/del/".format(source_folder,goal_folder,constrain,dataset,seed,"one_rf_seed", rf_seed)
+    runhistory =  "{}/{}/{}/{}/{}/cr/{}/{}/runhistory.json".format(source_folder,goal_folder,constrain,dataset,seed,"one_rf_seed", rf_seed)
     # these is run was not finished
     if os.path.exists(tmp):
         data_2 = defaultdict() 
-        if len(os.listdir(tmp)) == 0:
+        if len(os.listdir(tmp)) == 0 or len(os.listdir(runhistory)):
             return
         data_2["points"], data_2["configs"] = load_config(tmp + "smac3-output/run_{}/runhistory.json".format(seed))
         cr_configs = cr_configs[(len(data_2['configs'])-1):]
@@ -129,7 +130,7 @@ if __name__ == "__main__":
     datasets = ["german","adult","compass","lawschool"]
     #datasets = ["german"]
     sfs = ["personal_status", "sex", "race", "race"]
-    fairness_constrains=["equal_opportunity_difference"]
+    fairness_constrains=["error_rate_difference"]
     rf_seeds = [1,2,3,4,5]
     dataset = datasets[int(idx/(len(seeds)*len(methods)*len(rf_seeds)))%len(datasets)]
     sf = sfs[int(idx/(len(seeds)*len(methods)*len(rf_seeds)))%len(datasets)]
