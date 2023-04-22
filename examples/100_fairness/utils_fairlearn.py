@@ -218,9 +218,10 @@ def consistency_score(solution, prediction, X_data):
     return consistency_score(X_data, prediction)
 
 def equal_opportunity_difference(solution, prediction, X_data, sensitive_features):
+    from aif360.sklearn.metrics import equal_opportunity_difference
     sf = X_data[sensitive_features]
-    return aif360.sklearn.metrics.equal_opportunity_difference(
-        solution, prediction, sensitive_features=sf
+    return equal_opportunity_difference(
+        solution, prediction, prot_attr=sensitive_features
     )
 
 def error_rate_difference(solution, prediction, X_data, sensitive_features):
