@@ -92,7 +92,7 @@ rf_seed = 1
     # these is run was not finished
     if os.path.exists(tmp):
         data_2 = defaultdict() 
-        if len(os.listdir(tmp)) == 0 or os.path.exists(runhistory):
+        if len(os.listdir(tmp)) == 0 or os.path.exists(runhistory) or not(os.path.exists(runhistory):
             return
         data_2["points"], data_2["configs"] = load_config(tmp + "smac3-output/run_{}/runhistory.json".format(seed))
         cr_configs = cr_configs[(len(data_2['configs'])-1):]
@@ -132,7 +132,7 @@ if __name__ == "__main__":
     goal_folder = args.gf
     seeds = [12345,25,42,45451,97,13,27,39,41,53]
     methods = ["moo"]
-    datasets = ["german","adult","compass","lawschool"]
+    datasets = ["compass","lawschool"]
     #datasets = ["german"]
     sfs = ["personal_status", "sex", "race", "race"]
     fairness_constrains=["error_rate_difference"]
