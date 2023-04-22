@@ -97,8 +97,9 @@ rf_seed = 1
         data_2["points"], data_2["configs"] = load_config(tmp + "smac3-output/run_{}/runhistory.json".format(seed))
         cr_configs = cr_configs[(len(data_2['configs'])-1):]
         if len(cr_configs)==0:
-            shutil.copy(tmp + "smac3-output/run_{}/runhistory.json".format(seed), tmp )
-            shutil.rmtree(tmp)
+            #shutil.copy(tmp + "smac3-output/run_{}/runhistory.json".format(seed), tmp )
+            #shutil.rmtree(tmp)
+            print(tmp)
             return
     num_configs = len(cr_configs) + 1 
     corrleation_remover.run_experiment(
