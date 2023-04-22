@@ -769,10 +769,12 @@ def make_difference_plot(data, alpha_cr):
 if __name__ == "__main__":
 
     #data = load_data("/home/till/Desktop/diff_cross_val/", "200timesstrat")
-    data = load_data_particully("/home/till/Desktop/cross_val/", "200timesstrat",
-    datasets = ["adult", "compass", "lawschool", "german"],
-    constrains = ["demographic_parity"],
-    folders=["one_rf_seed_1", "one_rf_seed"],
+    #data = load_data_particully("/home/till/Desktop/cross_val/", "200timesstrat",
+    #datasets = ["adult", "compass", "lawschool", "german"],
+    #constrains = ["demographic_parity"],
+    #folders=["one_rf_seed_1", "one_rf_seed"],
     #"12345","25","42","45451", "97","13","27","39","41","53"
-    seeds= ["12345","25","42","45451", "97","13","27","39","41","53"])
-    make_difference_plot(data,"best")
+    #seeds= ["12345","25","42","45451", "97","13","27","39","41","53"])
+    #make_difference_plot(data,"best")
+
+    data = load_data

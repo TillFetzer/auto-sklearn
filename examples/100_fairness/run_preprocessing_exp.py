@@ -15,6 +15,7 @@ import argparse, sys
 from autosklearn.pipeline.components.classification.random_forest import RandomForest
 from ConfigSpace.configuration_space import Configuration
 import copy
+import shutil
 def pareto_set(all_costs):
     confs = all_costs["configs"]
     all_costs = np.array(all_costs["points"])
@@ -91,11 +92,13 @@ rf_seed = 1
     # these is run was not finished
     if os.path.exists(tmp):
         data_2 = defaultdict() 
-        if len(os.listdir(tmp)) == 0 or len(os.listdir(runhistory)):
+        if len(os.listdir(tmp)) == 0 or os.path.exists(runhistory):
             return
         data_2["points"], data_2["configs"] = load_config(tmp + "smac3-output/run_{}/runhistory.json".format(seed))
         cr_configs = cr_configs[(len(data_2['configs'])-1):]
-
+        if len(cr_configs)==0:
+            shutil.copy(tmp + "smac3-output/run_{}/runhistory.json".format(seed), tmp )
+            shutil.rmtree(tmp)
     num_configs = len(cr_configs) + 1 
     corrleation_remover.run_experiment(
         dataset,
