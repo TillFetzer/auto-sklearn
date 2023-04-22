@@ -99,6 +99,7 @@ rf_seed = 1
         if len(cr_configs)==0:
             shutil.copy(tmp + "smac3-output/run_{}/runhistory.json".format(seed), tmp )
             shutil.rmtree(tmp)
+            return
     num_configs = len(cr_configs) + 1 
     corrleation_remover.run_experiment(
         dataset,

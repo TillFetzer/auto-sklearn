@@ -181,7 +181,8 @@ def load_data(filepath, runetime):
             for seed in os.listdir(dataset_path):
                 data[constrain][dataset][seed] = defaultdict()
                 seed_path = "{}/{}".format(dataset_path, seed)
-                for method in os.listdir(seed_path):
+                methdods = ["moo","moo+cr"]
+                for method in methdods:
                     data[constrain][dataset][seed][method] = defaultdict()
                     data[constrain][dataset][seed][method]["points"] = []
                     data[constrain][dataset][seed][method]["configs"] = []
@@ -424,7 +425,7 @@ def make_plot_3(data):
     )
     
     fig.supxlabel("error",fontsize=label_size)
-    fig.supylabel("1_demographic_parity", fontsize=label_size)
+    fig.supylabel("1_equalized_odds", fontsize=label_size)
     def rgb(r: int, g: int, b: int) -> str:
         return "#%02x%02x%02x" % (r, g, b)
 
@@ -465,7 +466,7 @@ def make_plot_3(data):
             max_len, max_len_cr, max_len_rl = 0,0,0
             for seed in data[constrain][dataset].keys():
                 moo_pf.append(np.array(data[constrain][dataset][seed]['moo']['points']))
-                cr_pf.append(np.array(data[constrain][dataset][seed]['moo_cv']['points']))
+                cr_pf.append(np.array(data[constrain][dataset][seed]['moo+cr']['points']))
                 #redlineing_pf.append(np.array(data[constrain][dataset][seed]['redlineing']['points']))
                 #lfr_pf.append(np.array(data[constrain][dataset][seed]['lfr']['points']))
                 #seed = "25" 
@@ -475,9 +476,9 @@ def make_plot_3(data):
                 plot(data[constrain][dataset][seed]['moo']['points'], ax=ax, **styles["moo_points"], alpha = alpha)
 
                 #cr 
-                length = len(data[constrain][dataset][seed]['moo_cv']['points'])
+                length = len(data[constrain][dataset][seed]['moo+cr']['points'])
                 max_len= length if max_len < length else max_len
-                plot(data[constrain][dataset][seed]['moo_cv']['points'], ax=ax, **styles["cr_points"], alpha = alpha)
+                plot(data[constrain][dataset][seed]['moo+cr']['points'], ax=ax, **styles["cr_points"], alpha = alpha)
 
                 #redelineing
                 #length = len(data[constrain][dataset][seed]['redlineing']['points'])
@@ -522,13 +523,14 @@ def make_plot_3(data):
             plots_we(pf, ax, [styles["moo_points"]['color'],styles["cr_points"]['color']])
             ax.tick_params(axis="both", which="major", labelsize=tick_size)
     legend_elements = [Line2D([0], [0], color="red", lw=4, label='moo'),
-                   Line2D([0], [0], color="blue", lw=4, label='moo with cross-validation'),
+                   Line2D([0], [0], color="blue", lw=4, label='moo and optinionall cr'),
                    # Line2D([0], [0], color="green", lw=4, label='moo without SA and corrleation remover'),
                     #Line2D([0], [0], color=c_color, lw=4, label='moo with learned fair represenation')
                     ]
     fig.tight_layout(rect=[0.03, 0.05, 1, 1], pad = 5)
     fig.legend(handles=legend_elements, loc=3,  prop={'size': 16})
-    plt.show()
+    save_folder = "/home/till/Desktop/opt_with_cr/{}".format("equalized_odds")
+    plt.savefig(save_folder)
 def plot_arrows(
         to,
         frm,
@@ -777,4 +779,5 @@ if __name__ == "__main__":
     #seeds= ["12345","25","42","45451", "97","13","27","39","41","53"])
     #make_difference_plot(data,"best")
 
-    data = load_data
+    data = load_data("/home/till/Documents/auto-sklearn/tmp/cross_val/", "200timesstrat")
+    make_plot_3(data)
