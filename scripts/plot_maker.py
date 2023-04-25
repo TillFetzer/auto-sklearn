@@ -230,7 +230,8 @@ def  load_data_particully(filepath ,
             for seed in seeds:
                 data[constrain][dataset][seed] = defaultdict()
                 seed_path = "{}/{}".format(dataset_path, seed)
-                for method in os.listdir(seed_path):
+                methods = ["moo", "cr"]
+                for method in methods:
                     points = []
                     configs = []
                     
@@ -239,20 +240,27 @@ def  load_data_particully(filepath ,
                         method_path = "{}/{}/{}".format(seed_path, method, runetime_folder)
                         if not(os.path.exists(method_path)):
                             continue
+                        set = False
+                        length = 0
                         for rf_seed in os.listdir(method_path):
+                           
                             
                             #print(method)
-                            #method = 'moo'
+                            #method = 'cr'
                             data[constrain][dataset][seed][method] = defaultdict()
                             data[constrain][dataset][seed][method]["points"] = []
                             data[constrain][dataset][seed][method]["configs"] = []
-                            if rf_seed == "runhistory.json":
+                            if rf_seed == "runhistory.json" or rf_seed == "del":
                                 file  = "{}/{}/{}/runhistory.json".format(seed_path,method,runetime_folder) 
                             else:
                                 file  = "{}/{}/{}/{}/runhistory.json".format(seed_path,method,runetime_folder, rf_seed) 
-
-                            with open(file) as f:
-                                ds = json.load(f)
+                                if not(os.path.exists(file)):
+                                    file  = "{}/{}/{}/{}/del/smac3-output/run_{}/runhistory.json".format(seed_path,method,runetime_folder, rf_seed, seed) 
+                            try:
+                                with open(file) as f:
+                                    ds = json.load(f)
+                            except: 
+                                print(file + "not exists")
                             ps = []
                             cs = []
                             for d in ds["data"]:
@@ -270,10 +278,19 @@ def  load_data_particully(filepath ,
                                     continue 
                                 ps.append(point)
                                 cs.append(config)
+                            if len(ps) > length and not(set):
+                                length = len(ps)
+                                set = True
+                            if len(ps) != length:
+                                print(file)
+                                continue
                             points.append(ps)
                             configs.append(cs)
+                           
+
+                            
                     points = np.array(points)
-                    data[constrain][dataset][seed][method]['points']= pd.DataFrame(np.mean(points, axis = 0)) #mean could be other name
+                    data[constrain][dataset][seed][method]['points']= pd.DataFrame(np.mean(points, axis = 0)) 
                     #data[constrain][dataset][seed][method]['points'] = pd.DataFrame(data[constrain][dataset][seed][method]['points'])
                     data[constrain][dataset][seed][method]['configs'] = configs[0]
                     if method == "moo":
@@ -425,7 +442,7 @@ def make_plot_3(data):
     )
     
     fig.supxlabel("error",fontsize=label_size)
-    fig.supylabel("1_equalized_odds", fontsize=label_size)
+    fig.supylabel("consistency_score", fontsize=label_size)
     def rgb(r: int, g: int, b: int) -> str:
         return "#%02x%02x%02x" % (r, g, b)
 
@@ -529,7 +546,7 @@ def make_plot_3(data):
                     ]
     fig.tight_layout(rect=[0.03, 0.05, 1, 1], pad = 5)
     fig.legend(handles=legend_elements, loc=3,  prop={'size': 16})
-    save_folder = "/home/till/Desktop/opt_with_cr/{}".format("equalized_odds")
+    save_folder = "/home/till/Desktop/opt_with_cr/{}".format("consistency_score")
     plt.savefig(save_folder)
 def plot_arrows(
         to,
@@ -649,7 +666,7 @@ def make_difference_plot(data, alpha_cr):
         )
         
         fig.supxlabel("error",fontsize=label_size)
-        fig.supylabel("1-demographic_parity", fontsize=label_size)
+        fig.supylabel("consistency_score", fontsize=label_size)
         def rgb(r: int, g: int, b: int) -> str:
             return "#%02x%02x%02x" % (r, g, b)
 
@@ -764,7 +781,7 @@ def make_difference_plot(data, alpha_cr):
                         ]
         fig.tight_layout(rect=[0.03, 0.05, 1, 1], pad = 5)
         fig.legend(handles=legend_elements, loc=3,  prop={'size': 16})
-        save_folder = "/home/till/Desktop/arrows/{}/seed{}".format(constrain, "all")
+        save_folder = "/home/till/Desktop/arrows/{}/seed{}".format(constrain," all")
         plt.savefig(save_folder)
 
 
@@ -772,8 +789,8 @@ if __name__ == "__main__":
 
     #data = load_data("/home/till/Desktop/diff_cross_val/", "200timesstrat")
     #data = load_data_particully("/home/till/Desktop/cross_val/", "200timesstrat",
-    #datasets = ["adult", "compass", "lawschool", "german"],
-    #constrains = ["demographic_parity"],
+    #datasets = ["german","adult", "compass","lawschool"],
+    #constrains = ["consistency_score"],
     #folders=["one_rf_seed_1", "one_rf_seed"],
     #"12345","25","42","45451", "97","13","27","39","41","53"
     #seeds= ["12345","25","42","45451", "97","13","27","39","41","53"])

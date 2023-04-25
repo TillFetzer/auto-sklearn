@@ -4,6 +4,7 @@ import lfr
 import argparse, sys
 import redlineing
 import base_cr
+import single_base
 parser=argparse.ArgumentParser()
 
 parser.add_argument("--d", help="datsets",nargs="*")
@@ -35,12 +36,14 @@ for constrain in fairness_constrains:
                 if method == "moo":
                     base.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
                 if method == "redlineing":
-                    redlineing.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount)
+                    redlineing.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
                 if method == "cr":
                     corrleation_remover.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
                 if method == "lfr":
                    lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
                 if method == "moo+cr":
                     base_cr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
+                if method == "so":
+                    single_base.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
         print("all runs of {} finished".format(dataset))
 print("finished")

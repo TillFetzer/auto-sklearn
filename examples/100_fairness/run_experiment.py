@@ -3,6 +3,7 @@ import corrleation_remover
 import redlineing
 import lfr
 import base_cr
+import single_base
 def run_experiment(datasets =["adult"],
  fairness_constrains=["demographic_parity"],
   methods=["moo"], 
@@ -29,6 +30,8 @@ def run_experiment(datasets =["adult"],
                     if method == "lfr":
                         lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder)
                     if method == "moo+cr":
+                        base_cr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder)
+                    if method == "so":
                         base_cr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder)
             print("all runs of {} finished".format(dataset))
     print("finished")
