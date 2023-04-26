@@ -32,6 +32,6 @@ def run_experiment(datasets =["adult"],
                     if method == "moo+cr":
                         base_cr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder)
                     if method == "so":
-                        base_cr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder)
+                        single_base.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder)
             print("all runs of {} finished".format(dataset))
     print("finished")
