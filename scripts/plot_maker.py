@@ -181,16 +181,18 @@ def load_data(filepath, runetime):
             for seed in os.listdir(dataset_path):
                 data[constrain][dataset][seed] = defaultdict()
                 seed_path = "{}/{}".format(dataset_path, seed)
-                methdods = ["moo","moo+cr"]
+                methdods = ["moo","moo+cr", "cr", "so"]
                 for method in methdods:
                     data[constrain][dataset][seed][method] = defaultdict()
                     data[constrain][dataset][seed][method]["points"] = []
                     data[constrain][dataset][seed][method]["configs"] = []
                    
-                    runetime_folder = "same_hyperparamer"  if method == "cr" else runetime
+                    runetime_folder = "same_hyperparamer"  if method == "cr_transfere" else runetime
+                    
                     
                     file  = "{}/{}/{}/runhistory.json".format(seed_path,method,runetime_folder)
-
+                    if not(os.path.exists(file)):
+                                    file  = "{}/{}/{}/del/smac3-output/run_{}/runhistory.json".format(seed_path,method,runetime_folder,seed) 
                     with open(file) as f:
                         ds = json.load(f)
                     for d in ds["data"]:
@@ -200,7 +202,15 @@ def load_data(filepath, runetime):
                            
                             point = d[1][0]
                             config = ds["configs"][str(d[0][0])]
-
+                            if method == "so":
+                                p = []
+                                p.append(point)
+                                ff  = "{}/{}/{}/fairness.json".format(seed_path,method,runetime_folder)
+                                with open(ff) as f:
+                                    fairness = json.load(f)
+                                p.append(1-fairness[d[0][0] -1])
+                                point = p
+                                
                         #if run was not sucessfull no train loss is generated
                         #these happened also for sucessfull runs for example timeout
                         except KeyError:
@@ -442,7 +452,7 @@ def make_plot_3(data):
     )
     
     fig.supxlabel("error",fontsize=label_size)
-    fig.supylabel("consistency_score", fontsize=label_size)
+    fig.supylabel("error_rate_difference", fontsize=label_size)
     def rgb(r: int, g: int, b: int) -> str:
         return "#%02x%02x%02x" % (r, g, b)
 
@@ -454,11 +464,12 @@ def make_plot_3(data):
     styles = {
         "moo_points": dict(s=15, marker="o", color="red"),
         "moo_pareto": dict(s=4, marker="o", color="red", linestyle="-", linewidth=2),
-        "cr_points": dict(s=15, marker="o", color="blue"),
-        "cr_pareto": dict(s=4, marker="o", color="blue", linestyle="-", linewidth=2),
-        "redlineing_points": dict(s=15, marker="o", color ="green"),
-        "redlineing_pareto": dict(s=4, marker="o", color="green", linestyle="-", linewidth=2),
-        "lfr_points": dict(s=15, marker="o", color =c_color),
+        "moo+cr_points": dict(s=15, marker="o", color="blue"),
+        "moo+cr_pareto": dict(s=4, marker="o", color="blue", linestyle="-", linewidth=2),
+        "so_points": dict(s=15, marker="o", color ="green"),
+        "so_pareto": dict(s=4, marker="o", color="green", linestyle="-", linewidth=2),
+        "cr_points": dict(s=15, marker="o", color =c_color),
+        "cr_pareto": dict(s=4, marker="o", color=c_color, linestyle="-", linewidth=2),
     }
     for i,constrain in enumerate(data.keys()):
         global_max_y = 0
@@ -478,14 +489,14 @@ def make_plot_3(data):
             ax.set_title(dataset, fontsize=title_size)
             moo_pf = []
             cr_pf = []
-            redlineing_pf = []
-            #lfr_pf = []
+            so_pf = []
+            moo_cr_pf = []
             max_len, max_len_cr, max_len_rl = 0,0,0
             for seed in data[constrain][dataset].keys():
                 moo_pf.append(np.array(data[constrain][dataset][seed]['moo']['points']))
-                cr_pf.append(np.array(data[constrain][dataset][seed]['moo+cr']['points']))
-                #redlineing_pf.append(np.array(data[constrain][dataset][seed]['redlineing']['points']))
-                #lfr_pf.append(np.array(data[constrain][dataset][seed]['lfr']['points']))
+                cr_pf.append(np.array(data[constrain][dataset][seed]['cr']['points']))
+                so_pf.append(np.array(data[constrain][dataset][seed]['so']['points']))
+                moo_cr_pf.append(np.array(data[constrain][dataset][seed]['moo+cr']['points']))
                 #seed = "25" 
                 #moo
                 length = len(data[constrain][dataset][seed]['moo']['points'])
@@ -493,19 +504,19 @@ def make_plot_3(data):
                 plot(data[constrain][dataset][seed]['moo']['points'], ax=ax, **styles["moo_points"], alpha = alpha)
 
                 #cr 
+                length = len(data[constrain][dataset][seed]['cr']['points'])
+                max_len= length if max_len < length else max_len
+                plot(data[constrain][dataset][seed]['cr']['points'], ax=ax, **styles["cr_points"], alpha = alpha)
+
+                #so
+                length = len(data[constrain][dataset][seed]['so']['points'])
+                max_len= length if max_len < length else max_len
+                plot(data[constrain][dataset][seed]['so']['points'], ax=ax, **styles["so_points"], alpha = alpha)
+               
+                #moo_cr
                 length = len(data[constrain][dataset][seed]['moo+cr']['points'])
                 max_len= length if max_len < length else max_len
-                plot(data[constrain][dataset][seed]['moo+cr']['points'], ax=ax, **styles["cr_points"], alpha = alpha)
-
-                #redelineing
-                #length = len(data[constrain][dataset][seed]['redlineing']['points'])
-                #max_len= length if max_len < length else max_len
-                #plot(data[constrain][dataset][seed]['redlineing']['points'], ax=ax, **styles["redlineing_points"], alpha = alpha)
-               
-                ##lfr
-                #length = len(data[constrain][dataset][seed]['lfr']['points'])
-                #max_len= length if max_len < length else max_len
-                #plot(data[constrain][dataset][seed]['lfr']['points'], ax=ax, **styles["lfr_points"], alpha = alpha)
+                plot(data[constrain][dataset][seed]['moo+cr']['points'], ax=ax, **styles["moo+cr_points"], alpha = alpha)
 
             for  i in range(len(moo_pf)):
                 #moo
@@ -517,10 +528,15 @@ def make_plot_3(data):
                 if diff:
                     cr_pf[i] = np.vstack((cr_pf[i], [cr_pf[i][-1]]*(diff)))
 
-                #redliening
-                #diff = max_len-len(redlineing_pf[i]) 
-                #if diff:
-                #    redlineing_pf[i] = np.vstack((redlineing_pf[i], [redlineing_pf[i][-1]]*(diff)))
+                #so
+                diff = max_len-len(so_pf[i]) 
+                if diff:
+                    so_pf[i] = np.vstack((so_pf[i],[so_pf[i][-1]]*(diff)))
+                #moo+cr
+                diff = max_len-len(moo_cr_pf[i]) 
+                if diff:
+                    moo_cr_pf[i] = np.vstack((moo_cr_pf[i], [moo_cr_pf[i][-1]]*(diff)))
+
 
 
             #moo_points = data[constrain][dataset][seed]['moo']['points']
@@ -535,18 +551,19 @@ def make_plot_3(data):
             #t = copy.deepcopy(ax)
             #_, ax = plt.subplots(ax)
             # ,np.stack(redlineing_pf,axis=0)
-            pf = [np.stack(moo_pf, axis=0),np.stack(cr_pf, axis=0)]
+            pf = [np.stack(moo_pf, axis=0),np.stack(moo_cr_pf, axis=0),np.stack(so_pf, axis=0),np.stack(cr_pf, axis=0)]
             # , styles["redlineing_points"]['color']
-            plots_we(pf, ax, [styles["moo_points"]['color'],styles["cr_points"]['color']])
+            plots_we(pf, ax, [styles["moo_pareto"]['color'],styles["moo+cr_pareto"]['color'], styles["so_pareto"]['color'],styles["cr_pareto"]['color']])
             ax.tick_params(axis="both", which="major", labelsize=tick_size)
-    legend_elements = [Line2D([0], [0], color="red", lw=4, label='moo'),
-                   Line2D([0], [0], color="blue", lw=4, label='moo and optinionall cr'),
-                   # Line2D([0], [0], color="green", lw=4, label='moo without SA and corrleation remover'),
-                    #Line2D([0], [0], color=c_color, lw=4, label='moo with learned fair represenation')
+    legend_elements = [
+        Line2D([0], [0], color="red", lw=4, label='moo'),
+        Line2D([0], [0], color="blue", lw=4, label='moo and optinionall cr'),
+        Line2D([0], [0], color="green", lw=4, label='moo trained on only accurancy'),
+        Line2D([0], [0], color=c_color, lw=4, label='moo with only cr')
                     ]
     fig.tight_layout(rect=[0.03, 0.05, 1, 1], pad = 5)
     fig.legend(handles=legend_elements, loc=3,  prop={'size': 16})
-    save_folder = "/home/till/Desktop/opt_with_cr/{}".format("consistency_score")
+    save_folder = "/home/till/Desktop/opt_with_cr/{}".format("error_rate_difference")
     plt.savefig(save_folder)
 def plot_arrows(
         to,

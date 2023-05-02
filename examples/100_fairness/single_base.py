@@ -93,7 +93,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     #    file
     #)
     
-    fairness = automl.cv_results_["mean_test_score"]
+    fairness = automl.cv_results_["metric_{}".format(str(fair_metric))]
     with open(tmp + "/fairness.json", "w+") as f:
         fairness = json.dumps(list(fairness))
         f.write(fairness)
