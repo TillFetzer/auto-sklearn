@@ -4,6 +4,8 @@ import redlineing
 import lfr
 import base_cr
 import single_base
+import sampling
+import base_sampling
 def run_experiment(datasets =["adult"],
  fairness_constrains=["demographic_parity"],
   methods=["moo"], 
@@ -33,5 +35,11 @@ def run_experiment(datasets =["adult"],
                         base_cr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder)
                     if method == "so":
                         single_base.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder)
+                    if method == "ps":
+                        sampling.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder)
+                    if method == "ps":
+                        sampling.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder)
+                    if method == "moo+ps":
+                        base_sampling.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder)
             print("all runs of {} finished".format(dataset))
     print("finished")

@@ -6,6 +6,7 @@ import redlineing
 import base_cr
 import single_base
 import sampling
+import base_sampling
 parser=argparse.ArgumentParser()
 
 parser.add_argument("--d", help="datsets",nargs="*")
@@ -48,5 +49,8 @@ for constrain in fairness_constrains:
                     single_base.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
                 if method == "ps":
                     sampling.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
+                if method == "moo+ps":
+                    base_sampling.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
+                
         print("all runs of {} finished".format(dataset))
 print("finished")

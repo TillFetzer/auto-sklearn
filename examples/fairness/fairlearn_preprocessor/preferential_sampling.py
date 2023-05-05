@@ -127,7 +127,7 @@ class  PreferentialSampling(FairPreprocessor, AutoSklearnComponent):
     @staticmethod
     def get_properties(dataset_properties=None):
         return {
-            "shortname": "no",
+            "shortname": "ps",
             "name": "no",
             "handles_regression": True,
             "handles_classification": True,
