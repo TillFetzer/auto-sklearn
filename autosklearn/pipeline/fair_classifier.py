@@ -15,15 +15,16 @@ from autosklearn.pipeline.components.data_preprocessing import DataPreprocessorC
 from autosklearn.pipeline.components.data_preprocessing.balancing.balancing import (
     Balancing,
 )
+from examples.fairness.fairlearn_preprocessor import FairChoice
 from autosklearn.pipeline.components.feature_preprocessing import (
     FeaturePreprocessorChoice,
 )
 from autosklearn.pipeline.constants import SPARSE
 
 
-class SimpleClassificationPipeline(BasePipeline, ClassifierMixin):
-    """This class implements the classification task.
-
+class SimpleFairClassificationPipeline(BasePipeline, ClassifierMixin):
+    """This class implements the fair classification task.
+    maybe it can be  combined with classification 
     It implements a pipeline, which includes one preprocessing step and one
     classification algorithm. It can render a search space including all known
     classification and preprocessing algorithms.
@@ -119,9 +120,17 @@ class SimpleClassificationPipeline(BasePipeline, ClassifierMixin):
 
             if _fit_params is not None:
                 fit_params.update(_fit_params)
+        self.num_targets = 1 if len(y.shape) == 1 else y.shape[1]
+        if fit_params is None:
+            fit_params = {}
+        fit_params = {
+            key.replace(":", "__"): value for key, value in fit_params.items()
+        }
+        fit_params_steps = self._check_fit_params(**fit_params)
+        Xt = self._fit(X, y, **fit_params_steps)
+        return Xt, fit_params_steps[self.steps[-1][0]]
 
-        X, fit_params = super().fit_transformer(X, y, fit_params=fit_params)
-        return X, fit_params
+        
 
     def predict_proba(self, X, batch_size=None):
         """predict_proba.
@@ -213,6 +222,8 @@ class SimpleClassificationPipeline(BasePipeline, ClassifierMixin):
 
         classifiers = cs.get_hyperparameter("classifier:__choice__").choices
         preprocessors = cs.get_hyperparameter("feature_preprocessor:__choice__").choices
+        # if "fairness" in dataset_properties:
+        #   fairlearn = cs.get_hyperparameter("fairlearn:__choice__").choices
         available_classifiers = self._final_estimator.get_available_components(
             dataset_properties
         )
@@ -384,6 +395,14 @@ class SimpleClassificationPipeline(BasePipeline, ClassifierMixin):
                     ),
                 ],
                 [
+                    "fair_preprocessor",
+                    FairChoice(
+                        feat_type=feat_type,
+                        dataset_properties=default_dataset_properties,
+                        random_state=self.random_state,
+                    ),  
+                ],
+                [
                     "classifier",
                     ClassifierChoice(
                         feat_type=feat_type,
@@ -397,4 +416,4 @@ class SimpleClassificationPipeline(BasePipeline, ClassifierMixin):
         return steps
 
     def _get_estimator_hyperparameter_name(self):
-        return "classifier"
+        return "fair_classifier"

@@ -208,7 +208,10 @@ def load_data(filepath, runetime):
                                 ff  = "{}/{}/{}/fairness.json".format(seed_path,method,runetime_folder)
                                 with open(ff) as f:
                                     fairness = json.load(f)
-                                p.append(1-fairness[d[0][0] -1])
+                                if constrain == "consistency_score":
+                                    p.append(1-fairness[d[0][0] -1])
+                                else:
+                                    p.append(fairness[d[0][0] -1])
                                 point = p
                                 
                         #if run was not sucessfull no train loss is generated
@@ -452,7 +455,7 @@ def make_plot_3(data):
     )
     
     fig.supxlabel("error",fontsize=label_size)
-    fig.supylabel("error_rate_difference", fontsize=label_size)
+    fig.supylabel("1-consistency_score", fontsize=label_size)
     def rgb(r: int, g: int, b: int) -> str:
         return "#%02x%02x%02x" % (r, g, b)
 
@@ -563,7 +566,7 @@ def make_plot_3(data):
                     ]
     fig.tight_layout(rect=[0.03, 0.05, 1, 1], pad = 5)
     fig.legend(handles=legend_elements, loc=3,  prop={'size': 16})
-    save_folder = "/home/till/Desktop/opt_with_cr/{}".format("error_rate_difference")
+    save_folder = "/home/till/Desktop/opt_with_cr/{}".format("consistency_score")
     plt.savefig(save_folder)
 def plot_arrows(
         to,

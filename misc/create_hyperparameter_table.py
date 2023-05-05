@@ -56,7 +56,8 @@ name & \#$\lambda$ & cat (cond) & cont (cond) & const & un \\
 
 
 def get_dict(task_type="classifier", **kwargs):
-    assert task_type in ("classifier", "regressor")
+    # look here fair
+    assert task_type in ("classifier", "regressor", "fair_classifier")
 
     if task_type == "classifier":
         cs = autosklearn.pipeline.classification.SimpleClassificationPipeline.get_hyperparameter_search_space(
@@ -65,6 +66,10 @@ def get_dict(task_type="classifier", **kwargs):
     elif task_type == "regressor":
         cs = autosklearn.pipeline.regression.SimpleRegressionPipeline.get_hyperparameter_search_space(
             dataset_properties=kwargs
+        )
+    elif task_type == "fair_classifier":
+        cs = autosklearn.pipeline.fair_classifier.SimpleFairClassifierPipeline.get_hyperparameter_search_space(
+
         )
     else:
         raise ValueError("'task_type' is not in ('classifier', 'regressor')")

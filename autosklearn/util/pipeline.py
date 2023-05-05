@@ -14,6 +14,7 @@ from autosklearn.constants import (
 from autosklearn.data.abstract_data_manager import AbstractDataManager
 from autosklearn.pipeline.classification import SimpleClassificationPipeline
 from autosklearn.pipeline.regression import SimpleRegressionPipeline
+from autosklearn.pipeline.fair_classifier import SimpleFairClassificationPipeline
 
 __all__ = ["get_configuration_space"]
 
@@ -151,6 +152,14 @@ def _get_classification_configuration_space(
         "multiclass": multiclass,
         "sparse": sparse,
     }
+    if "fair_preprocessor" in include.keys():
+        return   SimpleFairClassificationPipeline(
+        feat_type=datamanager.feat_type,
+        dataset_properties=dataset_properties,
+        include=include,
+        exclude=exclude,
+        random_state=random_state,
+    ).get_hyperparameter_search_space(feat_type=datamanager.feat_type)
 
     return SimpleClassificationPipeline(
         feat_type=datamanager.feat_type,
