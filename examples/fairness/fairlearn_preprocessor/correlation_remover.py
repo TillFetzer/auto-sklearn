@@ -14,8 +14,10 @@ from autosklearn.pipeline.constants import (
     UNSIGNED_DATA,
     SIGNED_DATA
 )
+from examples.fairness.fairlearn_preprocessor import FairPreprocessor
+from autosklearn.pipeline.components.base import AutoSklearnComponent
 
-class CorrelationRemover(AutoSklearnPreprocessingAlgorithm):
+class CorrelationRemover(FairPreprocessor, AutoSklearnComponent):
     index_sf = []
 
     def __init__(self, alpha, **kwargs):
@@ -38,7 +40,7 @@ class CorrelationRemover(AutoSklearnPreprocessingAlgorithm):
         self.preprocessor.fit(X, y)
         return self
 
-    def transform(self, X):
+    def transform(self, X, y=None):
         X = pd.DataFrame(X)
         if self.preprocessor is None:
             raise NotImplementedError()

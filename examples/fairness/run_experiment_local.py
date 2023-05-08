@@ -7,6 +7,7 @@ import base_cr
 import single_base
 import sampling
 import base_sampling
+import base_sampling_cr
 parser=argparse.ArgumentParser()
 
 parser.add_argument("--d", help="datsets",nargs="*")
@@ -51,6 +52,8 @@ for constrain in fairness_constrains:
                     sampling.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
                 if method == "moo+ps":
                     base_sampling.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
+                if method == "moo+ps+cr":
+                    base_sampling_cr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
                 
         print("all runs of {} finished".format(dataset))
 print("finished")

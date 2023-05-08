@@ -288,12 +288,14 @@ def set_fair_metric(sf, metric):
                 sensitive_features=sf,
             )
     raise NotImplementedError
+#def add_correlation_remover(sf):
+#    autosklearn.pipeline.components.feature_preprocessing.add_preprocessor(
+#        CorrelationRemover
+#    )
+#    CorrelationRemover.utils_fairlearn(sf)
 def add_correlation_remover(sf):
-    autosklearn.pipeline.components.feature_preprocessing.add_preprocessor(
-        CorrelationRemover
-    )
-    CorrelationRemover.utils_fairlearn(sf)
-
+    add_fair_preprocessor(CorrelationRemover)
+    CorrelationRemover.utils_fairlearn(sf)   
 def add_no_preprocessor():
     autosklearn.pipeline.components.data_preprocessing.add_preprocessor(
         no_preprocessor
