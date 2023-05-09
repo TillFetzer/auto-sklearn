@@ -10,7 +10,7 @@ from autosklearn.pipeline.constants import (
 )
 from examples.fairness.fairlearn_preprocessor import FairPreprocessor
 from ConfigSpace.configuration_space import ConfigurationSpace
-
+import random
 
 class  PreferentialSampling(FairPreprocessor, AutoSklearnComponent):
     index_sf = []
@@ -32,7 +32,6 @@ class  PreferentialSampling(FairPreprocessor, AutoSklearnComponent):
     def transform(self, X, y=None):
         if y is None:
             return X
-        X = X
         X = np.array(X)
         protected = np.array(X[:,PreferentialSampling.index_sf]).flatten()
         
@@ -104,19 +103,17 @@ class  PreferentialSampling(FairPreprocessor, AutoSklearnComponent):
 
                     else:
                         sorted_current_case = current_case[np.argsort(probs[current_case])]
-                        ind = list(np.repeat(current_case, expected // actual))
+                        p_ind = list(np.repeat(current_case, expected // actual))
 
                         if expected % actual != 0:
                             if value == 0:
-                                ind += list(sorted_current_case[-(expected % actual):])
+                                p_ind += list(sorted_current_case[-(expected % actual):])
                             if value == 1:
-                                ind += list(sorted_current_case[:(expected % actual)])
-                    indices += ind
-                    for i in indices:
-                        y[i] = 0 if y[i] == 1 else 1
-
-
-        return X, y
+                                p_ind += list(sorted_current_case[:(expected % actual)])
+                        indices += p_ind
+        #these is a small own, extention,which does not conflict the pseudocode of the original paper
+        indices = random.shuffle(indices)
+        return np.squeeze(X[indices,:]), np.squeeze(y[indices,:])
         
 
 

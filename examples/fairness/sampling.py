@@ -82,6 +82,9 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     )
     # sensitive attributes needs to go out
     automl.fit(X_train, y_train, dataset_name="adult")
+    ############################################################################
+    # Compute the two competing metrics
+
 
 
     shutil.copy(tmp + "/del/smac3-output/run_{}/runhistory.json".format(seed), tmp )

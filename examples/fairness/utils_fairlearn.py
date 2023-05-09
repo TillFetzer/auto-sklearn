@@ -177,6 +177,7 @@ def save_pareto(
     for idx, ensemble in enumerate(pareto_front):
         predictions = ensemble.predict(X_test)
         acc = sklearn.metrics.accuracy_score(y_test, predictions)
+        print(acc)
             # TODO: needs adapted sometime
         fairness = fairlearn.metrics.equalized_odds_difference(
             y_test, predictions, sensitive_features=sensitive_features
