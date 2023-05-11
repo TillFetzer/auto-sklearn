@@ -128,6 +128,9 @@ class BasePipeline(Pipeline):
         return self
 
     def fit_transformer(self, X, y, fit_params=None):
+        if type(X) is tuple:
+            X,y_2 = X
+
         self.num_targets = 1 if len(y.shape) == 1 else y.shape[1]
         if fit_params is None:
             fit_params = {}

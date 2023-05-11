@@ -25,6 +25,7 @@ from examples.fairness.fairlearn_preprocessor import add_fair_preprocessor
 # TODO better import
 from examples.fairness.fairlearn_preprocessor.no_preprocessor import no_preprocessor
 from examples.fairness.fairlearn_preprocessor.correlation_remover import CorrelationRemover
+from examples.fairness.fairlearn_preprocessor.correlation_remover_dp import CorrelationRemover as CR
 from examples.fairness.fairlearn_preprocessor.sensitive_attribute_remover import SensitiveAtributeRemover
 from examples.fairness.fairlearn_preprocessor.learned_fair_representation import LFR
 from examples.fairness.fairlearn_preprocessor.preferential_sampling import PreferentialSampling
@@ -289,11 +290,11 @@ def set_fair_metric(sf, metric):
                 sensitive_features=sf,
             )
     raise NotImplementedError
-#def add_correlation_remover(sf):
-#    autosklearn.pipeline.components.feature_preprocessing.add_preprocessor(
-#        CorrelationRemover
-#    )
-#    CorrelationRemover.utils_fairlearn(sf)
+def add_correlation_remover_dp(sf_index,sf):
+    autosklearn.pipeline.components.feature_preprocessing.add_preprocessor(
+        CR
+    )
+    CR.utils_fairlearn(sf_index, sf)
 def add_correlation_remover(sf):
     add_fair_preprocessor(CorrelationRemover)
     CorrelationRemover.utils_fairlearn(sf)   
@@ -321,6 +322,8 @@ def add_preferential_sampling(index_sf):
 def add_no_fair():
     add_fair_preprocessor(NoFairPreprocessor)
    
+
+
 
 
 #def add_preferential_sampling(index_sf):

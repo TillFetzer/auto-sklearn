@@ -10,12 +10,23 @@ from autosklearn.pipeline.constants import (
 )
 from examples.fairness.fairlearn_preprocessor import FairPreprocessor
 from ConfigSpace.configuration_space import ConfigurationSpace
+from ConfigSpace.conditions import EqualsCondition
+from ConfigSpace.hyperparameters import (
+    CategoricalHyperparameter,
+    UniformFloatHyperparameter,
+    UniformIntegerHyperparameter,
+    UnParametrizedHyperparameter,
+)
+
 import random
 
 class  PreferentialSampling(FairPreprocessor, AutoSklearnComponent):
     index_sf = []
-    def __init__(self, **kwargs):
+    def __init__(self,ranker,n_neighbors=0,**kwargs):
         """This preprocessors samples that the data is fair"""
+        self.ranker = ranker
+        if ranker == "knn":
+            self.n_neighbors = n_neighbors
         for key, val in kwargs.items():
             setattr(self, key, val)
     
@@ -26,8 +37,12 @@ class  PreferentialSampling(FairPreprocessor, AutoSklearnComponent):
     def fit(self, X, Y=None):
         self.preprocessor = "prefentialsampling"
         self.fitted_ = True
-        from sklearn.naive_bayes import GaussianNB
-        self.ranker = GaussianNB().fit(X, Y)
+        if self.ranker == "naivebayes":
+            from sklearn.naive_bayes import GaussianNB
+            self.ranker = GaussianNB().fit(X, Y)
+        if self.ranker == "knn":
+            from sklearn.neighbors import KNeighborsClassifier
+            self.ranker = KNeighborsClassifier(n_neighbors = self.n_neighbors).fit(X,Y)
         return self
     def transform(self, X, y=None):
         if y is None:
@@ -141,4 +156,11 @@ class  PreferentialSampling(FairPreprocessor, AutoSklearnComponent):
         feat_type: Optional[FEAT_TYPE_TYPE] = None, dataset_properties=None
     ):
         cs = ConfigurationSpace()
+        ranker = CategoricalHyperparameter("ranker", ["naivebayes","knn"],default_value="naivebayes")
+        n_neighbors = UniformIntegerHyperparameter("n_neighbors",1,100,default_value=1)
+        cs.add_hyperparameters([ranker,n_neighbors])
+        knn_cond = EqualsCondition(
+        n_neighbors, ranker, "knn"
+        )
+        cs.add_conditions([knn_cond])
         return cs

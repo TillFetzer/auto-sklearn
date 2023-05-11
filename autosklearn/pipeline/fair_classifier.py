@@ -378,6 +378,14 @@ class SimpleFairClassificationPipeline(BasePipeline, ClassifierMixin):
         steps.extend(
             [
                 [
+                    "fair_preprocessor",
+                    FairChoice(
+                        feat_type=feat_type,
+                        dataset_properties=default_dataset_properties,
+                        random_state=self.random_state,
+                    ),  
+                ],
+                [
                     "data_preprocessor",
                     DataPreprocessorChoice(
                         feat_type=feat_type,
@@ -394,14 +402,7 @@ class SimpleFairClassificationPipeline(BasePipeline, ClassifierMixin):
                         random_state=self.random_state,
                     ),
                 ],
-                [
-                    "fair_preprocessor",
-                    FairChoice(
-                        feat_type=feat_type,
-                        dataset_properties=default_dataset_properties,
-                        random_state=self.random_state,
-                    ),  
-                ],
+               
                 [
                     "classifier",
                     ClassifierChoice(
