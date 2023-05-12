@@ -8,11 +8,11 @@ args=parser.parse_args()
 idx = args.idx
 under_folder = args.uf
 seeds = [12345,25,42,45451, 97,13,27,39,41,53]
-methods = ["ps","moo+ps"]
+methods = ["moo+ps+cr","moo+ps*cr"]
 datasets = ["german","adult","compass","lawschool"]
 #datasets = ["german"]
 sfs = ["personal_status", "sex", "race", "race"]
-fairness_constrains=["consistency_score","demographic_parity","equalized_odds", "error_rate_difference", " equal_opportunity_difference"]
+fairness_constrains=["consistency_score","demographic_parity","equalized_odds", "error_rate_difference"]
 
 
 dataset = datasets[int(idx/(len(seeds)*len(methods)))%len(datasets)]

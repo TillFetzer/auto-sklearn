@@ -7,6 +7,7 @@ import single_base
 import sampling
 import base_sampling
 import base_sampling_cr
+import base_sampling_cr_com
 def run_experiment(datasets =["adult"],
  fairness_constrains=["demographic_parity"],
   methods=["moo"], 
@@ -44,5 +45,7 @@ def run_experiment(datasets =["adult"],
                         base_sampling.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder)
                     if method == "moo+ps+cr":
                         base_sampling_cr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder)
+                    if method == "moo+ps*cr":
+                        base_sampling_cr_com.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder)  
             print("all runs of {} finished".format(dataset))
     print("finished")
