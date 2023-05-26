@@ -1,6 +1,7 @@
 import base
 import corrleation_remover
 import lfr
+import base_lfr
 import argparse
 import redlineing
 import base_cr
@@ -8,6 +9,7 @@ import single_base
 import sampling
 import base_sampling
 import base_sampling_cr
+import base_sampling_cr_lfr
 import base_sampling_cr_com
 parser=argparse.ArgumentParser()
 
@@ -45,6 +47,8 @@ for constrain in fairness_constrains:
                     corrleation_remover.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
                 if method == "lfr":
                    lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
+                if method == "moo+lfr":
+                    base_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
                 if method == "moo+cr":
                     base_cr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
                 if method == "so":
@@ -55,6 +59,8 @@ for constrain in fairness_constrains:
                     base_sampling.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
                 if method == "moo+ps+cr":
                     base_sampling_cr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
+                if method == "moo+ps+cr+lfr":
+                    base_sampling_cr_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
                 if method == "moo+ps*cr":
                     base_sampling_cr_com.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")         
         print("all runs of {} finished".format(dataset))

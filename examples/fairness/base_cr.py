@@ -26,7 +26,7 @@ from collections import defaultdict
 
 def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcount, under_folder):
     X, y = utils_fairlearn.load_data(dataset)
-    utils_fairlearn.add_no_preprocessor()
+    
     utils_fairlearn.add_correlation_remover(sf)
     # ==========================
     on = pd.concat([X[sf], y],axis=1)
@@ -40,8 +40,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     # ==========================
 
     fair_metric = utils_fairlearn.set_fair_metric(sf, fairness_constrain)
-    utils_fairlearn.add_sensitive_remover(X.columns.get_loc(sf))
-    utils_fairlearn.add_no_preprocessor()
+    
 
     ############################################################################
     # Build and fit a classifier

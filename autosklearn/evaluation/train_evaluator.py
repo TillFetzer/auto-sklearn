@@ -617,16 +617,31 @@ class TrainEvaluator(AbstractEvaluator):
                     [opt_losses[i][metric_name] for i in range(self.num_cv_folds)],
                     weights=opt_fold_weights,
                 )
-
+            
             X_targets = self.X_targets
             Y_targets = self.Y_targets
             Y_train_targets = self.Y_train_targets
-
-            Y_optimization_pred = concat_data(
-                Y_optimization_pred, num_cv_folds=self.num_cv_folds
-            )
+            try:
+                Y_optimization_pred = concat_data(
+                    Y_optimization_pred, num_cv_folds=self.num_cv_folds
+                )
+            except ValueError:   
+            #these only happens really if thorugh the label preprocessing all labels are the same
+            #becuase of that is not checked before
+            #these can happen only in fair preprocessing and is writen for it
+                for idx, pred in enumerate(Y_optimization_pred):
+                    if pred.shape[1] != len(np.unique(Y_targets)):
+                        import  examples.fairness.only_label
+                        if examples.fairness.only_label.get_only_label(idx) == 0.0:
+                           Y_optimization_pred[idx] = np.hstack((pred, np.zeros((pred.shape[0], 1))))
+                        else:
+                            Y_optimization_pred[idx] = np.hstack((pred, np.ones((pred.shape[0], 1))))
+                Y_optimization_pred = concat_data(
+                    Y_optimization_pred, num_cv_folds=self.num_cv_folds
+                )
             X_targets = concat_data(X_targets, num_cv_folds=self.num_cv_folds)
             Y_targets = concat_data(Y_targets, num_cv_folds=self.num_cv_folds)
+             
 
             if self.X_test is not None:
                 Y_test_pred = np.array(

@@ -2,7 +2,6 @@
 # and quick access
 
 import autosklearn
-import examples
 import fairlearn
 
 from autosklearn.askl_typing import FEAT_TYPE_TYPE
@@ -30,6 +29,7 @@ from examples.fairness.fairlearn_preprocessor.sensitive_attribute_remover import
 from examples.fairness.fairlearn_preprocessor.learned_fair_representation import LFR
 from examples.fairness.fairlearn_preprocessor.preferential_sampling import PreferentialSampling
 from examples.fairness.fairlearn_preprocessor.no_fair_preprocessing import NoFairPreprocessor
+# TODO: think on better options
 
 
 
@@ -313,7 +313,7 @@ def add_sensitive_remover(index_sf):
 
 
 def add_LFR(index_sf):
-    autosklearn.pipeline.components.feature_preprocessing.add_preprocessor(LFR)
+    add_fair_preprocessor(LFR)
     LFR.utils_fairlearn(index_sf)
 
 def add_preferential_sampling(index_sf):

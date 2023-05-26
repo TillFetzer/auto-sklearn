@@ -26,33 +26,32 @@ from collections import defaultdict
 
 def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcount, under_folder):
     X, y = utils_fairlearn.load_data(dataset)
+    utils_fairlearn.add_no_preprocessor()
+    utils_fairlearn.add_no_fair()
+    utils_fairlearn.add_preferential_sampling(X.columns.get_loc(sf))
+    utils_fairlearn.add_LFR(sf)
+    utils_fairlearn.add_correlation_remover(sf)
+    # ==========================
     on = pd.concat([X[sf], y],axis=1)
     X_train , X_test, y_train, y_test= utils_fairlearn.stratified_split(
         *(X.to_numpy(), y.to_numpy(), X[sf].to_numpy()),columns=X.columns,  on = on ,size=0.8,  seed=seed
     )
 
-    # ==========================
-
-    fair_metric = utils_fairlearn.set_fair_metric(sf, fairness_constrain)
-    
-
-    # that can outsorced in another script.
-
+   
     ############################################################################
     # Build and fit a classifier
     # ==========================
 
     fair_metric = utils_fairlearn.set_fair_metric(sf, fairness_constrain)
-    utils_fairlearn.add_LFR(sf)
-    utils_fairlearn.add_no_preprocessor()
+
 
     ############################################################################
     # Build and fit a classifier
     # ==========================
-    tmp =  file + "/{}/{}/{}/{}/lfr/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
+    tmp =  file + "/{}/{}/{}/{}/moo+ps+cr+lfr/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
     runtime = runtime
     automl = autosklearn.classification.AutoSklearnClassifier(
-         time_left_for_this_task=runtime,  # 3h
+        time_left_for_this_task=runtime,  # 3h
 
         #per_run_time_limit=runtime / 2,
         metric=[
@@ -69,7 +68,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
         include={
             'feature_preprocessor': ["no_preprocessing"],
             'data_preprocessor': ["no_preprocessor"],
-            "fair_preprocessor": ["LFR"],
+            "fair_preprocessor": ["NoFairPreprocessor","PreferentialSampling", "CorrelationRemover", "LFR"],
             "classifier": [
                 "random_forest"
             ], 
@@ -85,13 +84,9 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
         }
     )
     # sensitive attributes needs to go out
-    automl.fit(X_train, y_train)
+    automl.fit(X_train, y_train, dataset_name="adult")
 
-    ############################################################################
-    # Compute the two competing metrics
-    # =================================
-   
 
     shutil.copy(tmp + "/del/smac3-output/run_{}/runhistory.json".format(seed), tmp )
     shutil.rmtree(tmp + "/del")
-  
+   

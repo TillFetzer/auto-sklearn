@@ -11,6 +11,7 @@ from autosklearn.pipeline.base import DATASET_PROPERTIES_TYPE, PIPELINE_DATA_DTY
 
 
 class FairPreprocessor(object):
+    
     def __init__(
         self, random_state: Optional[Union[int, np.random.RandomState]] = None
     ) -> None:
@@ -43,3 +44,4 @@ class FairPreprocessor(object):
     ) -> ConfigurationSpace:
         cs = ConfigurationSpace()
         return cs
+

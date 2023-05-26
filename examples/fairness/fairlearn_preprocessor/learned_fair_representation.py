@@ -15,10 +15,14 @@ from autosklearn.pipeline.constants import (
     UNSIGNED_DATA,
     SIGNED_DATA
 )
+from examples.fairness.fairlearn_preprocessor.abstract_fair_preprocessor import  FairPreprocessor
+from autosklearn.pipeline.components.base import AutoSklearnComponent
+import numpy as np
+import examples.fairness.only_label
 
-
-class LFR(AutoSklearnPreprocessingAlgorithm):
+class LFR(FairPreprocessor, AutoSklearnComponent):
     index_sf = None
+    sf = None
     # n_prototypes, reconstruct_weight, target_weight, fairness_weight, tol, max_iter,
     def __init__(
         self,
@@ -28,7 +32,6 @@ class LFR(AutoSklearnPreprocessingAlgorithm):
         fairness_weight,
         tol,
         max_iter, 
-        predict_y,
         **kwargs,
     ):
         self.n_prototypes = n_prototypes
@@ -37,18 +40,19 @@ class LFR(AutoSklearnPreprocessingAlgorithm):
         self.fairness_weight = fairness_weight
         self.tol = tol
         self.n_iter = max_iter
-        self.predict_y = predict_y
         for key, val in kwargs.items():
             setattr(self, key, val)
 
     @classmethod
     def utils_fairlearn(cls, index_sf):
         cls.index_sf = index_sf
+        #cls.sf = sf
 
-    def fit(self, X, y=None):
+    def fit(self, X, Y=None):
         from aif360.sklearn.preprocessing import  LearnedFairRepresentations
-
+        #X,Y = np.array(X), np.array(Y)
         # maybe type needs to transform
+      
         self.preprocessor = LearnedFairRepresentations(
             prot_attr=LFR.index_sf,
             reconstruct_weight=self.reconstruct_weight,
@@ -59,16 +63,18 @@ class LFR(AutoSklearnPreprocessingAlgorithm):
             max_iter=self.n_iter,
         )
         # patched something in aif360, not good
-        self.preprocessor.fit(X, y)
+        self.preprocessor.fit(X, Y)
         return self
 
-    def transform(self, X):
+    def transform(self, X, y=None):
         if self.preprocessor is None:
             raise NotImplementedError()
-        if self.predict_y:
-            return self.preprocessor.transform(X), self.preprocessor.predict(X)
-        else:
+        if y is None:
             return self.preprocessor.transform(X)
+        y_pred = self.preprocessor.predict(X)
+        examples.fairness.only_label.set_only_label(y_pred[0])
+        return self.preprocessor.transform(X), y_pred
+        #return np.array(self.preprocessor.transform(X)), np.array(self.preprocessor.predict(X)).astype("float")
 
     @staticmethod
     def get_properties(dataset_properties=None):
@@ -96,14 +102,13 @@ class LFR(AutoSklearnPreprocessingAlgorithm):
             "reconstruct_weight", 0.0001, 1, default_value=0.01, log=True
         )
         target_weight = UniformFloatHyperparameter(
-            "target_weight", 0.01, 100, default_value=30, log=True
+            "target_weight", 0.001, 1, default_value=0.5, log=True
         )
         fairness_weight = UniformFloatHyperparameter(
-            "fairness_weight", 0.5, 500, default_value=50, log=True
+            "fairness_weight", 0.00001, 1, default_value=0.3, log=True
         )
         tol = UniformFloatHyperparameter("tol", 1e-6, 0.1, default_value=1e-4)
-        predict_y = CategoricalHyperparameter("predict_y", [True])
-        max_iter = Constant("max_iter",6000)
+        max_iter = UniformIntegerHyperparameter("max_iter",1000,10000, default_value=6000)
         cs.add_hyperparameters(
             [
                 n_prototypes,
@@ -111,8 +116,7 @@ class LFR(AutoSklearnPreprocessingAlgorithm):
                 target_weight,
                 tol,
                 fairness_weight,
-                max_iter,
-                predict_y
+                max_iter
             ]
         )
         return cs

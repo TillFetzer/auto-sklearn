@@ -126,7 +126,7 @@ class RandomForest(
             self.estimator.n_estimators = min(
                 self.estimator.n_estimators, self.n_estimators
             )
-
+        import numpy as np
         self.estimator.fit(X, y, sample_weight=sample_weight)
         return self
 
@@ -146,6 +146,9 @@ class RandomForest(
             raise NotImplementedError()
         probas = self.estimator.predict_proba(X)
         probas = convert_multioutput_multiclass_to_multilabel(probas)
+        if probas.shape[1] != 1:
+            print("why")
+            #probas = softmax(probas)
         return probas
 
     @staticmethod
