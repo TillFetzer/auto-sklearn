@@ -50,7 +50,7 @@ def run_experiment(datasets =["adult"],
                     if method == "moo+ps*cr":
                         base_sampling_cr_com.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder) 
                     if method == "moo+lfr":
-                        base_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount)
+                        base_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder)
                     if method == "moo+ps+cr+lfr":
                         base_sampling_cr_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder)
             print("all runs of {} finished".format(dataset))

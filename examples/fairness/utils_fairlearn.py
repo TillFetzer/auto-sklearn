@@ -152,7 +152,7 @@ def load_data(name):
         X, y = sklearn.datasets.fetch_openml(data_id=315, return_X_y=True, as_frame=True)
 
 
-    raise NotImplementedError
+    raise NotImplementedError("{} dataset is not implemetened, maybe there is a typo".format(name))
 
 
 

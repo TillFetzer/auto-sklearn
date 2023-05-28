@@ -630,7 +630,7 @@ class TrainEvaluator(AbstractEvaluator):
             #becuase of that is not checked before
             #these can happen only in fair preprocessing and is writen for it
                 for idx, pred in enumerate(Y_optimization_pred):
-                    if pred.shape[1] != len(np.unique(Y_targets)):
+                    if pred.shape[1] != len(np.unique(Y_targets[idx])):
                         import  examples.fairness.only_label
                         if examples.fairness.only_label.get_only_label(idx) == 0.0:
                            Y_optimization_pred[idx] = np.hstack((pred, np.zeros((pred.shape[0], 1))))
