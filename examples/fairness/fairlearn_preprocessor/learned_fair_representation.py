@@ -99,10 +99,10 @@ class LFR(FairPreprocessor, AutoSklearnComponent):
         #cahnge shortly the attribute to look on the higher picturec d
         n_prototypes = UniformIntegerHyperparameter("n_prototypes", 1, 100, default_value=50)
         reconstruct_weight = UniformFloatHyperparameter(
-            "reconstruct_weight", 1e-5, 10, default_value=0.01, log=True
+            "reconstruct_weight", 1e-6, 1, default_value=0.01, log=True
         )
         target_weight = UniformFloatHyperparameter(
-            "target_weight", 1e-5, 1, default_value=0.5, log=True
+            "target_weight", 1e-6, 1, default_value=0.5, log=True
         )
         fairness_weight = UniformFloatHyperparameter(
             "fairness_weight", 1e-20, 1, default_value=0.3, log=True
