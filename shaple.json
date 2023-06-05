@@ -1,0 +1,84 @@
+{
+    "demographic_parity": {
+        "lawschool": {
+            "moo+ps*cr": {
+                "no": {
+                    "acc": 0.48296593186372927,
+                    "fairness": 0.0774795398639576
+                },
+                "PreferentialSampling": {
+                    "acc": 0.09619238476954017,
+                    "fairness": 0.037461881610426864
+                },
+                "CorrelationRemover": {
+                    "acc": 0.0,
+                    "fairness": 0.0
+                },
+                "both": {
+                    "acc": 0.4208416833667306,
+                    "fairness": 0.885058578525616
+                }
+            }
+        },
+        "german": {
+            "moo+ps*cr": {
+                "no": {
+                    "acc": 0.5545722713864308,
+                    "fairness": 0.41675642815821157
+                },
+                "PreferentialSampling": {
+                    "acc": 0.17109144542772858,
+                    "fairness": 0.33510517685384406
+                },
+                "CorrelationRemover": {
+                    "acc": 0.002949852507374459,
+                    "fairness": 0.20198674228696234
+                },
+                "both": {
+                    "acc": 0.2713864306784663,
+                    "fairness": 0.04615165270098187
+                }
+            }
+        },
+        "adult": {
+            "moo+ps*cr": {
+                "no": {
+                    "acc": 0.16980823708869042,
+                    "fairness": 0.36343192136618757
+                },
+                "PreferentialSampling": {
+                    "acc": 0.24278165177598626,
+                    "fairness": 0.1261608145683046
+                },
+                "CorrelationRemover": {
+                    "acc": 0.17857921115711473,
+                    "fairness": 0.33469712026906884
+                },
+                "both": {
+                    "acc": 0.4088308999782086,
+                    "fairness": 0.17571014379643884
+                }
+            }
+        },
+        "compass": {
+            "moo+ps*cr": {
+                "no": {
+                    "acc": 0.49755957507895465,
+                    "fairness": 0.9999999999999996
+                },
+                "PreferentialSampling": {
+                    "acc": 0.5024404249210449,
+                    "fairness": 0.0
+                },
+                "CorrelationRemover": {
+                    "acc": 0.0,
+                    "fairness": 0.0
+                },
+                "both": {
+                    "acc": 0.0,
+                    "fairness": 0.0
+                }
+            }
+        }
+    }
+}

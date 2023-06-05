@@ -217,7 +217,7 @@ def load_data(filepath, runetime, methods):
                         data[constrain][dataset][seed][method]['configs'].append(config)
                     data[constrain][dataset][seed][method]['points'] = pd.DataFrame(data[constrain][dataset][seed][method]['points'])
                     data[constrain][dataset][seed][method]['pareto_set'], data[constrain][dataset][seed][method]['pareto_config']   = pareto_set(data[constrain][dataset][seed][method])
-
+                    
     return data
 
 
@@ -449,7 +449,7 @@ def make_plot_3(data):
     )
     
     fig.supxlabel("error",fontsize=label_size)
-    fig.supylabel("1_consistency_score", fontsize=label_size)
+    fig.supylabel("error_rate_difference", fontsize=label_size)
     def rgb(r: int, g: int, b: int) -> str:
         return "#%02x%02x%02x" % (r, g, b)
 
@@ -460,18 +460,14 @@ def make_plot_3(data):
     alpha = 0.1
 
     styles = {
-        "moo_points": dict(s=15, marker="o", color="red"),
-        "moo_pareto": dict(s=4, marker="o", color="red", linestyle="-", linewidth=2),
-        "so_points": dict(s=15, marker="o", color="black"),
-        "so_pareto": dict(s=4, marker="o", color="black", linestyle="-", linewidth=2),
-        "moo+cr_points": dict(s=15, marker="o", color="blue"),
-        "moo+cr_pareto": dict(s=4, marker="o", color="blue", linestyle="-", linewidth=2),
-        "moo_ps_points": dict(s=15, marker="o", color ="green"),
-        "moo_ps_pareto": dict(s=4, marker="o", color="green", linestyle="-", linewidth=2),
-        "moo+ps+cr_points": dict(s=15, marker="o", color =c_color),
-        "moo+ps+cr_pareto": dict(s=4, marker="o", color=c_color, linestyle="-", linewidth=2),
-        "moo+ps*cr_points": dict(s=15, marker="o", color=c_color_2),
-        "moo+ps*cr_pareto": dict(s=4, marker="o", color=c_color_2, linestyle="-", linewidth=2),
+        "moo": dict(s=15, marker="o", color="red"),
+        "so": dict(s=15, marker="o", color="black"),
+        "moo+cr": dict(s=15, marker="o", color="blue"),
+        "moo_ps_ranker": dict(s=15, marker="o", color ="green"),
+        "moo+ps+cr": dict(s=15, marker="o", color =c_color),
+        "moo+ps*cr": dict(s=15, marker="o", color=c_color_2),
+        "cr":  dict(s=15, marker="o", color="black"),
+        "ps_ranker": dict(s=15, marker="o", color=c_color),
     }
     for i,constrain in enumerate(data.keys()):
         global_max_y = 0
@@ -490,45 +486,45 @@ def make_plot_3(data):
             
             ax.set_title(dataset, fontsize=title_size)
             moo_pf = []
-            so_pf = []
-            moo_cr_pf = []
-            moo_ps_pf = []
+            lfr_pf = []
+            lfr_pf = []
+            moo_lfr_pf= []
             moo_cr_ps_pf = []
-            moo_cr_xor_ps_pf =[]
+            moo_cr_ps_lfr_pf =[]
             max_len, max_len_ps, max_len_rl = 0,0,0
             for seed in data[constrain][dataset].keys():
                 moo_pf.append(np.array(data[constrain][dataset][seed]['moo']['points']))
-                #so_pf.append(np.array(data[constrain][dataset][seed]['so']['points']))
-                moo_ps_pf.append(np.array(data[constrain][dataset][seed]['moo_ps_ranker']['points']))
-                moo_cr_pf.append(np.array(data[constrain][dataset][seed]['moo+cr']['points']))
-                moo_cr_ps_pf.append(np.array(data[constrain][dataset][seed]['ps_ranker']['points']))
-                #moo_cr_xor_ps_pf.append(np.array(data[constrain][dataset][seed]['moo+ps*cr']['points']))
+                #lfr_pf.append(np.array(data[constrain][dataset][seed]['so']['points']))
+                lfr_pf.append(np.array(data[constrain][dataset][seed]['lfr']['points']))
+                moo_lfr_pf.append(np.array(data[constrain][dataset][seed]['moo+lfr']['points']))
+                moo_cr_ps_pf.append(np.array(data[constrain][dataset][seed]['moo+ps+cr']['points']))
+                moo_cr_ps_lfr_pf.append(np.array(data[constrain][dataset][seed]['moo+ps+cr+lfr']['points']))
 
                 #seed = "25" 
                 #moo
                 length = len(data[constrain][dataset][seed]['moo']['points'])
                 max_len = length if max_len < length else max_len
-                plot(data[constrain][dataset][seed]['moo']['points'], ax=ax, **styles["moo_points"], alpha = alpha)
+                plot(data[constrain][dataset][seed]['moo']['points'], ax=ax, **styles["moo"], alpha = alpha)
 
-                #ps 
-                #length = len(data[constrain][dataset][seed]['so']['points'])
-                #max_len= length if max_len < length else max_len
-                #plot(data[constrain][dataset][seed]['so']['points'], ax=ax, **styles["so_points"], alpha = alpha)
-
-                #moo_ps
-                length = len(data[constrain][dataset][seed]['moo_ps_ranker']['points'])
+                #lfr
+                length = len(data[constrain][dataset][seed]['lfr']['points'])
                 max_len= length if max_len < length else max_len
-                plot(data[constrain][dataset][seed]['moo_ps_ranker']['points'], ax=ax, **styles["moo_ps_points"], alpha = alpha)
+                plot(data[constrain][dataset][seed]['lfr']['points'], ax=ax, **styles["so"], alpha = alpha)
+
+                #moo_lfr
+                length = len(data[constrain][dataset][seed]['moo+lfr']['points'])
+                max_len= length if max_len < length else max_len
+                plot(data[constrain][dataset][seed]['moo+lfr']['points'], ax=ax, **styles["moo_ps_ranker"], alpha = alpha)
                
-                #moo_cr
-                length = len(data[constrain][dataset][seed]['moo+cr']['points'])
+                #moo_cr_ps_lfr
+                length = len(data[constrain][dataset][seed]['moo+ps+cr+lfr']['points'])
                 max_len= length if max_len < length else max_len
-                plot(data[constrain][dataset][seed]['moo+cr']['points'], ax=ax, **styles["moo+cr_points"], alpha = alpha)
+                plot(data[constrain][dataset][seed]['moo+ps+cr+lfr']['points'], ax=ax, **styles["moo+cr"], alpha = alpha)
 
                 #moo_cr_ps
-                length = len(data[constrain][dataset][seed]['ps_ranker']['points'])
+                length = len(data[constrain][dataset][seed]['moo+ps+cr+lfr']['points'])
                 max_len= length if max_len < length else max_len
-                plot(data[constrain][dataset][seed]['ps_ranker']['points'], ax=ax, **styles["moo+ps+cr_points"], alpha = alpha)
+                plot(data[constrain][dataset][seed]['moo+ps+cr+lfr']['points'], ax=ax, **styles["moo+ps+cr"], alpha = alpha)
 
                 #moo_cr_xor_ps
                 #length = len(data[constrain][dataset][seed]['moo+ps*cr']['points'])
@@ -541,27 +537,27 @@ def make_plot_3(data):
                 diff = max_len-len(moo_pf[i]) 
                 if diff:
                     moo_pf[i] = np.vstack((moo_pf[i], [moo_pf[i][-1]]*(diff)))
-                #ps
-                #diff = max_len-len(so_pf[i]) 
-                #if diff:
-                #    so_pf[i] = np.vstack((so_pf[i], [so_pf[i][-1]]*(diff)))
+                #lfr
+                diff = max_len-len(lfr_pf[i]) 
+                if diff:
+                    lfr_pf[i] = np.vstack((lfr_pf[i], [lfr_pf[i][-1]]*(diff)))
 
                 #moo_ps
-                diff = max_len-len(moo_ps_pf[i]) 
+                diff = max_len-len(moo_lfr_pf[i]) 
                 if diff:
-                    moo_ps_pf[i] = np.vstack((moo_ps_pf[i],[moo_ps_pf[i][-1]]*(diff)))
+                    moo_lfr_pf[i] = np.vstack((moo_lfr_pf[i],[moo_lfr_pf[i][-1]]*(diff)))
                 #moo+cr
-                diff = max_len-len(moo_ps_pf[i]) 
+                diff = max_len-len(moo_lfr_pf[i]) 
                 if diff:
-                    moo_ps_pf[i] = np.vstack((moo_ps_pf[i], [moo_ps_pf[i][-1]]*(diff)))
-                #moo_ps
+                    moo_lfr_pf[i] = np.vstack((moo_lfr_pf[i], [moo_lfr_pf[i][-1]]*(diff)))
+                #moo_ps_cr
                 diff = max_len-len(moo_cr_ps_pf[i]) 
                 if diff:
                     moo_cr_ps_pf[i] = np.vstack((moo_cr_ps_pf[i],[moo_cr_ps_pf[i][-1]]*(diff)))
-                #moo+cr
-                #diff = max_len-len(moo_cr_xor_ps_pf[i]) 
-                #if diff:
-                #    moo_cr_xor_ps_pf[i] = np.vstack((moo_cr_xor_ps_pf[i], [moo_cr_xor_ps_pf[i][-1]]*(diff)))
+                #moo+ps+cr+lfr
+                diff = max_len-len(moo_cr_ps_lfr_pf[i]) 
+                if diff:
+                    moo_cr_ps_lfr_pf[i] = np.vstack((moo_cr_ps_lfr_pf[i], [moo_cr_ps_lfr_pf[i][-1]]*(diff)))
 
 
             #moo_points = data[constrain][dataset][seed]['moo']['points']
@@ -576,35 +572,33 @@ def make_plot_3(data):
             #t = copy.deepcopy(ax)
             #_, ax = plt.subplots(ax)
             # ,np.stack(redlineing_pf,axis=0)
-            # np.stack(moo_pf, axis=0),np.stack(moo_cr_pf, axis=0),np.stack(moo_ps_pf, axis=0),np.stack(ps_pf, axis=0)
+            # np.stack(moo_pf, axis=0),np.stack(moo_cr_pf, axis=0),np.stack(moo_lfr_pf, axis=0),np.stack(ps_pf, axis=0)
             pf = [np.stack(moo_pf, axis=0),
-                #np.stack(so_pf, axis=0),
-                np.stack(moo_cr_pf, axis=0),
-                np.stack(moo_ps_pf, axis=0),
+                np.stack(lfr_pf, axis=0),
+                np.stack(moo_lfr_pf, axis=0),
                 np.stack(moo_cr_ps_pf, axis=0),
-                #np.stack(moo_cr_xor_ps_pf, axis=0)
+                np.stack(moo_cr_ps_lfr_pf, axis=0)
                 ]
             # , styles["redlineing_points"]['color'] , styles["moo_ps_pareto"]['color'],styles["ps_pareto"]['color']
-            plots_we(pf, ax, [styles["moo_pareto"]['color'],
-                              #styles["so_pareto"]['color'],
-                              styles["moo+cr_pareto"]['color'],
-                              styles["moo_ps_pareto"]['color'], 
-                              styles["moo+ps+cr_pareto"]['color'],
-                              #styles["moo+ps*cr_pareto"]['color']
+            plots_we(pf, ax, [styles["moo"]['color'],
+                              styles["so"]['color'],
+                              styles["moo+cr"]['color'],
+                              styles["moo_ps_ranker"]['color'], 
+                              styles["moo+ps+cr"]['color']
                               ])
             ax.tick_params(axis="both", which="major", labelsize=tick_size)
     legend_elements = [
-        Line2D([0], [0], color=styles["moo_pareto"]['color'], lw=4, label='moo'),
-        #Line2D([0], [0], color=styles["so_pareto"]['color'], lw=4, label='single objective optimization, but with accuracy'),
-        Line2D([0], [0], color=styles["moo+cr_pareto"]['color'],lw=4, label='moo with optinionall cr'),
-        Line2D([0], [0], color=styles["moo_ps_pareto"]['color'], lw=4, label='moo and optinionall sampling'),
-        Line2D([0], [0], color=styles["moo+ps+cr_pareto"]['color'], lw=4, label='moo with only sampling'),
-        #Line2D([0], [0], color=styles["moo+ps*cr_pareto"]['color'], lw=4, label='moo with optinionall sampling xor cr')
+        Line2D([0], [0], color=styles["moo"]['color'], lw=4, label="Moo"),
+        Line2D([0], [0], color=styles["so"]['color'], lw=4, label='Moo with Learned Fair Represenation'),
+        Line2D([0], [0], color=styles["moo+cr"]['color'],lw=4, label="Moo with Learned Fair Represenation"),
+        Line2D([0], [0], color=styles["moo_ps_ranker"]['color'], lw=4, label="Moo with optionall sampling and/or Correlation Remover"),
+        Line2D([0], [0], color=styles["moo+ps+cr"]['color'], lw=4, label='Moo with optionall sampling and/or Correlation Remover and/or Learned Fair Represenation'),
+        #Line2D([0], [0], color=styles["moo+ps*cr_pareto"]['color'], lw=4, label='Moo with optinionall sampling')
                     ]
     fig.tight_layout(rect=[0.03, 0.05, 1, 1], pad = 5)
     fig.legend(handles=legend_elements, loc=3,  prop={'size': 16})
     #save_folder = "/home/till/Desktop/all_prepreprocessor_plots/sampling+cr/{}".format("error_rate_difference_all")
-    save_folder = "/home/till/Desktop/{}".format("consistency_score_all")
+    save_folder = "/home/till/Desktop/lfr/{}".format("error_rate_difference")
     plt.savefig(save_folder)
 def plot_arrows(
         to,
@@ -958,7 +952,7 @@ def calc_hypervolume(data,file):
     print(hypervolume_dict)
     with open(file, 'w') as f:
         json.dump(hypervolume_dict, f, indent=4)
-def plot_scaled_values(results,result_folder,plot_feature, offset=0.1, scale_type='0-1', one_line=False, label=False):
+def plot_scaled_values(results,result_folder,plot_feature, methods, one_line=False, label=False):
     def rgb(r: int, g: int, b: int) -> str:
         return "#%02x%02x%02x" % (r, g, b)
     c_color = rgb(128, 0, 128)
@@ -966,41 +960,42 @@ def plot_scaled_values(results,result_folder,plot_feature, offset=0.1, scale_typ
     c_color_3 = rgb(0,128, 128)
     c_color_4 = rgb(128,128,0)
     styles = {
-        "moo": dict(s=15, marker="o", color="red"),
-        "so": dict(s=15, marker="o", color="black"),
-        "moo+cr": dict(s=15, marker="o", color="blue"),
-        "moo_ps_ranker": dict(s=15, marker="o", color ="green"),
-        "moo+ps+cr": dict(s=15, marker="o", color =c_color),
-        "moo+ps*cr": dict(s=15, marker="o", color=c_color_2),
-        "cr":  dict(s=15, marker="o", color=c_color_3),
-        "ps": dict(s=15, marker="o", color=c_color_4),
+        "moo": dict(s=15, marker="o", color="red",fullName="Moo"),
+        "so": dict(s=15, marker="o", color="black",fullName="Optimization for accuracy"),
+        "moo+cr": dict(s=15, marker="o", color=c_color,fullName="Moo with optionall correlation remover"),
+        "moo_ps_ranker": dict(s=15, marker="o", color ="black",fullName="Moo with optionall sampling"),
+        "moo+ps+cr": dict(s=15, marker="o", color =c_color_4, fullName="Moo with optionall correlation remover and/or sampling"),
+        "moo+ps*cr": dict(s=15, marker="o", color=c_color_2,fullName="Moo with optionall correlation remover xor sampling"),
+        "cr":  dict(s=15, marker="o", color="blue", fullName="Moo with everytime correlation remover"),
+        "ps_ranker": dict(s=15, marker="o", color="green", fullName="Moo with everytime sampling"),
     }
     for constrain in results.keys():
     
-        if not one_line:
-            plot_width = .7 * len(results)
-        else:
-            plot_width = .42 * len(results)        
+        datasets = ["german","lawschool"]
+        plot_width = .6 * len(datasets)
+             
         fig, ax = plt.subplots(figsize=(plot_width,2))
         width = 0
-        ss_order = results[constrain].keys()
-        for dataset in results[constrain].keys():
+        #ss_order = results[constrain].keys()
+        
+        for dataset in datasets:
             width += 1
-            for idx, method in enumerate(results[constrain][dataset]["methods"]):
+            for method in methods:
+                idx = results[constrain][dataset]["methods"].index(method)
                 color = styles[method]['color']
                 data = results[constrain][dataset][plot_feature][idx]
+                label = styles[method]["fullName"]
                 if width == 1:
-                    m = method if method != "moo_ps_ranker" else "moo_ps"
-                    ax.scatter(width, data, label=m, color=color, marker='o')
+                    ax.scatter(width, data, label=label, color=color, marker='o')
                 else:
                     ax.scatter(width, data, color=color, marker='o')
 
             
         
 
-        ax.set_xticks(range(1, len(ss_order)+1))
+        ax.set_xticks(range(1, len(datasets)+1))
         
-        ax.set_xticklabels(results[constrain].keys(), fontsize=12, rotation=90)
+        ax.set_xticklabels(datasets, fontsize=12, rotation=90)
        
 
         if one_line:
@@ -1097,7 +1092,115 @@ def calc_pareto_contribution(data,file, methods):
 
                     #print(preprocessor_dict)
 
-                            
+import numpy as np
+
+def calculate_shape_value(pareto_set,score):
+    # Calculate the shape value using your desired method
+    # This function is specific to your shape value calculation method
+    # Replace this with your own implementation
+    if len(pareto_set) == 0:
+        return 0
+    if(score=="hypervolumne"):
+        hypervolume_obj =  HV(ref_point=np.array([1,1])) 
+        shape_value = hypervolume_obj(np.array(pareto_set))
+    if(score=="acc"):
+        pareto_set = pd.DataFrame(pareto_set)
+        shape_value = sum(pareto_set[0])
+    if(score=="fairness"):
+        pareto_set = pd.DataFrame(pareto_set)
+        shape_value = sum(pareto_set[1])      
+    return shape_value
+#I think the idea 
+# 
+def calc_sum(pareto_front):
+    hypervolume_obj =  HV(ref_point=np.array([1,1])) 
+    vol = hypervolume_obj(np.array(pareto_front))
+    pareto_front = pd.DataFrame(pareto_front)
+    return sum(pareto_front[0]),sum(pareto_front[1]), vol
+
+def scale_front(pareto_front):
+    if len(pareto_front) <=1:
+        return 1,1
+    scaler = MinMaxScaler()
+    return scaler.fit_transform(np.array(1-pareto_front[0]).reshape(-1,1)), scaler.fit_transform(np.array(1-pareto_front[1]).reshape(-1,1))
+
+def filter_points(pareto_front, pareto_config, preprocessors,scale = False):
+    if scale:
+        pareto_front[0], pareto_front[1] = scale_front(pareto_front)
+    score_dict = defaultdict()
+    pareto_front = np.array(pareto_front)
+    sum_acc, sum_fair, sum_vol = calc_sum(pareto_front)
+    #if sum_acc == 0:
+    #    print(pareto_front)
+    for pre in preprocessors:
+        #score_dict[pre] = defaultdict()
+        points = []
+        for idx,point in enumerate(pareto_front):
+            if complex_xor_preproecessing(pareto_config[idx])==pre:
+                points.append(point)
+        if len(points) == 0:
+            points = [[1,1]]
+        score_dict[pre] = np.array(points)
+    return score_dict 
+   
+            
+from itertools import permutations
+def calculate_shapley_values(data, methods, file):
+    hypervolume_obj =  HV(ref_point=np.array([1,1])) 
+    #shaling should be done in these function
+    shapley_values = defaultdict() 
+    for constrain in data.keys():
+        shapley_values[constrain] = defaultdict() 
+        for dataset in data[constrain].keys():
+            shapley_values[constrain][dataset] = defaultdict() 
+            for seed in data[constrain][dataset].keys():
+                for method in methods:
+                    if method not in  shapley_values[constrain][dataset].keys():
+                        shapley_values[constrain][dataset][method] = defaultdict()
+                    pareto_front = data[constrain][dataset][seed][method]["points"]
+                    pareto_config = data[constrain][dataset][seed][method]["configs"]
+                    preprocessors = get_possible_pre(method)
+                    #TODO: 
+                    #print(constrain, dataset, seed, method)
+                    div = np.math.factorial(len(preprocessors)) * len(data[constrain][dataset].keys()) * hypervolume_obj(np.array(pareto_front))
+                    ##if(dataset=="lawschool" and method=="moo+ps*cr" and  constrain=="demographic_parity"):
+                    #       print("into")   
+                       
+                    methods_points = filter_points(pareto_front, pareto_config, preprocessors)
+                    #i=0
+                    for perm in permutations(preprocessors):
+                        #print(perm)
+                        #if perm[0]  ==  "CorrelationRemover":
+                        #    print("test")
+                        points = np.array([[1,1]])
+                        post_acc, post_fair, post_vol = 0,0,0
+                        pre_acc,pre_fair,pre_vol = 0,0,0
+                        for idx,pre in enumerate(perm):
+                            #print(points)
+                            #print( methods_points[pre])
+                            new_points = np.vstack((points, methods_points[pre]))
+                            if pre not in shapley_values[constrain][dataset][method].keys():
+                                shapley_values[constrain][dataset][method][pre] = defaultdict() 
+                                #shapley_values[constrain][dataset][method][pre]["acc"] = 0
+                                #shapley_values[constrain][dataset][method][pre]["fairness"] = 0
+                                shapley_values[constrain][dataset][method][pre]["hypervolumne"] = 0 
+                              
+                            shapley_values[constrain][dataset][method][pre]["hypervolumne"] += (hypervolume_obj(new_points) - hypervolume_obj(points))/div
+                           
+                           
+                            pre_acc,pre_fair,pre_vol = post_acc,post_fair,post_vol                                 
+        with open(file, 'w') as f:
+            json.dump(shapley_values, f, indent=4)
+    return  
+                   
+"""
+    post_acc  += methods_points[pre]["acc"]
+    post_fair += methods_points[pre]["fairness"]
+    post_vol  += methods_points[pre]["hypervolumne"]
+    shapley_values[constrain][dataset][method][pre]["acc"] += (post_acc-pre_acc)/div
+    shapley_values[constrain][dataset][method][pre]["fairness"]  += (post_fair-pre_fair)/div
+    shapley_values[constrain][dataset][method][pre]["hypervolumne"] +=  (post_vol-pre_vol)/div 
+"""
 
 
 
@@ -1113,18 +1216,25 @@ if __name__ == "__main__":
     #"12345","25","42","45451", "97","13","27","39","41","53"
     seeds= ["12345","25","42","45451", "97","13","27","39","41","53"]
     #make_difference_plot(data,"best")
-    #methods = ["moo","so","cr","ps","moo_ps_ranker","moo+cr","moo+ps+cr","moo+ps*cr"]
-    methods = ["moo+cr","moo+ps+cr","moo+ps*cr"]
+    methods = ["lfr","moo+lfr","moo+ps+cr","moo+ps+cr+lfr"]
+    #methods = ["moo","ps_ranker","cr"]
     data = load_data("/home/till/Documents/auto-sklearn/tmp/cross_val/", "200timesstrat", methods)
+    #sv = calculate_shapley_values(data,methods,file="/home/till/Documents/auto-sklearn/tmp/shaple.json")
+    #print(sv)
+    #make_plot_3(data)
     deep_dive = defaultdict()
-    for method in methods:
-        for seed in seeds:
-            deep_dive[seed] = data["error_rate_difference"]["adult"][seed][method]["pareto_set"].to_json()
-        file = "/home/till/Documents/auto-sklearn/tmp/deep_dive_error_rate_difference_values_adult_{}.json".format(method)
-        with open(file, 'w') as f:
-            json.dump(deep_dive, f, indent=4)
+    for constrain in data.keys():
+        for dataset in data[constrain].keys():
+            for method in methods:
+                deep_dive[method] = defaultdict()
+                for seed in seeds:
+                    deep_dive[method][seed] = data[constrain][dataset][seed][method]["pareto_config"]
+    #    file = "/home/till/Documents/auto-sklearn/tmp/deep_dive_error_rate_difference_values_adult_{}.json".format(method)
+    with open("/home/till/Documents/auto-sklearn/tmp/data.json", 'w') as f:
+           json.dump(deep_dive, f, indent=4)
+    #file = "/home/till/Documents/auto-sklearn/tmp/hypervolumne_fairness_acc_presentation.json"
     #with open(file) as f:
-    #    results = json.load(f)
+    #   results = json.load(f)
     #calc_hypervolume(data, file)
-    #plot_scaled_values(results,"/home/till/Documents/auto-sklearn/tmp/",'hypervolume_scaled_max')
+    #plot_scaled_values(results,"/home/till/Desktop/presentation_plots/",'hypervolume_scaled_max',methods)
     #make_choice_file(data, file, methods)
