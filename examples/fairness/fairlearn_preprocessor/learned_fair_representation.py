@@ -97,18 +97,18 @@ class LFR(FairPreprocessor, AutoSklearnComponent):
     ):
         cs = ConfigurationSpace()
         #cahnge shortly the attribute to look on the higher picturec d
-        n_prototypes = UniformIntegerHyperparameter("n_prototypes", 1, 100, default_value=50)
+        n_prototypes = UniformIntegerHyperparameter("n_prototypes", 1, 200, default_value=50)
         reconstruct_weight = UniformFloatHyperparameter(
             "reconstruct_weight", 1e-6, 1, default_value=0.01, log=True
         )
         target_weight = UniformFloatHyperparameter(
-            "target_weight", 1e-6, 1, default_value=0.5, log=True
+            "target_weight", 1e-4, 1, default_value=0.5, log=True
         )
         fairness_weight = UniformFloatHyperparameter(
-            "fairness_weight", 1e-20, 1, default_value=0.3, log=True
+            "fairness_weight", 1e-25, 1, default_value=1e-15, log=True
         )
-        tol = UniformFloatHyperparameter("tol", 1e-12, 0.1, default_value=1e-4)
-        max_iter = UniformIntegerHyperparameter("max_iter",1000,10000, default_value=6000)
+        tol = UniformFloatHyperparameter("tol", 1e-6, 0.1, default_value=0.01)
+        max_iter = UniformIntegerHyperparameter("max_iter",1000,15000, default_value=9000)
         cs.add_hyperparameters(
             [
                 n_prototypes,
