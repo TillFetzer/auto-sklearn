@@ -1240,28 +1240,28 @@ if __name__ == "__main__":
     #"12345","25","42","45451", "97","13","27","39","41","53"
     seeds= ["12345","25","42","45451", "97","13","27","39","41","53"]
     #make_difference_plot(data,"best")
-    methods = ["moo","lfr","lfr_ss"]
+    methods = ["moo","cr"]
     #methods = ["moo+cr","moo_ps_ranker","moo+ps+cr","moo+ps*cr"]
     #methods = ["moo","ps_ranker","cr"]
     data = load_data("/home/till/Documents/auto-sklearn/tmp/cross_val/", "200timesstrat", methods)
     #print()
     #calculate_shapley_values(data,methods,file="/home/till/Documents/auto-sklearn/tmp/")
     #print(sv)
-    make_plot_3(data)
-    #deep_dive = defaultdict()
+    #make_plot_3(data)
+    deep_dive = defaultdict()
     #for constrain in data.keys():
     #    deep_dive[constrain] = defaultdict()
     #    for dataset in data[constrain].keys():
     #        deep_dive[constrain][dataset] = defaultdict()
-    #        for method in methods:
-    #            deep_dive[constrain][dataset][method] = defaultdict()
-    #            for seed in seeds:
-    #                deep_dive[constrain][dataset][method][seed] = data[constrain][dataset][seed][method]["pareto_config"]
+    for method in methods:
+                deep_dive[method] = defaultdict()
+                for seed in seeds:
+                    deep_dive[method][seed] = data["error_rate_difference"]["adult"][seed][method]["pareto_config"]
                     
         
-    #file = "/home/till/Documents/auto-sklearn/tmp/lfr_extend.json"
-    #with open(file, 'w') as f:
-    #       json.dump(deep_dive, f, indent=4)
+    file = "/home/till/Documents/auto-sklearn/tmp/deep_dive_erd.json"
+    with open(file, 'w') as f:
+           json.dump(deep_dive, f, indent=4)
     #file = "/home/till/Documents/auto-sklearn/tmp/hypervolumne_fairness_acc_presentation.json"
     #with open(file) as f:
     #   results = json.load(f)
