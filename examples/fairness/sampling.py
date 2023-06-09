@@ -24,7 +24,7 @@ import json
 from collections import defaultdict
 
 
-def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcount, under_folder):
+def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcount, under_folder, performance = "accurancy"):
     X, y = utils_fairlearn.load_data(dataset)
     utils_fairlearn.add_no_preprocessor()
     utils_fairlearn.add_preferential_sampling(X.columns.get_loc(sf))
@@ -52,7 +52,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
 
         #per_run_time_limit=runtime / 2,
         metric=[
-            autosklearn.metrics.accuracy,
+           performance,
             fair_metric,
         ],
         # metric=autosklearn.metrics.accuracy,

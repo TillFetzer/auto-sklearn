@@ -81,7 +81,7 @@ def run_experiment(
         tmp_folder =  tmp, 
          # 3h
         metric=[
-            autosklearn.metrics.accuracy,
+           performance,
             fair_metric,
         ],
         # metric=autosklearn.metrics.accuracy,

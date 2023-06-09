@@ -10,6 +10,7 @@ import base_sampling_cr
 import base_sampling_cr_com
 import base_lfr
 import base_sampling_cr_lfr
+import autosklearn
 def run_experiment(datasets =["adult"],
  fairness_constrains=["demographic_parity"],
   methods=["moo"], 
@@ -18,7 +19,8 @@ def run_experiment(datasets =["adult"],
    sf=["sex"] ,
    runtime = 10800, 
    runcount=-1,
-   under_folder="dummy"):
+   under_folder="dummy",
+   performance = autosklearn.metrics.accuracy):
     # sf= ["foreign_worker"]
     print("start")
     if len(sf) == 1:
@@ -28,30 +30,30 @@ def run_experiment(datasets =["adult"],
             for seed in seeds:
                 for method in methods:
                     if method == "moo":
-                        base.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder)
+                        base.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)
                     if method == "redlineing":
-                        redlineing.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder)
+                        redlineing.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)
                     if method == "cr":
-                        corrleation_remover.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder)
+                        corrleation_remover.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)
                     if method == "lfr":
-                        lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder)
+                        lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)
                     if method == "moo+cr":
-                        base_cr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder)
+                        base_cr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)
                     if method == "so":
-                        single_base.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder)
+                        single_base.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)
                     if method == "ps":
-                        sampling.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder)
+                        sampling.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)
                     if method == "ps":
-                        sampling.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder)
+                        sampling.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)
                     if method == "moo+ps":
-                        base_sampling.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder)
+                        base_sampling.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)
                     if method == "moo+ps+cr":
-                        base_sampling_cr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder)
+                        base_sampling_cr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)
                     if method == "moo+ps*cr":
-                        base_sampling_cr_com.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder) 
+                        base_sampling_cr_com.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance) 
                     if method == "moo+lfr":
-                        base_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder)
+                        base_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)
                     if method == "moo+ps+cr+lfr":
-                        base_sampling_cr_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder)
+                        base_sampling_cr_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)
             print("all runs of {} finished".format(dataset))
     print("finished")

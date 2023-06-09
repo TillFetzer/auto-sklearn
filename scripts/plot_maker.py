@@ -923,14 +923,18 @@ def calc_hypervolume(data,file):
     scaler = MinMaxScaler()
     hypervolume_obj =  HV(ref_point=np.array([1,1]))
     hypervolume_dict = defaultdict()
-    for constrain in data.keys():
+
+    #for constrain in data.keys():
+    for constrain in ["error_rate_difference"]:
         hypervolume_dict[constrain] = defaultdict()
-        for dataset in data[constrain].keys():
+        for dataset in ["adult"]:
             hypervolume_dict[constrain][dataset] = defaultdict()
             hypervolume_dict[constrain][dataset]["hypervolume"] = []
             hypervolume_dict[constrain][dataset]["fairness"] = []
             hypervolume_dict[constrain][dataset]["acc"] = []
-            
+            hypervolume_dict[constrain][dataset]["hypervolume_seed_range"] = []
+            hypervolume_dict[constrain][dataset]["fairness_seed_range"] = []
+            hypervolume_dict[constrain][dataset]["acc_seed_range"] = []
             hypervolume_dict[constrain][dataset]["methods"] = [method for method in data[constrain][dataset]["97"].keys()]
             help_dict_hv = defaultdict()
             help_dict_f = defaultdict()
@@ -942,7 +946,8 @@ def calc_hypervolume(data,file):
                             help_dict_f[method] = []
                             help_dict_a[method] = []
                     pareto_front = data[constrain][dataset][seed][method]["pareto_set"]
-                    
+                    if dataset=="adult" and constrain == "error_rate_difference" and method=="cr":
+                        print("!!!")
                     help_dict_hv[method].append(hypervolume_obj(np.array(pareto_front)))
                     help_dict_f[method].append(mean(pareto_front[1]))
                     help_dict_a[method].append(mean(pareto_front[0]))
@@ -950,6 +955,9 @@ def calc_hypervolume(data,file):
                         hypervolume_dict[constrain][dataset]["hypervolume"].append(mean(help_dict_hv[method]))
                         hypervolume_dict[constrain][dataset]["fairness"].append(mean(help_dict_f[method]))
                         hypervolume_dict[constrain][dataset]["acc"].append(mean(help_dict_a[method]))
+                        hypervolume_dict[constrain][dataset]["hypervolume_seed_range"].append(max(help_dict_hv[method])-min(help_dict_hv[method]))
+                        hypervolume_dict[constrain][dataset]["fairness_seed_range"].append(max(help_dict_f[method])-min(help_dict_f[method]))
+                        hypervolume_dict[constrain][dataset]["acc_seed_range"].append(max(help_dict_a[method])-min(help_dict_a[method]))
 
             hv = np.array(hypervolume_dict[constrain][dataset]["hypervolume"]).reshape(-1,1)
             fairness = np.array(hypervolume_dict[constrain][dataset]["fairness"]).reshape(-1,1)
@@ -957,6 +965,10 @@ def calc_hypervolume(data,file):
             scaled_hv = scaler.fit_transform(hv).tolist()
             scaled_fairness = scaler.fit_transform(fairness).tolist()
             scaled_acc = scaler.fit_transform(accurancy).tolist()
+            
+            hypervolume_dict[constrain][dataset]["hypervolume_max_diff"] = max(hypervolume_dict[constrain][dataset]["hypervolume"]) - min(hypervolume_dict[constrain][dataset]["hypervolume"])
+            hypervolume_dict[constrain][dataset]["fairness_max_diff"] =  max(hypervolume_dict[constrain][dataset]["fairness"]) - min(hypervolume_dict[constrain][dataset]["fairness"])
+            hypervolume_dict[constrain][dataset]["acc_max_diff"] = max(hypervolume_dict[constrain][dataset]["acc"]) - min(hypervolume_dict[constrain][dataset]["acc"])
             hypervolume_dict[constrain][dataset]["hypervolume_scaled_max"] = [value[0] for value in scaled_hv]
             hypervolume_dict[constrain][dataset]["fairness_scaled_max"] = [1-value[0] for value in scaled_fairness]
             hypervolume_dict[constrain][dataset]["acc_scaled_max"] = [1-value[0] for value in scaled_acc]
@@ -982,7 +994,7 @@ def plot_scaled_values(results,result_folder,plot_feature, methods, one_line=Fal
     }
     for constrain in results.keys():
     
-        datasets = ["german","lawschool"]
+        datasets = results[constrain].keys()
         plot_width = .6 * len(datasets)
              
         fig, ax = plt.subplots(figsize=(plot_width,2))
@@ -1240,31 +1252,31 @@ if __name__ == "__main__":
     #"12345","25","42","45451", "97","13","27","39","41","53"
     seeds= ["12345","25","42","45451", "97","13","27","39","41","53"]
     #make_difference_plot(data,"best")
-    methods = ["moo","cr"]
-    #methods = ["moo+cr","moo_ps_ranker","moo+ps+cr","moo+ps*cr"]
-    #methods = ["moo","ps_ranker","cr"]
-    data = load_data("/home/till/Documents/auto-sklearn/tmp/cross_val/", "200timesstrat", methods)
+    #methods = ["moo","cr"]
+    methods = ["moo","so","moo_ps","moo+cr","moo_ps_ranker","moo+ps+cr","moo+ps*cr"]
+    #methods = ["moo","ps_ranker","moo_ps_ranker"]
+    data = load_data("/home/till/Desktop/cross_val/", "200timesstrat", methods)
     #print()
     #calculate_shapley_values(data,methods,file="/home/till/Documents/auto-sklearn/tmp/")
     #print(sv)
     #make_plot_3(data)
-    deep_dive = defaultdict()
+    #deep_dive = defaultdict()
     #for constrain in data.keys():
     #    deep_dive[constrain] = defaultdict()
     #    for dataset in data[constrain].keys():
     #        deep_dive[constrain][dataset] = defaultdict()
-    for method in methods:
-                deep_dive[method] = defaultdict()
-                for seed in seeds:
-                    deep_dive[method][seed] = data["error_rate_difference"]["adult"][seed][method]["pareto_config"]
+    #for method in methods:
+    #            deep_dive[method] = defaultdict()
+    #            for seed in seeds:
+    #                deep_dive[method][seed] = data["error_rate_difference"]["adult"][seed][method]["pareto_config"]
                     
         
-    file = "/home/till/Documents/auto-sklearn/tmp/deep_dive_erd.json"
-    with open(file, 'w') as f:
-           json.dump(deep_dive, f, indent=4)
-    #file = "/home/till/Documents/auto-sklearn/tmp/hypervolumne_fairness_acc_presentation.json"
-    #with open(file) as f:
-    #   results = json.load(f)
-    #calc_hypervolume(data, file)
-    #plot_scaled_values(results,"/home/till/Desktop/presentation_plots/",'hypervolume_scaled_max',methods)
+    #file = "/home/till/Documents/auto-sklearn/tmp/deep_dive_erd.json"
+    #with open(file, 'w') as f:
+    #       json.dump(deep_dive, f, indent=4)
+    file = "/home/till/Documents/auto-sklearn/tmp/hypervolumne_fairness_acc.json"
+   # with open(file) as f:
+    #  results = json.load(f)
+    calc_hypervolume(data, file)
+    #plot_scaled_values(results,"/home/till/Desktop/presentation_plots/",'acc_scaled_max',methods)
     #make_choice_file(data, file, methods)
