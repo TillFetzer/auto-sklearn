@@ -35,12 +35,12 @@ class LFR(FairPreprocessor, AutoSklearnComponent):
         random_state=None,
         **kwargs,
     ):
-        self.n_prototypes = self.n_prototypes
-        self.reconstruct_weight = self.reconstruct_weight    
-        self.target_weight = self.target_weight
-        self.fairness_weight = self.fairness_weight
-        self.tol = self.tol
-        self.n_iter = self.n_iter
+        self.n_prototypes = n_prototypes
+        self.reconstruct_weight = reconstruct_weight    
+        self.target_weight = target_weight
+        self.fairness_weight = fairness_weight
+        self.tol = tol
+        self.n_iter = max_iter
         self.random_state = random_state
         for key, val in kwargs.items():
             setattr(self, key, val)
