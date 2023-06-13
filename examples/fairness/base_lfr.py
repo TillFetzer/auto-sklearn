@@ -54,7 +54,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
 
         #per_run_time_limit=runtime / 2,
         metric=[
-           performance,
+            performance,
             fair_metric,
         ],
         # metric=autosklearn.metrics.accuracy,

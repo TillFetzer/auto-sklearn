@@ -31,15 +31,17 @@ class LFR(FairPreprocessor, AutoSklearnComponent):
         target_weight,
         fairness_weight,
         tol,
-        max_iter, 
+        max_iter,
+        random_state=None,
         **kwargs,
     ):
-        self.n_prototypes = n_prototypes
-        self.reconstruct_weight = reconstruct_weight
-        self.target_weight = target_weight
-        self.fairness_weight = fairness_weight
-        self.tol = tol
-        self.n_iter = max_iter
+        self.n_prototypes = self.n_prototypes
+        self.reconstruct_weight = self.reconstruct_weight    
+        self.target_weight = self.target_weight
+        self.fairness_weight = self.fairness_weight
+        self.tol = self.tol
+        self.n_iter = self.n_iter
+        self.random_state = random_state
         for key, val in kwargs.items():
             setattr(self, key, val)
 
@@ -61,6 +63,8 @@ class LFR(FairPreprocessor, AutoSklearnComponent):
             tol=self.tol,
             n_prototypes= self.n_prototypes,
             max_iter=self.n_iter,
+            verbose=2,
+            random_state=self.random_state
         )
         # patched something in aif360, not good
         self.preprocessor.fit(X, Y)
@@ -99,15 +103,15 @@ class LFR(FairPreprocessor, AutoSklearnComponent):
         #cahnge shortly the attribute to look on the higher picturec d
         n_prototypes = UniformIntegerHyperparameter("n_prototypes", 1, 200, default_value=50)
         reconstruct_weight = UniformFloatHyperparameter(
-            "reconstruct_weight", 1e-6, 1, default_value=0.01, log=True
+            "reconstruct_weight", 1e-4, 100, default_value=0.01, log=True
         )
         target_weight = UniformFloatHyperparameter(
-            "target_weight", 1e-4, 1, default_value=0.5, log=True
+            "target_weight", 1e-2, 100, default_value=0.5, log=True
         )
         fairness_weight = UniformFloatHyperparameter(
-            "fairness_weight", 1e-25, 1, default_value=1e-10, log=True
+            "fairness_weight", 1e-10, 100, default_value=1e-5, log=True
         )
-        tol = UniformFloatHyperparameter("tol", 1e-6, 0.1, default_value=0.01)
+        tol = Constant("tol", 0)
         max_iter = UniformIntegerHyperparameter("max_iter",1000,15000, default_value=9000)
         cs.add_hyperparameters(
             [
