@@ -11,6 +11,7 @@ import base_sampling_cr_com
 import base_lfr
 import base_sampling_cr_lfr
 import autosklearn
+import single_lfr
 def run_experiment(datasets =["adult"],
  fairness_constrains=["demographic_parity"],
   methods=["moo"], 
@@ -37,6 +38,8 @@ def run_experiment(datasets =["adult"],
                         corrleation_remover.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)
                     if method == "lfr":
                         lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)
+                    if method == "so_lfr":
+                        single_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)
                     if method == "moo+cr":
                         base_cr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)
                     if method == "so":
