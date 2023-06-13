@@ -17,7 +17,7 @@ datasets = ["german"]
 sfs = ["personal_status"]
 fairness_constrains=["consistency_score","demographic_parity","equalized_odds", "error_rate_difference"]
 #performance = autosklearn.metrics.f1_macro
-
+performance = autosklearn.metrics.accuracy
 dataset = datasets[int(idx/(len(seeds)*len(methods)))%len(datasets)]
 sf = sfs[int(idx/(len(seeds)*len(methods)))%len(datasets)]
 method = methods[int(idx/len(seeds))%len(methods)]
