@@ -36,7 +36,9 @@ def run_experiment(
     runcount=None, 
     under_folder="no_name", 
     configs = None,
-    rf_seed = None):
+    rf_seed = None,
+    performance =  autosklearn.metrics.accuracy
+    ):
     X, y = utils_fairlearn.load_data(dataset)
     # utils_fairlearn.set_fairlearn_attributes(X.columns.get_loc("sex"), "sex", "DemographicParity")
     # Change the target to align with scikit-learn's convention that

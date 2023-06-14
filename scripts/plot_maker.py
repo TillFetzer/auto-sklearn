@@ -948,8 +948,6 @@ def calc_hypervolume(data,file):
                             help_dict_f[method] = []
                             help_dict_a[method] = []
                     pareto_front = data[constrain][dataset][seed][method]["pareto_set"]
-                    if dataset=="adult" and constrain == "error_rate_difference" and method=="cr":
-                        print("!!!")
                     help_dict_hv[method].append(hypervolume_obj(np.array(pareto_front)))
                     help_dict_f[method].append(mean(pareto_front[1]))
                     help_dict_a[method].append(mean(pareto_front[0]))
@@ -1171,7 +1169,7 @@ def filter_points(pareto_front, pareto_config, preprocessors,scale = False, ref_
 from pymoo.indicators.gd import GD  
    
 from itertools import permutations
-def calculate_shapley_values(data, methods, file):
+def calculate_shapley_values(data, methods, file, latex_table = True):
     ref_points = [1,1]
     hypervolume_obj =  HV(ref_point=np.array(ref_points)) 
    
@@ -1192,7 +1190,7 @@ def calculate_shapley_values(data, methods, file):
                     preprocessors = get_possible_pre(method)
                     #TODO: 
                     #print(constrain, dataset, seed, method)
-                    div = np.math.factorial(len(preprocessors)) * len(data[constrain][dataset].keys()) #* hypervolume_obj(np.array(pareto_front))
+                    div = np.math.factorial(len(preprocessors)) * len(data[constrain][dataset].keys()) * hypervolume_obj(np.array(pareto_front))
                     ##if(dataset=="lawschool" and method=="moo+ps*cr" and  constrain=="demographic_parity"):
                     #       print("into")   
                        
@@ -1223,12 +1221,17 @@ def calculate_shapley_values(data, methods, file):
                             #    f.write('permutaion_group:{}, preprocessor:{}, marignal contribution: {}\n'.format(
                             #     str(perm), pre, hypervolume_obj(new_points) - hypervolume_obj(points)       
                             #    ))  
-                            if idx > 0:
-                                shapley_values[constrain][dataset][method][pre]["hypervolumne"] += (1e05*(hypervolume_obj(new_points))- 1e05*(hypervolume_obj(points)))/div
+                        
+                            shapley_values[constrain][dataset][method][pre]["hypervolumne"] += (100*(hypervolume_obj(new_points))- 100*(hypervolume_obj(points)))/div
                             points = new_points   
                 #shapley_values[constrain][dataset][method]["all"]["hypervolumne"] += hypervolume_obj(points) / len(data[constrain][dataset].keys())                                 
-        with open(file + "shapley_no_init.json", 'w') as f:
+        with open(file + "shapley_scaled.json", 'w') as f:
             json.dump(shapley_values, f, indent=4)
+        if latex_table:
+            for constrain in shapley_values.keys():
+                for method in methods: 
+                    table_data = shapley_values[constrain]  
+                    generate_latex_table(table_data, constrain, method, file)
     return  
                    
 """
@@ -1239,6 +1242,42 @@ def calculate_shapley_values(data, methods, file):
     shapley_values[constrain][dataset][method][pre]["fairness"]  += (post_fair-pre_fair)/div
     shapley_values[constrain][dataset][method][pre]["hypervolumne"] +=  (post_vol-pre_vol)/div 
 """
+
+
+
+def generate_latex_table(data, constrain, method, file):
+    table = "\\begin{table}[]\n"
+    table += "\\centering\n"
+    #table += "\\caption{"
+    table += "\\begin{tabular}{|l|" + "l|" * len(list(data["german"][method].keys())) + "}\n"
+    table += "\\hline\n"
+    
+    # Header row
+    header = "Dataset & "
+    for pre in data["german"][method].keys():
+        header += pre + " & "
+    header = header.rstrip(" & ") + " \\\\\n"
+    table += header
+    table += "\\hline\n"
+    
+    # Data rows
+    
+    for dataset in data.keys():
+        row = f"{dataset} & "
+        for pre in data[dataset][method].keys():
+            hypervolume = data[dataset][method][pre]['hypervolumne']
+            row += "{:.2f} & ".format(hypervolume)
+        row = row.rstrip(" & ")
+        row += " \\\\\n"
+        table += row
+        table += "\\hline\n"
+    
+    table += "\\end{tabular}\n"
+    table += "\\end{table}"
+    
+    with open(file + 'table_{}_{}.tex'.format(constrain,method), 'w') as file:
+        file.write(table)
+
 
 
 
@@ -1255,13 +1294,13 @@ if __name__ == "__main__":
     seeds= ["12345","25","42","45451", "97","13","27","39","41","53"]
     #make_difference_plot(data,"best")
     #methods = ["moo","cr"]
-    methods = ["moo","lfr","moo+ps+cr+lfr","moo+lfr","moo+ps+cr"]
+    methods = ["moo+cr","moo_ps_ranker","moo+ps*cr","moo+ps+cr"]
     #methods = ["moo","ps_ranker","moo_ps_ranker"]
-    data = load_data("/home/till/Documents/auto-sklearn/tmp/cross_val/","200timesstrat", methods)
+    data = load_data("/home/till/Desktop/cross_val/","200timesstrat", methods)
     #print()
-    #calculate_shapley_values(data,methods,file="/home/till/Documents/auto-sklearn/tmp/")
+    calculate_shapley_values(data,methods,file="/home/till/Documents/auto-sklearn/tmp/")
     #print(sv)
-    make_plot_3(data)
+    #make_plot_3(data)
     #deep_dive = defaultdict()
     #for constrain in data.keys():
     #    deep_dive[constrain] = defaultdict()
