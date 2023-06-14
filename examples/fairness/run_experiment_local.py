@@ -11,6 +11,7 @@ import base_sampling
 import base_sampling_cr
 import base_sampling_cr_lfr
 import base_sampling_cr_com
+import autosklearn
 parser=argparse.ArgumentParser()
 
 parser.add_argument("--d", help="datsets",nargs="*")
@@ -40,17 +41,17 @@ for constrain in fairness_constrains:
         for seed in seeds:
             for method in methods:
                 if method == "moo":
-                    base.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
+                    base.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test", performance = autosklearn.metrics.f1_macro)
                 if method == "redlineing":
                     redlineing.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
                 if method == "cr":
-                    corrleation_remover.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
+                    corrleation_remover.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test",performance = autosklearn.metrics.f1_macro)
                 if method == "lfr":
                    lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
                 if method == "moo+lfr":
                     base_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
                 if method == "moo+cr":
-                    base_cr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
+                    base_cr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test", performance = autosklearn.metrics.f1_macro)
                 if method == "so":
                     single_base.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
                 if method == "ps":

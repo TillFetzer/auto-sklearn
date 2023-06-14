@@ -28,7 +28,6 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     X, y = utils_fairlearn.load_data(dataset)
     utils_fairlearn.add_no_preprocessor()
     utils_fairlearn.add_no_fair()
-    utils_fairlearn.add_preferential_sampling(X.columns.get_loc(sf))
     utils_fairlearn.add_LFR(sf)
     # ==========================
     on = pd.concat([X[sf], y],axis=1)

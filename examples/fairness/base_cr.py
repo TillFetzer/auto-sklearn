@@ -40,7 +40,9 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     # ==========================
 
     fair_metric = utils_fairlearn.set_fair_metric(sf, fairness_constrain)
-    
+    utils_fairlearn.add_no_fair()
+    utils_fairlearn.add_no_preprocessor()
+    utils_fairlearn.add_correlation_remover(sf)
 
     ############################################################################
     # Build and fit a classifier
@@ -63,8 +65,9 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
         seed = seed,
         tmp_folder =  tmp + "/del",
         include={
-            'feature_preprocessor': ["no_preprocessing","CorrelationRemover"],
+            'feature_preprocessor': ["no_preprocessing"],
             'data_preprocessor': ["no_preprocessor"],
+            "fair_preprocessor": ["NoFairPreprocessor","CorrelationRemover"],
             "classifier": [
                 "random_forest"
             ], 
@@ -85,18 +88,18 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     ############################################################################
     # Compute the two competing metrics
     # =================================
-    sensitive_features = X_train[sf]
-    utils_fairlearn.save_pareto(
-        automl,
-        X_train,
-        y_train,
-        sensitive_features,
-        runtime,
-        fairness_constrain,
-        "moo",
-        dataset,
-        file
-    )
+    #sensitive_features = X_train[sf]
+    #utils_fairlearn.save_pareto(
+    #    automl,
+    #    X_train,
+    #    y_train,
+    #    sensitive_features,
+    #    runtime,
+    #    fairness_constrain,
+    #    "moo",
+    #    dataset,
+    #    file
+    #)
 
     shutil.copy(tmp + "/del/smac3-output/run_{}/runhistory.json".format(seed), tmp )
     shutil.rmtree(tmp + "/del")

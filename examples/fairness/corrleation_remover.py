@@ -52,29 +52,14 @@ def run_experiment(
     ############################################################################
     # Build and fit a classifier
     # ==========================
-    if runcount:
-        scenario_args = {"runcount_limit": runcount, "init_config": configs, "seeds":  [rf_seed]} if configs  else {"runcount_limit": runcount}
-        #these only for structure in the folders
-        runcount = "one_rf_seed" if configs else str(runcount) + "strat"
-        fair_metric = utils_fairlearn.set_fair_metric(sf, fairness_constrain)
-        utils_fairlearn.add_no_preprocessor()
-        utils_fairlearn.add_correlation_remover(sf)
-    else: 
-        runcount = runtime
-
+    fair_metric = utils_fairlearn.set_fair_metric(sf, fairness_constrain)
+    utils_fairlearn.add_correlation_remover(sf)
+    utils_fairlearn.add_no_preprocessor()
+    
     ############################################################################
     # Build and fit a classifier
     # ==========================train_ev
-    if rf_seed:
-        tmp =  file + "/{}/{}/{}/{}/cr/{}/{}/del".format(under_folder, fairness_constrain, dataset, seed, runcount, rf_seed)
-    else:
-        tmp =  file + "/{}/{}/{}/{}/cr/{}/del".format(under_folder, fairness_constrain, dataset, seed, runcount)
-    if os.path.exists(tmp):
-        if rf_seed:
-            tmp =  file + "/{}/{}/{}/{}/cr/{}/{}/2t/del".format(under_folder, fairness_constrain, dataset, seed, runcount, rf_seed)
-        else:
-            tmp =  file + "/{}/{}/{}/{}/cr/{}/2t/del".format(under_folder, fairness_constrain, dataset, seed, runcount)
-
+    tmp =  file + "/{}/{}/{}/{}/cr/{}timesstrat/".format(under_folder, fairness_constrain, dataset, seed, runcount)
 
     automl = autosklearn.classification.AutoSklearnClassifier(
         time_left_for_this_task=runtime,
@@ -88,11 +73,15 @@ def run_experiment(
         ],
         # metric=autosklearn.metrics.accuracy,
         delete_tmp_folder_after_terminate=False,
-        initial_configurations_via_metalearning=15,
-        smac_scenario_args=scenario_args,
+        initial_configurations_via_metalearning=0,
+        smac_scenario_args={"runcount_limit": runcount},
         include={
-            "feature_preprocessor": ["CorrelationRemover"],
-            "data_preprocessor": ["no_preprocessor"], 
+            'feature_preprocessor': ["no_preprocessing"],
+            'data_preprocessor': ["no_preprocessor"],
+            "fair_preprocessor": ["CorrelationRemover"],
+            "classifier": [
+                "random_forest"
+            ], 
             "classifier": [
                 "random_forest",
             ]
