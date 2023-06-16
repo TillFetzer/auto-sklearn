@@ -1,6 +1,7 @@
 from run_experiment import run_experiment
 import argparse, sys
 import autosklearn
+import utils_fairlearn
 parser=argparse.ArgumentParser()
 parser.add_argument("--idx", type=int)
 parser.add_argument("--uf", type=str)
@@ -9,14 +10,14 @@ args=parser.parse_args()
 idx = args.idx
 under_folder = args.uf
 seeds = [12345,25,42,45451, 97,13,27,39,41,53]
-methods = ["cr","moo+cr"]
+methods = ["moo","moo+cr","moo+ps"]
 #methods = ["moo","so","ps","cr", "moo+cr", "moo_ps","moo+ps+cr","moo+ps*cr","lfr"]
 datasets = ["german","adult","lawschool","compass"]
 #datasets = ["german"]
 sfs = ["personal_status", "sex", "race", "race"]
 #sfs = ["personal_status"]
 fairness_constrains=["consistency_score","demographic_parity","equalized_odds", "error_rate_difference"]
-performance = autosklearn.metrics.f1_macro
+performance = utils_fairlearn.set_f1_score()
 #performance = autosklearn.metrics.accuracy
 dataset = datasets[int(idx/(len(seeds)*len(methods)))%len(datasets)]
 sf = sfs[int(idx/(len(seeds)*len(methods)))%len(datasets)]

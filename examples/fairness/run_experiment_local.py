@@ -12,6 +12,7 @@ import base_sampling_cr
 import base_sampling_cr_lfr
 import base_sampling_cr_com
 import autosklearn
+import utils_fairlearn
 parser=argparse.ArgumentParser()
 
 parser.add_argument("--d", help="datsets",nargs="*")
@@ -32,6 +33,7 @@ file = args.f
 sf = args.sa # same length then dataset or 1
 seeds = args.seeds
 runcount = args.runcount
+performance = utils_fairlearn.set_f1_score()
 # sf= ["foreign_worker"]
 print("start")
 if len(sf) == 1:
@@ -41,7 +43,7 @@ for constrain in fairness_constrains:
         for seed in seeds:
             for method in methods:
                 if method == "moo":
-                    base.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test", performance = autosklearn.metrics.f1_macro)
+                    base.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test", performance = performance)
                 if method == "redlineing":
                     redlineing.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
                 if method == "cr":

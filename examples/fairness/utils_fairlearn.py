@@ -204,7 +204,21 @@ def demographic_parity_difference(solution, prediction, X_data, sensitive_featur
     return fairlearn.metrics.demographic_parity_difference(
         solution, prediction, sensitive_features=sf
     )
+def f1_score(solution, prediction):
+        return sklearn.metrics.f1_score(solution, prediction)
 
+
+def set_f1_score():
+        return autosklearn.metrics.make_scorer(
+            name="f1",
+            score_func=f1_score,
+            optimum=1,
+            greater_is_better=True,
+            needs_proba=False,
+            needs_X=False,
+            needs_threshold=False
+        )
+       
 
 def equalized_odds_difference(solution, prediction, X_data, sensitive_features):
     sf = X_data[sensitive_features]
