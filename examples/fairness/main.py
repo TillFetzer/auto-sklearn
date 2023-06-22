@@ -10,7 +10,7 @@ args=parser.parse_args()
 idx = args.idx
 under_folder = args.uf
 seeds = [12345,25,42,45451, 97,13,27,39,41,53]
-methods = ["moo","moo+cr","moo+ps"]
+methods = ["cr"]
 #methods = ["moo","so","ps","cr", "moo+cr", "moo_ps","moo+ps+cr","moo+ps*cr","lfr"]
 datasets = ["german","adult","lawschool","compass"]
 #datasets = ["german"]
@@ -32,4 +32,13 @@ print(dataset)
 print(method)
 print(seed)
 print(fairness_constrains)
-run_experiment(datasets =[dataset], fairness_constrains=[fairness_constrains], methods=[method], file="/work/dlclarge2/fetzert-MySpace/autosklearn", seeds= [seed], sf=[sf] ,runtime = 200000, runcount=runcount, under_folder=under_folder, performance = performance)
+run_experiment(datasets =[dataset], 
+               fairness_constrains=[fairness_constrains], 
+               methods=[method], 
+               file="/work/ws/nemo/fr_tf167-conda-0/autosklearn", 
+               seeds= [seed], 
+               sf=[sf],
+               runtime = 200000, 
+               runcount=runcount, 
+               under_folder=under_folder, 
+               performance = performance)
