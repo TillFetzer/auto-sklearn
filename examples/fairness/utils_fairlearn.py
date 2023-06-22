@@ -96,8 +96,9 @@ def load_data(name):
         X = pd.get_dummies(X)
         return X, y
     if name == "lawschool":  # not finished
+        #todo datasets has to created
         X = pd.read_csv(
-            "/work/dlclarge2/fetzert-MySpace/auto-sklearn/dataset/law_data.csv",
+            "/work/ws/nemo/fr_tf167-conda-0/auto-sklearn/dataset/law_data.csv",
             #"/home/till/Documents/auto-sklearn/dataset/law_data.csv",
             dtype={"race": "category", "region_first": "category"},
             index_col=0,
