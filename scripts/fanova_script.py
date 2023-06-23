@@ -1,7 +1,7 @@
 from fanova import fANOVA
 import fanova.visualizer
 from smac.configspace import ConfigurationSpace
-from ConfigSpace.hyperparameters import UniformFloatHyperparameter
+from ConfigSpace.hyperparameters import CategoricalHyperparameter, Constant
 import json
 import os
 import numpy as np
@@ -14,7 +14,7 @@ import pickle
 
 
 
-def format_data(method, constrain, dataset,  data_path, y_format):
+def format_data(method, constrain, dataset,  data_path, y_format, ocs):
     """
     in: method, constraint, data_path
     do: read data from data_path and format it for fanova
@@ -28,14 +28,29 @@ def format_data(method, constrain, dataset,  data_path, y_format):
         with open(file) as f:
             ds = json.load(f)
         for i, d in enumerate(ds["data"]):
-            X.append(list(ds["configs"][str(i+1)].values()))
+            config = []
+            for i,x in enumerate(list(ds["configs"][str(i+1)].values())[0:4]):
+                keys = list(ds["configs"][str(i+1)])
+                try:
+                    config.append(float(x))
+                except:
+                    if isinstance(ocs[keys[i]], CategoricalHyperparameter):
+                        choices = list(getattr(ocs[keys[i]], "choices"))
+                        config.append(choices.index(x) if x in choices else ValueError("not in choices")) 
+                    elif isinstance(ocs[keys[i]], Constant):
+                        #Constant Hyperparameter have no fanova value
+                        config.append(0)
+                    else:
+                        raise ValueError("Funny Hyperparameter")
             
+            X.append(config)
             #print(list(ds["configs"][str(i+1)].values())[:-1])
             y_index = 0 if y_format == "performance" else 1
             Y.append(d[1][0][y_index])
     X = pd.DataFrame(X)
     #that could be more difficult for different methods
-    
+    X.columns = list(ds["configs"][str(i+1)].keys())[0:4]
+
     return X, pd.DataFrame(Y)
            
         
@@ -45,25 +60,36 @@ if __name__ == '__main__':
     constrain = "demographic_parity"
     data_path = "/home/till/Desktop/cross_val/"
     dataset = "adult"
-    y_format = "performance"
-    X,Y = format_data(method, constrain, dataset, data_path, y_format) 
-    # create an instance of fanova with data for the random forest and the configSpace
+    y_format = "fairness"
     file = open("/home/till/Documents/auto-sklearn/tmp/moo_ps_config_space.pickle",'rb')
-    cs = pickle.load(file)
-    X.columns = cs.get_hyperparameter_names()
-    f = fANOVA(X = X, Y = Y, config_space = cs)
+    ocs = pickle.load(file)
+    X,Y = format_data(method, constrain, dataset, data_path, y_format,ocs) 
+    # create an instance of fanova with data for the random forest and the configSpace
+    cs = ConfigurationSpace()
+    for hp in X.columns:
+        #if  isinstance(ocs[hp], CategoricalHyperparameter):
+        #    setattr(ocs[hp], "choices", tuple(abs(hash(x)%10) for x in getattr(ocs[hp],"choices")))
+        #    setattr(ocs[hp], "default_value", abs(hash(getattr(ocs[hp],"choices")[0])%10))
+        cs.add_hyperparameter(ocs[hp])   
+        #if categorical change to hash
+    assert len(cs.get_hyperparameters()) == len(X.columns)
+    f = fANOVA(X = X, Y = np.array(Y), config_space = cs)
 
     # marginal for first parameter
-    p_list = (0, )
+    p_list = ("fair_preprocessor:__choice__",)
     res = f.quantify_importance(p_list)
     print(res)
+
+    #best_p_margs = f.get_most_important_pairwise_marginals(n=3)
+    #print(best_p_margs)
+
     # directory in which you can find all plots
-    #plot_dir =  './tmp/'
+    plot_dir =  '/home/till/Documents/auto-sklearn/tmp/plots/'
     # first create an instance of the visualizer with fanova object and configspace
-    #vis = fanova.visualizer.Visualizer(f, cs, plot_dir)
+    vis = fanova.visualizer.Visualizer(f, cs, plot_dir)
     # generating plot data for col0
-    #mean, std, grid = vis.generate_marginal(0)
+    #vis.generate_marginal(3)
 
     # creating all plots in the directory
-    #vis.create_all_plots()
+    vis.create_all_plots()
 
