@@ -42,7 +42,8 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     fair_metric = utils_fairlearn.set_fair_metric(sf, fairness_constrain)
     utils_fairlearn.add_no_fair()
     utils_fairlearn.add_no_preprocessor()
-    utils_fairlearn.add_correlation_remover(sf)
+    #utils_fairlearn.add_correlation_remover(sf)
+    utils_fairlearn.add_correlation_remover_dp(X.columns.get_loc(sf), sf)
 
     ############################################################################
     # Build and fit a classifier
@@ -65,9 +66,9 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
         seed = seed,
         tmp_folder =  tmp + "/del",
         include={
-            'feature_preprocessor': ["no_preprocessing"],
+            'feature_preprocessor': ["no_preprocessing","CorrelationRemover"],
             'data_preprocessor': ["no_preprocessor"],
-            "fair_preprocessor": ["NoFairPreprocessor","CorrelationRemover"],
+            #"fair_preprocessor": ["NoFairPreprocessor","CorrelationRemover"],
             "classifier": [
                 "random_forest"
             ], 
@@ -82,6 +83,10 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
         "seed": seed             
         }
     )
+    cs = automl.get_configuration_space(X_train, y_train)
+    import pickle
+    with open("/home/till/Documents/auto-sklearn/tmp/moo_ps_cr_config_space.pickle", "wb") as f:
+        pickle.dump(cs, f)
     # sensitive attributes needs to go out
     automl.fit(X_train, y_train, dataset_name="adult")
 

@@ -86,7 +86,7 @@ def load_data(name):
         X = pd.get_dummies(X)
         X = X.drop("sex_Female", axis=1)
         X = X.rename(columns={"sex_Male": "sex"})
-        return X, y
+        return X*1.0, y
     if name == "compass":
         X, y = sklearn.datasets.fetch_openml(
             data_id=44162, return_X_y=True, as_frame=True
@@ -94,7 +94,7 @@ def load_data(name):
         y = (y == "0") * 1
         X["race"] = (X["race"] == "0").astype(int)
         X = pd.get_dummies(X)
-        return X, y
+        return X*1.0, y
     if name == "lawschool":  # not finished
         #todo datasets has to created
         X = pd.read_csv(
@@ -140,13 +140,14 @@ def load_data(name):
         # these is right now, if there issues with datatypes
         X[cols_to_convert] = X[cols_to_convert].astype(int)
 
-        return X, y
+        return X*1.0, y
     if name == "german":
         X, y = sklearn.datasets.fetch_openml(data_id=31, return_X_y=True, as_frame=True)
         y = (y == "good") * 1
         X["personal_status"] = X["personal_status"].str.contains("female").astype(int)
         X = pd.get_dummies(X)
-
+        #X['foreign_worker_no'] = X['foreign_worker_no'].astype(int)
+        #X['foreign_worker_yes'] = X['foreign_worker_yes'].astype(int)
         return X, y
     if name == "crime":
         # not finished but prepared 

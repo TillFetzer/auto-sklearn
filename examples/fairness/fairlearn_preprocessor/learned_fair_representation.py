@@ -67,6 +67,7 @@ class LFR(FairPreprocessor, AutoSklearnComponent):
             random_state=self.random_state
         )
         # patched something in aif360, not good
+        #X = np.array(X)
         self.preprocessor.fit(X, Y)
         return self
 

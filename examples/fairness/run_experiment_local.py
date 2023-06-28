@@ -1,4 +1,5 @@
 import base
+import autosklearn
 import corrleation_remover
 import lfr
 import base_lfr
@@ -9,6 +10,9 @@ import single_base
 import sampling
 import base_sampling
 import base_sampling_cr
+import base_sampling_lfr
+import base_cr_lfr
+import sampling_cr_lfr
 import base_sampling_cr_lfr
 import base_sampling_cr_com
 import utils_fairlearn
@@ -64,6 +68,12 @@ for constrain in fairness_constrains:
                 if method == "moo+ps+cr+lfr":
                     base_sampling_cr_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
                 if method == "moo+ps*cr":
-                    base_sampling_cr_com.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")         
+                    base_sampling_cr_com.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")  
+                if method == "moo+ps+lfr":
+                    base_sampling_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")        
+                if method == "moo+cr+lfr":
+                    base_sampling_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")        
+                if method == "ps+cr+lfr":
+                    sampling_cr_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")              
         print("all runs of {} finished".format(dataset))
 print("finished")

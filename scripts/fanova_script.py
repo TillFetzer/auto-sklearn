@@ -46,7 +46,7 @@ def format_data(method, constrain, dataset,  data_path, y_format, ocs):
             X.append(config)
             #print(list(ds["configs"][str(i+1)].values())[:-1])
             y_index = 0 if y_format == "performance" else 1
-            Y.append(d[1][0][y_index])
+            Y.append(1-d[1][0][y_index])
     X = pd.DataFrame(X)
     #that could be more difficult for different methods
     X.columns = list(ds["configs"][str(i+1)].keys())[0:4]
@@ -56,40 +56,41 @@ def format_data(method, constrain, dataset,  data_path, y_format, ocs):
         
 
 if __name__ == '__main__':
-    method = "moo_ps_ranker"
-    constrain = "demographic_parity"
-    data_path = "/home/till/Desktop/cross_val/"
-    dataset = "adult"
-    y_format = "fairness"
-    file = open("/home/till/Documents/auto-sklearn/tmp/moo_ps_config_space.pickle",'rb')
-    ocs = pickle.load(file)
-    X,Y = format_data(method, constrain, dataset, data_path, y_format,ocs) 
-    # create an instance of fanova with data for the random forest and the configSpace
-    cs = ConfigurationSpace()
-    for hp in X.columns:
-        #if  isinstance(ocs[hp], CategoricalHyperparameter):
-        #    setattr(ocs[hp], "choices", tuple(abs(hash(x)%10) for x in getattr(ocs[hp],"choices")))
-        #    setattr(ocs[hp], "default_value", abs(hash(getattr(ocs[hp],"choices")[0])%10))
-        cs.add_hyperparameter(ocs[hp])   
-        #if categorical change to hash
-    assert len(cs.get_hyperparameters()) == len(X.columns)
-    f = fANOVA(X = X, Y = np.array(Y), config_space = cs)
+    for dataset in ["lawschool", "adult", "compass","german"]:
+        for constrain in ["equalized_odds", "demographic_parity", "consistency_score", "error_rate_difference"]:
+            method = "moo+ps+cr+lfr"
+            data_path = "/home/till/Desktop/cross_val/"
+            y_format = "fairness"
+            file = open("/home/till/Documents/auto-sklearn/tmp/moo_ps_cr_lfr_config_space.pickle",'rb')
+            ocs = pickle.load(file)
+            X,Y = format_data(method, constrain, dataset, data_path, y_format,ocs) 
+            # create an instance of fanova with data for the random forest and the configSpace
+            cs = ConfigurationSpace()
+            for hp in X.columns:
+                #if  isinstance(ocs[hp], CategoricalHyperparameter):
+                #    setattr(ocs[hp], "choices", tuple(abs(hash(x)%10) for x in getattr(ocs[hp],"choices")))
+                #    setattr(ocs[hp], "default_value", abs(hash(getattr(ocs[hp],"choices")[0])%10))
+                cs.add_hyperparameter(ocs[hp])   
+                #if categorical change to hash
+            assert len(cs.get_hyperparameters()) == len(X.columns)
+            f = fANOVA(X = X, Y = np.array(Y), config_space = cs)
 
-    # marginal for first parameter
-    p_list = ("fair_preprocessor:__choice__",)
-    res = f.quantify_importance(p_list)
-    print(res)
+            # marginal for first parameter
+            p_list = ("fair_preprocessor:__choice__",)
+            res = f.quantify_importance(p_list)
+            print(res)
 
-    #best_p_margs = f.get_most_important_pairwise_marginals(n=3)
-    #print(best_p_margs)
+            #best_p_margs = f.get_most_important_pairwise_marginals(n=3)
+            #print(best_p_margs)
 
-    # directory in which you can find all plots
-    plot_dir =  '/home/till/Documents/auto-sklearn/tmp/plots/'
-    # first create an instance of the visualizer with fanova object and configspace
-    vis = fanova.visualizer.Visualizer(f, cs, plot_dir)
-    # generating plot data for col0
-    #vis.generate_marginal(3)
+            # directory in which you can find all plots
+            plot_dir =  '/home/till/Documents/auto-sklearn/tmp/plots/moo+ps+cr+lfr/{}/{}'.format(constrain, dataset)
+            # first create an instance of the visualizer with fanova object and configspace
+            label = "1-{}".format(constrain) if constrain != "error_rate_difference" else "{}".format(constrain)
+            vis = fanova.visualizer.Visualizer(f, cs, plot_dir, y_label="{}".format(constrain))
+            # generating plot data for col0
+            #vis.generate_marginal(3)
 
-    # creating all plots in the directory
-    vis.create_all_plots()
+            # creating all plots in the directory
+            vis.create_all_plots()
 

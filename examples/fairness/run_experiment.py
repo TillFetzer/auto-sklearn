@@ -12,6 +12,9 @@ import base_lfr
 import base_sampling_cr_lfr
 import autosklearn
 import single_lfr
+import base_sampling_lfr
+import base_cr_lfr
+import sampling_cr_lfr
 def run_experiment(datasets =["adult"],
  fairness_constrains=["demographic_parity"],
   methods=["moo"], 
@@ -58,5 +61,11 @@ def run_experiment(datasets =["adult"],
                         base_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)
                     if method == "moo+ps+cr+lfr":
                         base_sampling_cr_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)
+                    if method == "moo+ps+lfr":
+                        base_sampling_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)        
+                    if method == "moo+cr+lfr":
+                        base_sampling_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)        
+                    if method == "ps+cr+lfr":
+                        sampling_cr_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)           
             print("all runs of {} finished".format(dataset))
     print("finished")

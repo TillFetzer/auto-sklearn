@@ -28,7 +28,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     X, y = utils_fairlearn.load_data(dataset)
     utils_fairlearn.add_no_preprocessor()
     utils_fairlearn.add_no_fair()
-    utils_fairlearn.add_preferential_sampling(X.columns.get_loc(sf))
+    utils_fairlearn.add_LFR(sf)
     utils_fairlearn.add_correlation_remover(sf)
     # ==========================
     on = pd.concat([X[sf], y],axis=1)
@@ -47,7 +47,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     ############################################################################
     # Build and fit a classifier
     # ==========================
-    tmp =  file + "/{}/{}/{}/{}/moo+ps+cr/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
+    tmp =  file + "/{}/{}/{}/{}/moo+cr+lfr/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
     runtime = runtime
     automl = autosklearn.classification.AutoSklearnClassifier(
         time_left_for_this_task=runtime,  # 3h
@@ -67,7 +67,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
         include={
             'feature_preprocessor': ["no_preprocessing"],
             'data_preprocessor': ["no_preprocessor"],
-            "fair_preprocessor": ["NoFairPreprocessor","PreferentialSampling", "CorrelationRemover"],
+            "fair_preprocessor": ["NoFairPreprocessor", "CorrelationRemover", "LFR"],
             "classifier": [
                 "random_forest"
             ], 
@@ -82,14 +82,11 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
         "seed": seed             
         }
     )
-    cs = automl.get_configuration_space(X_train, y_train)
-    import pickle
-    with open("/home/till/Documents/auto-sklearn/tmp/moo_ps_cr_config_space.pickle", "wb") as f:
-        pickle.dump(cs, f)
-    # sensitive attributes needs to go out
+    #cs = automl.get_configuration_space(X_train, y_train)
     #import pickle
-    #with open(tmp + "config_space.pickle", "wb") as f:
-    #    pickle.dump(automl.get_configuration_space(X_train, y_train), f)
+    #with open("/home/till/Documents/auto-sklearn/tmp/moo_ps_cr_lfr_config_space.pickle", "wb") as f:
+    #    pickle.dump(cs, f)
+    # sensitive attributes needs to go out
     automl.fit(X_train, y_train, dataset_name="adult")
 
 
