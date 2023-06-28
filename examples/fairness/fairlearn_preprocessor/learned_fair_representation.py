@@ -112,7 +112,7 @@ class LFR(FairPreprocessor, AutoSklearnComponent):
         fairness_weight = UniformFloatHyperparameter(
             "fairness_weight", 1e-10, 100, default_value=1e-5, log=True
         )
-        tol = Constant("tol", 1e-6, 1e-1, default_value=1e-4)
+        tol = UniformFloatHyperparameter("tol", 1e-6, 1e-1, default_value=1e-4, log=True)
         max_iter = UniformIntegerHyperparameter("max_iter",1000,15000, default_value=9000)
         cs.add_hyperparameters(
             [
