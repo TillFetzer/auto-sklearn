@@ -93,7 +93,7 @@ if __name__ == '__main__':
     f = fANOVA(X = X, Y = np.array(Y), config_space = cs)
     print("{}, {}, {}".format(dataset, constrain, method))
     best_p_margs = f.get_most_important_pairwise_marginals(n=10)
-    with open("{}/{}_results.txt".format(save_path, file), "w") as f:
+    with open("{}/{}_{}_results.txt".format(save_path, file, y_format), "w") as f:
         f.write("dataset: {}, constrain: {}, method: {}\n".format(dataset, constrain, method))       
         f.write("best pairwise marginals: {}\n".format(best_p_margs))
 
