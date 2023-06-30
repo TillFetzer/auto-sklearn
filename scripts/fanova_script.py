@@ -79,8 +79,8 @@ if __name__ == '__main__':
     dataset = datasets[int(idx/(len(methods)*len(y_formats)))%len(datasets)]
     constrain = fairness_constrains[int(idx/(len(methods)*len(y_formats)*len(datasets)))%len(fairness_constrains)]
     print(method, file, y_format, dataset, constrain)
-    file = open("{}/{}_config_space.pickle".format(under_folder,file),'rb')
-    ocs = pickle.load(file)
+    cs_file = open("{}/{}_config_space.pickle".format(under_folder,file),'rb')
+    ocs = pickle.load(cs_file)
     
     X,Y = format_data(method, constrain, dataset, data_path, y_format,ocs) 
            
