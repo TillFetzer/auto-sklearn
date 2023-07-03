@@ -704,6 +704,8 @@ def plot_scaled_values(results,result_folder,plot_feature, methods, one_line=Fal
         "moo+ps*cr": dict(s=15, marker="o", color=c_color_2,fullName="Moo with optionall correlation remover xor sampling"),
         "moo+lfr":  dict(s=15, marker="o", color="blue", fullName="Moo with optioal lfr"),
         "moo+ps+cr+lfr": dict(s=15, marker="o", color="green", fullName="Moo with optional lfr/ps/cr"),
+        "moo+ps+lfr": dict(s=15, marker="o", color="orange", fullName="Moo with optional lfr/ps"),
+        "ps+cr+lfr": dict(s=15, marker="o", color="grey", fullName="Moo with one preprocessor"),
     }
     for constrain in results.keys():
     
@@ -1008,7 +1010,8 @@ if __name__ == "__main__":
     #make_difference_plot(data,"best")
     #methods = ["moo","cr"]
     methods = ["moo_ps_ranker","moo","so","moo+cr",
-               "moo+lfr","moo+ps+cr","moo+ps*cr","moo+ps+cr+lfr"]
+               "moo+lfr","moo+ps+cr","moo+ps*cr","moo+ps+cr+lfr", 
+               "moo+ps+lfr","ps+cr+lfr"]
     #methods = ["moo","ps_ranker","moo_ps_ranker"]
     data = load_data("/home/till/Desktop/cross_val/","200timesstrat", methods)
     #print()
@@ -1026,11 +1029,11 @@ if __name__ == "__main__":
     #                deep_dive[method][seed] = data["error_rate_difference"]["adult"][seed][method]["pareto_config"]
                     
         
-    file = "/home/till/Documents/auto-sklearn/tmp/hypervolumne_with_lfr.json"
+    file = "/home/till/Documents/auto-sklearn/tmp/hypervolumne_with_new_combinations.json"
     #with open(file, 'w') as f:
     #       json.dump(deep_dive, f, indent=4)
     with open(file) as f:
         results = json.load(f)
     #calc_hypervolume(data, file)
-    plot_scaled_values(results,"/home/till/Desktop/lfr_compare/",'acc_scaled_max',methods)
+    plot_scaled_values(results,"/home/till/Desktop/lfr_compare/",'fairness_scaled_max',methods)
     #make_choice_file(data, file, methods)
