@@ -120,7 +120,7 @@ def load_data(name):
             ],
             axis=1,
         )
-        X = X.rename(columns={"race_White": "race"})
+        X = X.rename(columns={"race_White": "race"})*1.0
 
         cols_to_convert = [
             "region_first_FW",
@@ -148,7 +148,7 @@ def load_data(name):
         X = pd.get_dummies(X)
         #X['foreign_worker_no'] = X['foreign_worker_no'].astype(int)
         #X['foreign_worker_yes'] = X['foreign_worker_yes'].astype(int)
-        return X, y
+        return X*1.0, y
     if name == "crime":
         # not finished but prepared 
         X, y = sklearn.datasets.fetch_openml(data_id=315, return_X_y=True, as_frame=True)
