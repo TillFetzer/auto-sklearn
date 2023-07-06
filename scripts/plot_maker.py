@@ -170,8 +170,8 @@ def make_plot_3(data):
         figsize=figsize,
     )
     
-    fig.supxlabel("1-f1_score",fontsize=label_size)
-    fig.supylabel("1-demographic_parity", fontsize=label_size)
+    fig.supxlabel("error",fontsize=label_size)
+    fig.supylabel("1-erd", fontsize=label_size)
     def rgb(r: int, g: int, b: int) -> str:
         return "#%02x%02x%02x" % (r, g, b)
 
@@ -183,11 +183,11 @@ def make_plot_3(data):
 
     styles = {
         "moo": dict(s=15, marker="o", color="red"),
-        "moo+ps": dict(s=15, marker="o", color="green"),
-        "moo+cr": dict(s=15, marker="o", color="blue"),
+        #"so": dict(s=15, marker="o", color="green"),
+        "moo+ps": dict(s=15, marker="o", color="blue"),
         "moo+ps+cr": dict(s=15, marker="o", color ="green"),
         "lfr": dict(s=15, marker="o", color=c_color_2),
-        "cr":  dict(s=15, marker="o", color="black"),
+        "so":  dict(s=15, marker="o", color="black"),
         "ps": dict(s=15, marker="o", color=c_color),
     }
     for i,constrain in enumerate(data.keys()):
@@ -204,44 +204,53 @@ def make_plot_3(data):
             ax.set_title(dataset, fontsize=title_size)
             moo_pf = []
             moo_ps_pf = []
-            #cr_pf = []
-            moo_cr_pf= []
+            moo_ps_xor_cr_pf = []
+            op_pf = []
+            moo_ps_lfr_pf = []
+            all_pf = []
             moo_ps_cr_pf = []
             moo_ps_cr_pf = []
             max_len  = 0
+            
             for seed in data[constrain][dataset].keys():
                 moo_pf.append(np.array(data[constrain][dataset][seed]['moo']['points']))
-                moo_ps_pf.append(np.array(data[constrain][dataset][seed]['moo_ps']['points']))
-                #cr_pf.append(np.array(data[constrain][dataset][seed]['lfr']['points']))
-                moo_cr_pf.append(np.array(data[constrain][dataset][seed]['moo+cr']['points']))
-                #moo_ps_cr_pf.append(np.array(data[constrain][dataset][seed]['moo+ps*cr']['points']))
-                #moo_ps_cr_pf.append(np.array(data[constrain][dataset][seed]['so']['points']))
-
-               
-                #lfr
-               # plot(data[constrain][dataset][seed]['lfr']['points'], ax=ax, **styles["lfr"], alpha = alpha)
-                #max_len = len(data[constrain][dataset][seed]['lfr']['points'])
-                #plot(data[constrain][dataset][seed]['lfr']['pareto_set'], ax=ax, **styles["lfr"], alpha = alpha)
+                moo_ps_xor_cr_pf.append(np.array(data[constrain][dataset][seed]['moo+ps+cr']['points']))
+                op_pf.append(np.array(data[constrain][dataset][seed]['ps+cr+lfr']['points']))
+                moo_ps_cr_pf.append(np.array(data[constrain][dataset][seed]['moo+ps*cr']['points']))
+                moo_ps_lfr_pf.append(np.array(data[constrain][dataset][seed]['moo+ps+lfr']['points']))
+                all_pf.append(np.array(data[constrain][dataset][seed]['moo+ps+cr+lfr']['points']))
+              
 
                 #moo
                 length = len(data[constrain][dataset][seed]['moo']['points'])
                 max_len= length if max_len < length else max_len
                 plot(data[constrain][dataset][seed]['moo']['points'], ax=ax, **styles["moo"], alpha = alpha)
 
-                #moo_ps
-                length = len(data[constrain][dataset][seed]['moo_ps']['points'])
+                #moo+ps+cr
+                length = len(data[constrain][dataset][seed]['moo+ps+cr']['points'])
                 max_len= length if max_len < length else max_len
-                plot(data[constrain][dataset][seed]['moo_ps']['points'], ax=ax, **styles["moo+ps+cr"], alpha = alpha)
+                plot(data[constrain][dataset][seed]['moo+ps+cr']['points'], ax=ax, **styles["moo+ps+cr"], alpha = alpha)
 
-                #moo+cr
-                length = len(data[constrain][dataset][seed]['moo+cr']['points'])
+                #ps+cr+lfr
+                length = len(data[constrain][dataset][seed]['ps+cr+lfr']['points'])
                 max_len= length if max_len < length else max_len
-                plot(data[constrain][dataset][seed]['moo+cr']['points'], ax=ax, **styles["moo+cr"], alpha = alpha)
+                plot(data[constrain][dataset][seed]['ps+cr+lfr']['points'], ax=ax, **styles["ps"], alpha = alpha)
 
                 #moo+ps*cr
-                #length = len(data[constrain][dataset][seed]['moo+ps*cr']['points'])
-                #max_len= length if max_len < length else max_len
-                #plot(data[constrain][dataset][seed]['moo+ps*cr']['points'], ax=ax, **styles["so"], alpha = alpha)
+                length = len(data[constrain][dataset][seed]['moo+ps*cr']['points'])
+                max_len= length if max_len < length else max_len
+                plot(data[constrain][dataset][seed]['moo+ps*cr']['points'], ax=ax, **styles["moo+ps"], alpha = alpha)
+
+                #moo+ps+lfr
+                length = len(data[constrain][dataset][seed]['moo+ps+lfr']['points'])
+                max_len= length if max_len < length else max_len
+                plot(data[constrain][dataset][seed]['moo+ps+lfr']['points'], ax=ax, **styles["so"], alpha = alpha)
+
+                #moo+ps+cr+lfr
+                length = len(data[constrain][dataset][seed]['moo+ps+cr+lfr']['points'])
+                max_len= length if max_len < length else max_len
+                plot(data[constrain][dataset][seed]['moo+ps+cr+lfr']['points'], ax=ax, **styles["lfr"], alpha = alpha)
+
 
 
             for  i in range(len(moo_pf)):
@@ -249,81 +258,68 @@ def make_plot_3(data):
                 diff = max_len-len(moo_pf[i]) 
                 if diff:
                     moo_pf[i] = np.vstack((moo_pf[i], [moo_pf[i][-1]]*(diff)))
-                #ps
-                diff = max_len-len(moo_ps_pf[i]) 
-                if diff:
-                   moo_ps_pf[i] = np.vstack((moo_ps_pf[i], [moo_ps_pf[i][-1]]*(diff)))
 
-                #cr
-                #diff = max_len-len(cr_pf[i])
-                #if diff:
-                #    cr_pf[i] = np.vstack((cr_pf[i], [cr_pf[i][-1]]*(diff)))   
-                #moo_ps
-                diff = max_len-len(moo_ps_pf[i]) 
+                #moo+ps+cr  
+                diff = max_len-len(moo_ps_xor_cr_pf[i])
                 if diff:
-                    moo_ps_pf[i] = np.vstack((moo_ps_pf[i],[moo_ps_pf[i][-1]]*(diff)))
-                #moo+cr
-                diff = max_len-len(moo_cr_pf[i]) 
+                    moo_ps_xor_cr_pf[i] = np.vstack((moo_ps_xor_cr_pf[i], [moo_ps_xor_cr_pf[i][-1]]*(diff)))
+                
+                #ps+cr+lfr
+                diff = max_len-len(op_pf[i])
                 if diff:
-                    moo_cr_pf[i] = np.vstack((moo_cr_pf[i], [moo_cr_pf[i][-1]]*(diff)))
-                #so
-                #diff = max_len-len(moo_ps_cr_pf[i])
-                #if diff:
-                #    moo_ps_cr_pf[i] = np.vstack((moo_ps_cr_pf[i], [moo_ps_cr_pf[i][-1]]*(diff)))
-                #moo_ps_cr
-                #diff = max_len-len(moo_cr_ps_pf[i]) 
-                #if diff:
-                #    moo_cr_ps_pf[i] = np.vstack((moo_cr_ps_pf[i],[moo_cr_ps_pf[i][-1]]*(diff)))
+                    op_pf[i] = np.vstack((op_pf[i], [op_pf[i][-1]]*(diff)))
+                
+                #moo+ps*cr
+                diff = max_len-len(moo_ps_cr_pf[i])
+                if diff:
+                    moo_ps_cr_pf[i] = np.vstack((moo_ps_cr_pf[i], [moo_ps_cr_pf[i][-1]]*(diff)))
+
+
+                #moo+ps+lfr
+                diff = max_len-len(moo_ps_lfr_pf[i])
+                if diff:
+                    moo_ps_lfr_pf[i] = np.vstack((moo_ps_lfr_pf[i], [moo_ps_lfr_pf[i][-1]]*(diff)))
+                
+
                 #moo+ps+cr+lfr
-                #diff = max_len-len(moo_cr_ps_lfr_pf[i]) 
-                #if diff:
-                #    moo_cr_ps_lfr_pf[i] = np.vstack((moo_cr_ps_lfr_pf[i], [moo_cr_ps_lfr_pf[i][-1]]*(diff)))
+                diff = max_len-len(all_pf[i])
+                if diff:
+                    all_pf[i] = np.vstack((all_pf[i], [all_pf[i][-1]]*(diff)))
+                
 
 
-            #moo_points = data[constrain][dataset][seed]['moo']['points']
-            #ps_points = data[constrain][dataset][seed]['ps']['points']
-            #redlineing_points = data[constrain][dataset][seed]['redlineing']['points']
-            #moo_pf = data[constrain][dataset][seed]['moo']['points']
-            #moo_ps_pf = data[constrain][dataset][seed]['ps']['points']
-            #redlineing_pf = data[constrain][dataset][seed]['redlineing']['points']
-            #TODO: transform in shape(seed, point, metric)
-            #TODO: almoo_ps need to thing about that not every seed has the same amount of points
-            #moo_pf = np.vstack(moo_pf)
-            #t = copy.deepcopy(ax)
-            #_, ax = plt.subplots(ax)
-            # ,np.stack(redlineing_pf,axis=0)
-            # np.stack(moo_pf, axis=0),np.stack(moo_cr_pf, axis=0),np.stack(moo_lfr_pf, axis=0),np.stack(moo_ps_pf, axis=0)
+
             pf = [
                 np.stack(moo_pf, axis=0),
-                #np.stack(moo_ps_cr_pf, axis=0),
-                np.stack(moo_ps_pf, axis=0),
-                #np.stack(cr_pf, axis=0),
-                np.stack(moo_cr_pf, axis=0),
-                #np.stack(moo_ps_pf, axis=0),
+                np.stack(moo_ps_xor_cr_pf, axis=0),
+                np.stack(op_pf, axis=0),
+                np.stack(moo_ps_cr_pf, axis=0),
+                np.stack(moo_ps_lfr_pf, axis=0),
+                np.stack(all_pf, axis=0)
                 ]
             # , styles["redlineing_points"]['color'] , styles["moo_ps_pareto"]['color'],styles["ps_pareto"]['color']
             plots_we(pf, ax, [
                               styles["moo"]['color'],
+                              styles["moo+ps+cr"]['color'],
+                              styles["ps"]['color'],
                               styles["moo+ps"]['color'],
-                              styles["moo+cr"]['color'],
-                              #styles["cr"]['color'],
-                              #styles["moo+cr"]['color'], 
-                              #styles["moo+ps+cr"]['color'],
+                              styles["so"]['color'], 
+                              styles["lfr"]['color'],
                               ])
             ax.tick_params(axis="both", which="major", labelsize=tick_size)
     legend_elements = [
         Line2D([0], [0], color=styles["moo"]['color'], lw=4, label="Moo"),
-        #Line2D([0], [0], color=styles["so"]['color'], lw=4, label='so'),
-        #Line2D([0], [0], color=styles["ps"]['color'],lw=4, label='ps'),
-        #Line2D([0], [0], color=styles["cr"]['color'], lw=4, label="Moo with Correlation Remover"),
-        Line2D([0], [0], color=styles["moo+cr"]['color'], lw=4, label='Moo with optinionall Correlation Remover'),
-        Line2D([0], [0], color=styles["moo+ps"]['color'], lw=4, label='Moo with optionall  sampling'),
+        Line2D([0], [0], color=styles["moo+ps+cr"]['color'], lw=4, label='moo+ps+cr'),
+        Line2D([0], [0], color=styles["ps"]['color'],lw=4, label='only preprocessor'),
+        Line2D([0], [0], color=styles["moo+ps"]['color'], lw=4, label="moo+ps*cr"),
+        Line2D([0], [0], color=styles["so"]['color'], lw=4, label='moo+ps+lfr'),
+        Line2D([0], [0], color=styles["lfr"]['color'], lw=4, label='all')
       
                    ]
     fig.tight_layout(rect=[0.03, 0.09, 1, 1], pad = 5)
     fig.legend(handles=legend_elements, loc=3,  prop={'size': 16})
     #save_folder = "/home/till/Desktop/all_prepreprocessor_plots/sampling+cr/{}".format("error_rate_difference_all")
-    save_folder = "/home/till/Desktop/f1_scores/{}".format("demographic_parity.png")
+    save_folder = "/home/till/Desktop/new_combinations/{}".format("erd.png")
     #plt.show()
     plt.savefig(save_folder)
 def plot_arrows(
@@ -697,7 +693,11 @@ def plot_scaled_values(results,result_folder,plot_feature, methods, one_line=Fal
     c_color_4 = rgb(128,128,0)
     styles = {
         "moo": dict(s=15, marker="o", color="red",fullName="Moo"),
-        "so": dict(s=15, marker="o", color="black",fullName="Optimization for accuracy"),
+        "cr": dict(s=15, marker="x", color="green",fullName="Correlation remover"),
+        "ps_ranker": dict(s=15, marker="x", color="orange",fullName="Sampling"),
+        "lfr": dict(s=15, marker="x", color="blue",fullName="LFR"),
+        "so": dict(s=15, marker="x", color="black",fullName="Optimizing for accuracy"),
+        "moo+cr+lfr": dict(s=15, marker="o", color="black",fullName="Moo with optionall correlation remover and lfr"),
         "moo+cr": dict(s=15, marker="o", color=c_color,fullName="Moo with optionall correlation remover"),
         "moo_ps_ranker": dict(s=15, marker="o", color =c_color_3,fullName="Moo with optionall sampling"),
         "moo+ps+cr": dict(s=15, marker="o", color =c_color_4, fullName="Moo with optionall correlation remover and/or sampling"),
@@ -723,10 +723,11 @@ def plot_scaled_values(results,result_folder,plot_feature, methods, one_line=Fal
                 color = styles[method]['color']
                 data = results[constrain][dataset][plot_feature][idx]
                 label = styles[method]["fullName"]
+                marker = styles[method]["marker"]
                 if width == 1:
-                    ax.scatter(width, data, label=label, color=color, marker='o')
+                    ax.scatter(width, data, label=label, color=color, marker=marker)
                 else:
-                    ax.scatter(width, data, color=color, marker='o')
+                    ax.scatter(width, data, color=color, marker=marker)
 
             
         
@@ -998,7 +999,12 @@ def generate_latex_table(data, constrain, method, file):
 
 if __name__ == "__main__":
     #methods = ["moo_ps_ranker","moo","moo+cr", "ps_ranker"]
-    
+    methods = ["moo", "so",
+               "cr","ps_ranker",
+               "moo_ps_ranker", "moo+cr", "moo+lfr",
+               "moo+ps+cr","moo+ps*cr", 
+               "moo+ps+lfr", "moo+cr+lfr",
+               "moo+ps+cr+lfr","ps+cr+lfr"]
     #data = load_data("/home/till/Documents/auto-sklearn/tmp/cross_val/", "200timesstrat", methods)
     #make_plot_3(data)
     #data = load_data_particully("/home/till/Desktop/psoss_val/", "200timesstrat",
@@ -1006,12 +1012,10 @@ if __name__ == "__main__":
     #constrains = ["consistency_score"],
     #folders=["one_rf_seed_1", "one_rf_seed"],
     #"12345","25","42","45451", "97","13","27","39","41","53"
-    seeds= ["12345","25","42","45451", "97","13","27","39","41","53"]
+    #seeds= ["12345","25","42","45451", "97","13","27","39","41","53"]
     #make_difference_plot(data,"best")
     #methods = ["moo","cr"]
-    methods = ["moo_ps_ranker","moo","so","moo+cr",
-               "moo+lfr","moo+ps+cr","moo+ps*cr","moo+ps+cr+lfr", 
-               "moo+ps+lfr","ps+cr+lfr"]
+    
     #methods = ["moo","ps_ranker","moo_ps_ranker"]
     data = load_data("/home/till/Desktop/cross_val/","200timesstrat", methods)
     #print()
@@ -1032,8 +1036,9 @@ if __name__ == "__main__":
     file = "/home/till/Documents/auto-sklearn/tmp/hypervolumne_with_new_combinations.json"
     #with open(file, 'w') as f:
     #       json.dump(deep_dive, f, indent=4)
-    with open(file) as f:
-        results = json.load(f)
     #calc_hypervolume(data, file)
-    plot_scaled_values(results,"/home/till/Desktop/lfr_compare/",'fairness_scaled_max',methods)
+    with open(file) as f:
+       results = json.load(f)
+   
+    plot_scaled_values(results,"/home/till/Desktop/new_combinations/",'fairness_scaled_max',methods)
     #make_choice_file(data, file, methods)
