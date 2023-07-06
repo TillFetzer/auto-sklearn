@@ -13,7 +13,9 @@ import base_sampling_cr_lfr
 import autosklearn
 import single_lfr
 import base_sampling_lfr
+import base_unbalanced
 import base_cr_lfr
+import base_cr_lfr_com
 import sampling_cr_lfr
 def run_experiment(datasets =["adult"],
  fairness_constrains=["demographic_parity"],
@@ -33,6 +35,8 @@ def run_experiment(datasets =["adult"],
         for i, dataset in enumerate(datasets):
             for seed in seeds:
                 for method in methods:
+                    if method == "moo_unbalanced":
+                        base_unbalanced.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)
                     if method == "moo":
                         base.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)
                     if method == "redlineing":
@@ -66,6 +70,8 @@ def run_experiment(datasets =["adult"],
                     if method == "moo+cr+lfr":
                         base_cr_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)        
                     if method == "ps+cr+lfr":
-                        sampling_cr_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)           
+                        sampling_cr_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance) 
+                    if method == "moo+cr*lfr":
+                        base_cr_lfr_com.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)          
             print("all runs of {} finished".format(dataset))
     print("finished")

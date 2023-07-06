@@ -46,7 +46,10 @@ def format_data(method, constrain, dataset,  data_path, y_format, ocs):
             X.append(config)
             #print(list(ds["configs"][str(i+1)].values())[:-1])
             y_index = 0 if y_format == "performance" else 1
-            Y.append(1-d[1][0][y_index])
+            if constrain == "error_rate_difference":
+                Y.append(d[1][0][y_index])
+            else:
+                Y.append(1-d[1][0][y_index])
     X = pd.DataFrame(X)
     #that could be more difficult for different methods
     X.columns = list(ds["configs"][str(i+1)].keys())[0:13]
@@ -56,6 +59,7 @@ def format_data(method, constrain, dataset,  data_path, y_format, ocs):
         
 
 if __name__ == '__main__':
+    """
     parser=argparse.ArgumentParser()
     parser.add_argument("--idx", type=int)
     parser.add_argument("--uf", type=str)
@@ -102,7 +106,7 @@ if __name__ == '__main__':
         for constrain in ["equalized_odds", "demographic_parity", "consistency_score", "error_rate_difference"]:
             method = "moo+ps+cr+lfr"
             data_path = "/home/till/Desktop/cross_val/"
-            y_format = "performance"
+            y_format = "fairness"
             file = open("/home/till/Documents/auto-sklearn/tmp/moo_ps_cr_lfr_config_space.pickle",'rb')
             ocs = pickle.load(file)
             X,Y = format_data(method, constrain, dataset, data_path, y_format,ocs) 
@@ -120,15 +124,17 @@ if __name__ == '__main__':
             print("{}, {}, {}".format(dataset, constrain, method))
             # marginal for first parameter
             #for i in list(cs.get_hyperparameters()):
-            #    #if i.name == "balancing:strategy":
+                #if i.name != "fair_preprocessor:__choice__":
                 #    continue
-            #    res = f.quantify_importance([i.name])
-            #    print(res)
+                #res = f.quantify_importance([i.name])
+                #print(res)
+            res = f.quantify_importance(['fair_preprocessor:__choice__', 'classifier:random_forest:max_features'])
+            print(res)
             #p_list = (0,1,2,3,4,5,6,7,8,9,10,11,12,)
             #res = f.quantify_importance(p_list)
             #print(res)
 
-            best_p_margs = f.get_most_important_pairwise_marginals(n=5)
+            #best_p_margs = f.get_most_important_pairwise_marginals(n=5)
             
 
             # directory in which you can find all plots
@@ -142,4 +148,3 @@ if __name__ == '__main__':
             # creating all plots in the directory
             #vis.create_all_plots()
 
-    """

@@ -28,6 +28,8 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     X, y = utils_fairlearn.load_data(dataset)
     utils_fairlearn.add_no_preprocessor()
     utils_fairlearn.add_no_fair()
+    utils_fairlearn.add_correlation_remover_dp(X.columns.get_loc(sf), sf)
+    #utils_fairlearn.add_correlation_remover(sf)
     utils_fairlearn.add_LFR(sf)
     # ==========================
     on = pd.concat([X[sf], y],axis=1)
@@ -46,14 +48,14 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     ############################################################################
     # Build and fit a classifier
     # ==========================
-    tmp =  file + "/{}/{}/{}/{}/moo+lfr/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
+    tmp =  file + "/{}/{}/{}/{}/moo+ps*lfr/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
     runtime = runtime
     automl = autosklearn.classification.AutoSklearnClassifier(
         time_left_for_this_task=runtime,  # 3h
 
         #per_run_time_limit=runtime / 2,
         metric=[
-            performance,
+           performance,
             fair_metric,
         ],
         # metric=autosklearn.metrics.accuracy,
@@ -64,9 +66,9 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
         seed = seed,
         tmp_folder =  tmp + "/del",
         include={
-            'feature_preprocessor': ["no_preprocessing"],
-            'data_preprocessor': ["no_preprocessor"],
+            'feature_preprocessor': ["no_preprocessing",'CorrelationRemover'],
             "fair_preprocessor": ["NoFairPreprocessor","LFR"],
+            'data_preprocessor': ["no_preprocessor"],
             "classifier": [
                 "random_forest"
             ], 
@@ -82,13 +84,9 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
         }
     )
     # sensitive attributes needs to go out
-    
-    cs = automl.get_configuration_space(X_train, y_train)
-    import pickle
-    with open("/home/till/Documents/auto-sklearn/tmp/moo_lfr_config_space.pickle", "wb") as f:
-        pickle.dump(cs, f)
-    # sensitive attributes needs to go out
     automl.fit(X_train, y_train, dataset_name="adult")
+
+
     shutil.copy(tmp + "/del/smac3-output/run_{}/runhistory.json".format(seed), tmp )
     shutil.rmtree(tmp + "/del")
    

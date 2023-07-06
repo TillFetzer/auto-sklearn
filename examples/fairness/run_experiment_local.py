@@ -15,6 +15,7 @@ import base_cr_lfr
 import sampling_cr_lfr
 import base_sampling_cr_lfr
 import base_sampling_cr_com
+import base_cr_lfr_com
 import utils_fairlearn
 parser=argparse.ArgumentParser()
 
@@ -68,7 +69,9 @@ for constrain in fairness_constrains:
                 if method == "moo+ps+cr+lfr":
                     base_sampling_cr_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
                 if method == "moo+ps*cr":
-                    base_sampling_cr_com.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")  
+                    base_sampling_cr_com.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test") 
+                if method == "moo+cr*lfr":
+                    base_cr_lfr_com.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
                 if method == "moo+ps+lfr":
                     base_sampling_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")        
                 if method == "moo+cr+lfr":
