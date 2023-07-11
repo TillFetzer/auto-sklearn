@@ -104,13 +104,13 @@ if __name__ == '__main__':
     """
     for dataset in ["lawschool", "adult", "compass","german"]:
         for constrain in ["equalized_odds", "demographic_parity", "consistency_score", "error_rate_difference"]:
-            method = "moo+ps+cr+lfr"
+            method = "moo+cr"
             data_path = "/home/till/Desktop/cross_val/"
             y_format = "fairness"
-            file = open("/home/till/Documents/auto-sklearn/tmp/moo_ps_cr_lfr_config_space.pickle",'rb')
+            file = open("/home/till/Documents/auto-sklearn/tmp/moo_cr_config_space.pickle",'rb')
             ocs = pickle.load(file)
             X,Y = format_data(method, constrain, dataset, data_path, y_format,ocs) 
-            #X = X.drop(columns = ["balancing:strategy"])
+            X = X.drop(columns = ["balancing:strategy"]) # never is the pareto front.
             # create an instance of fanova with data for the random forest and the configSpace
             cs = ConfigurationSpace()
             for hp in X.columns:
@@ -123,13 +123,12 @@ if __name__ == '__main__':
             f = fANOVA(X = X, Y = np.array(Y), config_space = cs)
             print("{}, {}, {}".format(dataset, constrain, method))
             # marginal for first parameter
-            #for i in list(cs.get_hyperparameters()):
-                #if i.name != "fair_preprocessor:__choice__":
-                #    continue
-                #res = f.quantify_importance([i.name])
-                #print(res)
-            res = f.quantify_importance(['fair_preprocessor:__choice__', 'classifier:random_forest:max_features'])
-            print(res)
+            for i in list(cs.get_hyperparameters()):
+                if i.name != "feature_preprocessor:__choice__":
+                   continue
+                res = f.quantify_importance([i.name])
+                print(res)
+           
             #p_list = (0,1,2,3,4,5,6,7,8,9,10,11,12,)
             #res = f.quantify_importance(p_list)
             #print(res)

@@ -1018,7 +1018,7 @@ if __name__ == "__main__":
     
     #methods = ["moo","ps_ranker","moo_ps_ranker"]
     data = load_data("/home/till/Desktop/cross_val/","200timesstrat", methods)
-    #print()
+    print()
     #calculate_shapley_values(data,methods,file="/home/till/Documents/auto-sklearn/tmp/")
     #print(sv)
     #make_plot_3(data)
@@ -1033,12 +1033,12 @@ if __name__ == "__main__":
     #                deep_dive[method][seed] = data["error_rate_difference"]["adult"][seed][method]["pareto_config"]
                     
         
-    file = "/home/till/Documents/auto-sklearn/tmp/hypervolumne_with_new_combinations.json"
+    #file = "/home/till/Documents/auto-sklearn/tmp/hypervolumne_with_new_combinations.json"
     #with open(file, 'w') as f:
     #       json.dump(deep_dive, f, indent=4)
     #calc_hypervolume(data, file)
-    with open(file) as f:
-       results = json.load(f)
+    #with open(file) as f:
+    #   results = json.load(f)
    
-    plot_scaled_values(results,"/home/till/Desktop/new_combinations/",'fairness_scaled_max',methods)
+    #plot_scaled_values(results,"/home/till/Desktop/new_combinations/",'fairness_scaled_max',methods)
     #make_choice_file(data, file, methods)
