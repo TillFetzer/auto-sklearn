@@ -35,7 +35,6 @@ class CorrelationRemover( AutoSklearnPreprocessingAlgorithm):
         index = CorrelationRemover.sf
         if type(X) == tuple:
            X,y = X
-           index = CorrelationRemover.index_sf
         X = pd.DataFrame(X)
         self.alpha = float(self.alpha)
         self.preprocessor = FCR(
