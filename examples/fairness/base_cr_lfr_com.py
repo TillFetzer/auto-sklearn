@@ -48,7 +48,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     ############################################################################
     # Build and fit a classifier
     # ==========================
-    tmp =  file + "/{}/{}/{}/{}/moo+ps*lfr/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
+    tmp =  file + "/{}/{}/{}/{}/moo+cr*lfr/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
     runtime = runtime
     automl = autosklearn.classification.AutoSklearnClassifier(
         time_left_for_this_task=runtime,  # 3h
@@ -83,6 +83,12 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
         "seed": seed             
         }
     )
+    # that is get config space out
+    #cs = automl.get_configuration_space(X_train, y_train)
+    #import pickle
+    #with open("/home/till/Documents/auto-sklearn/tmp/configspace/moo+cr*lfr_config_space.pickle", "wb") as f:
+    #    pickle.dump(cs, f)
+    # sensitive attributes needs to go out
     # sensitive attributes needs to go out
     automl.fit(X_train, y_train, dataset_name="adult")
 

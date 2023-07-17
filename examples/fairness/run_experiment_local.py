@@ -75,7 +75,7 @@ for constrain in fairness_constrains:
                 if method == "moo+ps+lfr":
                     base_sampling_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")        
                 if method == "moo+cr+lfr":
-                    base_sampling_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")        
+                    base_cr_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")        
                 if method == "ps+cr+lfr":
                     sampling_cr_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")              
         print("all runs of {} finished".format(dataset))

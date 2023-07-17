@@ -84,6 +84,11 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
         }
     )
     # sensitive attributes needs to go out
+    #cs = automl.get_configuration_space(X_train, y_train)
+    #import pickle
+    #with open("/home/till/Documents/auto-sklearn/tmp/configspace/moo+ps*cr_config_space.pickle", "wb") as f:
+    #    pickle.dump(cs, f)
+    # sensitive attributes needs to go out
     automl.fit(X_train, y_train, dataset_name="adult")
 
 

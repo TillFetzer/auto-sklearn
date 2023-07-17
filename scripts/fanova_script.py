@@ -7,6 +7,7 @@ import os
 import numpy as np
 import pandas as pd
 import pickle
+from collections import defaultdict
 import argparse
 
 
@@ -102,33 +103,49 @@ if __name__ == '__main__':
         f.write("best pairwise marginals: {}\n".format(best_p_margs))
 
     """
-    for dataset in ["lawschool", "adult", "compass","german"]:
-        for constrain in ["equalized_odds", "demographic_parity", "consistency_score", "error_rate_difference"]:
-            method = "moo+cr"
-            data_path = "/home/till/Desktop/cross_val/"
-            y_format = "fairness"
-            file = open("/home/till/Documents/auto-sklearn/tmp/moo_cr_config_space.pickle",'rb')
-            ocs = pickle.load(file)
-            X,Y = format_data(method, constrain, dataset, data_path, y_format,ocs) 
-            X = X.drop(columns = ["balancing:strategy"]) # never is the pareto front.
-            # create an instance of fanova with data for the random forest and the configSpace
-            cs = ConfigurationSpace()
-            for hp in X.columns:
-                #if  isinstance(ocs[hp], CategoricalHyperparameter):
-                #    setattr(ocs[hp], "choices", tuple(abs(hash(x)%10) for x in getattr(ocs[hp],"choices")))
-                #    setattr(ocs[hp], "default_value", abs(hash(getattr(ocs[hp],"choices")[0])%10))
-                cs.add_hyperparameter(ocs[hp])   
-                #if categorical change to hash
-            assert len(cs.get_hyperparameters()) == len(X.columns)
-            f = fANOVA(X = X, Y = np.array(Y), config_space = cs)
-            print("{}, {}, {}".format(dataset, constrain, method))
-            # marginal for first parameter
-            for i in list(cs.get_hyperparameters()):
-                if i.name != "feature_preprocessor:__choice__":
-                   continue
-                res = f.quantify_importance([i.name])
-                print(res)
-           
+    #"moo+ps*cr", 
+    #"moo+ps+lfr",
+    #"moo+cr+lfr",
+    #  "moo+ps+cr+lfr","ps+cr+lfr",
+    #  "moo_ps_ranker","moo+lfr","moo+cr"
+    methods = [  
+             "moo+ps+cr"
+               ]
+    file = "/home/till/Desktop/fanova/"
+    y_formats = ["fairness","performance"]
+    for method in methods:
+        file_cs = open("/home/till/Documents/auto-sklearn/tmp/configspace/{}_config_space.pickle".format(method),'rb')
+        ocs = pickle.load(file_cs)
+        for  y_format in y_formats:
+            results = defaultdict()
+            for dataset in ["lawschool", "adult", "compass","german"]:
+                results[dataset] = defaultdict()
+                for constrain in ["equalized_odds", "demographic_parity", "consistency_score", "error_rate_difference"]:
+                    results[dataset][constrain] = defaultdict()
+                    data_path = "/home/till/Desktop/cross_val/"
+                    X,Y = format_data(method, constrain, dataset, data_path, y_format,ocs) 
+                    X = X.drop(columns = ["balancing:strategy"]) # never is the pareto front.
+                    # create an instance of fanova with data for the random forest and the configSpace
+                    cs = ConfigurationSpace()
+                    for hp in X.columns:
+                        #if  isinstance(ocs[hp], CategoricalHyperparameter):
+                        #    setattr(ocs[hp], "choices", tuple(abs(hash(x)%10) for x in getattr(ocs[hp],"choices")))
+                        #    setattr(ocs[hp], "default_value", abs(hash(getattr(ocs[hp],"choices")[0])%10))
+                        cs.add_hyperparameter(ocs[hp])   
+                        #if categorical change to hash
+                    assert len(cs.get_hyperparameters()) == len(X.columns)
+                    fan = fANOVA(X = X, Y = np.array(Y), config_space = cs)
+                    print("{}, {}, {}".format(dataset, constrain, method))
+                    # marginal for first parameter
+                    for i in list(cs.get_hyperparameters()):
+        
+                        #if i.name != "feature_preprocessor:__choice__" and i.name != "fair_preprocessor:__choice__":
+                        #    continue
+                        results[dataset][constrain][i.name] = list(fan.quantify_importance([i.name]).values())[0]
+            with open("{}{}_{}.json".format(file,y_format, method), "w") as f:
+                print("{}{}_{}.json".format(file,y_format, method))
+                json.dump(results, f, indent=4)   
+            
             #p_list = (0,1,2,3,4,5,6,7,8,9,10,11,12,)
             #res = f.quantify_importance(p_list)
             #print(res)

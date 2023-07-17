@@ -684,7 +684,7 @@ def calc_hypervolume(data,file):
     print(hypervolume_dict)
     with open(file, 'w') as f:
         json.dump(hypervolume_dict, f, indent=4)
-def plot_scaled_values(results,result_folder,plot_feature, methods, one_line=False, label=False):
+def plot_scaled_values(results,result_folder,plot_feature, needed_methods, one_line=False, label=False):
     def rgb(r: int, g: int, b: int) -> str:
         return "#%02x%02x%02x" % (r, g, b)
     c_color = rgb(128, 0, 128)
@@ -692,16 +692,17 @@ def plot_scaled_values(results,result_folder,plot_feature, methods, one_line=Fal
     c_color_3 = rgb(0,128, 128)
     c_color_4 = rgb(128,128,0)
     styles = {
-        "moo": dict(s=15, marker="o", color="red",fullName="Moo"),
+        "moo": dict(s=15, marker="x", color="red",fullName="Moo"),
         "cr": dict(s=15, marker="x", color="green",fullName="Correlation remover"),
         "ps_ranker": dict(s=15, marker="x", color="orange",fullName="Sampling"),
         "lfr": dict(s=15, marker="x", color="blue",fullName="LFR"),
         "so": dict(s=15, marker="x", color="black",fullName="Optimizing for accuracy"),
+        "moo_ps_ranker": dict(s=15, marker="x", color =c_color_3,fullName="Moo with optionall sampling"),
+        "moo+cr": dict(s=15, marker="x", color="purple",fullName="Moo with optionall correlation remover"),
+
         "moo+cr+lfr": dict(s=15, marker="o", color="black",fullName="Moo with optionall correlation remover and lfr"),
-        "moo+cr": dict(s=15, marker="o", color=c_color,fullName="Moo with optionall correlation remover"),
-        "moo_ps_ranker": dict(s=15, marker="o", color =c_color_3,fullName="Moo with optionall sampling"),
-        "moo+ps+cr": dict(s=15, marker="o", color =c_color_4, fullName="Moo with optionall correlation remover and/or sampling"),
-        "moo+ps*cr": dict(s=15, marker="o", color=c_color_2,fullName="Moo with optionall correlation remover xor sampling"),
+        "moo+ps+cr": dict(s=15, marker="o", color ="purple", fullName="Moo with optionall correlation remover and/or sampling"),
+        "moo+ps*cr": dict(s=15, marker="o", color="red",fullName="Moo with optionall correlation remover xor sampling"),
         "moo+lfr":  dict(s=15, marker="o", color="blue", fullName="Moo with optioal lfr"),
         "moo+ps+cr+lfr": dict(s=15, marker="o", color="green", fullName="Moo with optional lfr/ps/cr"),
         "moo+ps+lfr": dict(s=15, marker="o", color="orange", fullName="Moo with optional lfr/ps"),
@@ -715,20 +716,23 @@ def plot_scaled_values(results,result_folder,plot_feature, methods, one_line=Fal
         fig, ax = plt.subplots(figsize=(plot_width,2))
         width = 0
         #ss_order = results[constrain].keys()
-        
+        max_needed = 0
         for dataset in datasets:
             width += 1
+            methods = results[constrain][dataset]["methods"]
             for method in methods:
                 idx = results[constrain][dataset]["methods"].index(method)
-                color = styles[method]['color']
                 data = results[constrain][dataset][plot_feature][idx]
-                label = styles[method]["fullName"]
-                marker = styles[method]["marker"]
-                if width == 1:
-                    ax.scatter(width, data, label=label, color=color, marker=marker)
-                else:
-                    ax.scatter(width, data, color=color, marker=marker)
-
+                max_needed = max(max_needed, data)  if method in needed_methods else max_needed
+                if method in needed_methods or data > max_needed:
+                    color = styles[method]['color']
+                    label = styles[method]["fullName"]
+                    marker = styles[method]["marker"]
+                    if width == 1:
+                        ax.scatter(width, data, label=label, color=color, marker=marker)
+                    else:
+                        ax.scatter(width, data, color=color, marker=marker)
+            
             
         
 
@@ -753,15 +757,11 @@ def plot_scaled_values(results,result_folder,plot_feature, methods, one_line=Fal
         plt.savefig(result_folder + plot_feature +  "_" + constrain, bbox_inches = 'tight', pad_inches = 0.1)
         #print(results)    
 def get_possible_pre(method):
-    if method == "moo+cr":
-        return ["no", "CorrelationRemover"]
-    if method == "moo_ps_ranker":
-         return ["no", "PreferentialSampling"]
-    if method == "moo+ps+cr":
-        return ["no", "PreferentialSampling","CorrelationRemover"]
-    if method == "moo+ps*cr":
-        return ["no", "PreferentialSampling","CorrelationRemover", "both"]
-
+    preprocessors = ["no"]
+    preprocessors += ["PreferentialSampling"] if "ps" in method else []
+    preprocessors += ["CorrelationRemover"] if "cr" in method else []
+    preprocessors += ["LFR"] if "lfr" in method else []
+    return preprocessors
 def calc_pareto_contribution(data,file, methods):
     scaler = MinMaxScaler()
     contribution = defaultdict()
@@ -844,10 +844,10 @@ def calculate_shape_value(pareto_set,score):
         shape_value = hypervolume_obj(np.array(pareto_set))
     if(score=="acc"):
         pareto_set = pd.DataFrame(pareto_set)
-        shape_value = sum(pareto_set[0])
+        shape_value = 1-min(pareto_set[0])
     if(score=="fairness"):
         pareto_set = pd.DataFrame(pareto_set)
-        shape_value = sum(pareto_set[1])      
+        shape_value = 1-min(pareto_set[1])      
     return shape_value
 #I think the idea 
 # 
@@ -880,15 +880,9 @@ def filter_points(pareto_front, pareto_config, preprocessors,scale = False, ref_
         if len(points) == 0:
             points = [ref_point]
         score_dict[pre] = np.array(points)
-    return score_dict 
-   
-from pymoo.indicators.gd import GD  
-   
+    return score_dict   
 from itertools import permutations
-def calculate_shapley_values(data, methods, file, latex_table = True):
-    ref_points = [1,1]
-    hypervolume_obj =  HV(ref_point=np.array(ref_points)) 
-   
+def calculate_shapley_values(data, methods, file, compare = "hypervolumne", latex_table = True):
     #shaling should be done in these function
     shapley_values = defaultdict() 
     for constrain in data.keys():
@@ -896,58 +890,32 @@ def calculate_shapley_values(data, methods, file, latex_table = True):
         for dataset in data[constrain].keys():
             shapley_values[constrain][dataset] = defaultdict() 
             for seed in data[constrain][dataset].keys():
-                
                 for method in methods:
-        
                     if method not in  shapley_values[constrain][dataset].keys():
                         shapley_values[constrain][dataset][method] = defaultdict()
                     pareto_front = data[constrain][dataset][seed][method]["points"]
                     pareto_config = data[constrain][dataset][seed][method]["configs"]
                     preprocessors = get_possible_pre(method)
-                    #TODO: 
-                    #print(constrain, dataset, seed, method)
-                    div = np.math.factorial(len(preprocessors)) * len(data[constrain][dataset].keys()) * hypervolume_obj(np.array(pareto_front))
-                    ##if(dataset=="lawschool" and method=="moo+ps*cr" and  constrain=="demographic_parity"):
-                    #       print("into")   
-                       
                     methods_points = filter_points(pareto_front, pareto_config, preprocessors)
-                    #i=0
-                    #with open(file+'logs_shapley/{}_{}_{}.txt'.format(dataset, constrain, seed), 'a+') as f:
-                    #            f.write('{}: \n'.format(
-                    #             method     
-                    #            )) 
+                    preprocessors = preprocessors[1:]
+                    div = np.math.factorial(len(preprocessors)) * len(data[constrain][dataset].keys()) * calculate_shape_value(pareto_front,compare)
                     for perm in permutations(preprocessors):
-                        #print(perm)
-                        #if perm[0]  ==  "CorrelationRemover":
-                        #    print("test")
-                        points = np.array([ref_points])
-                        post_acc, post_fair, post_vol = 0,0,0
-                        pre_acc,pre_fair,pre_vol = 0,0,0
+                        points = np.array(methods_points["no"])
                         for idx,pre in enumerate(perm):
-                            
-                            #print(points)
-                            #print( methods_points[pre])
                             new_points = np.vstack((points, methods_points[pre]))  
                             if pre not in shapley_values[constrain][dataset][method].keys():
                                 shapley_values[constrain][dataset][method][pre] = defaultdict() 
-                                #shapley_values[constrain][dataset][method][pre]["acc"] = 0
-                                #shapley_values[constrain][dataset][method][pre]["fairness"] = 0
-                                shapley_values[constrain][dataset][method][pre]["hypervolumne"] = 0 
-                            #with open(file+'logs_shapley/{}_{}_{}.txt'.format(dataset, constrain, seed), 'a+') as f:
-                            #    f.write('permutaion_group:{}, preprocessor:{}, marignal contribution: {}\n'.format(
-                            #     str(perm), pre, hypervolume_obj(new_points) - hypervolume_obj(points)       
-                            #    ))  
-                        
-                            shapley_values[constrain][dataset][method][pre]["hypervolumne"] += (100*(hypervolume_obj(new_points))- 100*(hypervolume_obj(points)))/div
+                                shapley_values[constrain][dataset][method][pre][compare] = 0    
+                            shapley_values[constrain][dataset][method][pre][compare] += ((calculate_shape_value(new_points,compare))- (calculate_shape_value(points, compare)))/div
                             points = new_points   
                 #shapley_values[constrain][dataset][method]["all"]["hypervolumne"] += hypervolume_obj(points) / len(data[constrain][dataset].keys())                                 
-        with open(file + "shapley_scaled.json", 'w') as f:
+        with open(file + "shapley_{}.json".format(compare), 'w') as f:
             json.dump(shapley_values, f, indent=4)
         if latex_table:
             for constrain in shapley_values.keys():
                 for method in methods: 
                     table_data = shapley_values[constrain]  
-                    generate_latex_table(table_data, constrain, method, file)
+                    generate_latex_table(table_data, constrain, method, file, compare)
     return  
                    
 """
@@ -961,7 +929,7 @@ def calculate_shapley_values(data, methods, file, latex_table = True):
 
 
 
-def generate_latex_table(data, constrain, method, file):
+def generate_latex_table(data, constrain, method, file, compare):
     table = "\\begin{table}[]\n"
     table += "\\centering\n"
     #table += "\\caption{"
@@ -981,7 +949,7 @@ def generate_latex_table(data, constrain, method, file):
     for dataset in data.keys():
         row = f"{dataset} & "
         for pre in data[dataset][method].keys():
-            hypervolume = data[dataset][method][pre]['hypervolumne']
+            hypervolume = data[dataset][method][pre][compare]
             row += "{:.2f} & ".format(hypervolume)
         row = row.rstrip(" & ")
         row += " \\\\\n"
@@ -999,12 +967,10 @@ def generate_latex_table(data, constrain, method, file):
 
 if __name__ == "__main__":
     #methods = ["moo_ps_ranker","moo","moo+cr", "ps_ranker"]
-    methods = ["moo", "so",
-               "cr","ps_ranker",
-               "moo_ps_ranker", "moo+cr", "moo+lfr",
-               "moo+ps+cr","moo+ps*cr", 
+    methods = [ "moo+ps+cr","moo+ps*cr", 
                "moo+ps+lfr", "moo+cr+lfr",
-               "moo+ps+cr+lfr","ps+cr+lfr"]
+               "moo+ps+cr+lfr","ps+cr+lfr"
+               ]
     #data = load_data("/home/till/Documents/auto-sklearn/tmp/cross_val/", "200timesstrat", methods)
     #make_plot_3(data)
     #data = load_data_particully("/home/till/Desktop/psoss_val/", "200timesstrat",
@@ -1018,8 +984,8 @@ if __name__ == "__main__":
     
     #methods = ["moo","ps_ranker","moo_ps_ranker"]
     data = load_data("/home/till/Desktop/cross_val/","200timesstrat", methods)
-    print()
-    #calculate_shapley_values(data,methods,file="/home/till/Documents/auto-sklearn/tmp/")
+    #print()
+    #calculate_shapley_values(data,methods,file="/home/till/Documents/auto-sklearn/tmp/", compare="fairness")
     #print(sv)
     #make_plot_3(data)
     #deep_dive = defaultdict()
@@ -1033,12 +999,12 @@ if __name__ == "__main__":
     #                deep_dive[method][seed] = data["error_rate_difference"]["adult"][seed][method]["pareto_config"]
                     
         
-    #file = "/home/till/Documents/auto-sklearn/tmp/hypervolumne_with_new_combinations.json"
+    file = "/home/till/Documents/auto-sklearn/tmp/hypervolumne_with_new_combinations.json"
     #with open(file, 'w') as f:
     #       json.dump(deep_dive, f, indent=4)
     #calc_hypervolume(data, file)
-    #with open(file) as f:
-    #   results = json.load(f)
+    with open(file) as f:
+       results = json.load(f)
    
-    #plot_scaled_values(results,"/home/till/Desktop/new_combinations/",'fairness_scaled_max',methods)
+    #plot_scaled_values(results,"/home/till/Desktop/new_combinations/",'fairness_scaled_max', methods)
     #make_choice_file(data, file, methods)
