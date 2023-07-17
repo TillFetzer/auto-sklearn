@@ -23,15 +23,16 @@ import json
 from collections import defaultdict
 
 
-def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcount, under_folder, performance = "accurancy"):
+def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcount, under_folder, performance =  autosklearn.metrics.accuracy):
     X, y = utils_fairlearn.load_data(dataset)
 
     # ==========================
 
-    fair_metric = utils_fairlearn.set_fair_metric(sf, fairness_constrain)
-    X_train, X_test, y_train, y_test = sklearn.model_selection.train_test_split(
-        X, y, random_state=1
+    on = pd.concat([X[sf], y],axis=1)
+    X_train , X_test, y_train, y_test= utils_fairlearn.stratified_split(
+        *(X.to_numpy(), y.to_numpy(), X[sf].to_numpy()),columns=X.columns,  on = on ,size=0.8,  seed=seed
     )
+
 
     # that can outsorced in another script.
 
