@@ -67,7 +67,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
         include={
             'feature_preprocessor': ["no_preprocessing"],
             'data_preprocessor': ["no_preprocessor"],
-            "fair_preprocessor": ["NoFairPreprocessor","PreferentialSampling", "CorrelationRemover"],
+            #"fair_preprocessor": ["NoFairPreprocessor","PreferentialSampling", "CorrelationRemover"],
             "classifier": [
                 "random_forest"
             ], 

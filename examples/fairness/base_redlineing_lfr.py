@@ -43,11 +43,13 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     fair_metric = utils_fairlearn.set_fair_metric(sf, fairness_constrain)
     utils_fairlearn.add_sensitive_remover(sf)
     utils_fairlearn.add_no_preprocessor()
+    utils_fairlearn.add_no_fair()
+    utils_fairlearn.add_LFR(sf)
 
     ############################################################################
     # Build and fit a classifier
     # ==========================
-    tmp =  file + "/{}/{}/{}/{}/redlineing/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
+    tmp =  file + "/{}/{}/{}/{}/moo+sar+lfr/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
     runtime = runtime
     automl = autosklearn.classification.AutoSklearnClassifier(
         time_left_for_this_task=runtime,  # 3h
@@ -66,14 +68,10 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
         include={
             'feature_preprocessor': ["no_preprocessing"],
             'data_preprocessor': ["no_preprocessor"],
-            "fair_preprocessor": ["SensitiveAttributeRemover"],
+            "fair_preprocessor": ["NoFairPreprocessor","SensitiveAttributeRemover", "LFR"],
             "classifier": [
                 "random_forest"
             ], 
-            "classifier": [
-                "random_forest",
-            ]
-            # "GridSearch_DecisionTree", "ThresholdOptimizer_DecisionTree", , "decision_tree", "ExponentiatedGradient_DecisionTree"
         },
           resampling_strategy='fairness-cv',
         resampling_strategy_arguments= {

@@ -17,6 +17,10 @@ import base_unbalanced
 import base_cr_lfr
 import base_cr_lfr_com
 import sampling_cr_lfr
+import base_redlineing
+import base_redlineing_cr
+import base_redlineing_ps
+import base_redlineing_lfr
 def run_experiment(datasets =["adult"],
  fairness_constrains=["demographic_parity"],
   methods=["moo"], 
@@ -72,6 +76,23 @@ def run_experiment(datasets =["adult"],
                     if method == "ps+cr+lfr":
                         sampling_cr_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance) 
                     if method == "moo+cr*lfr":
-                        base_cr_lfr_com.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)          
+                        base_cr_lfr_com.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)
+                    # experiemtns with redlineing
+                    if method == "redlineing":
+                        redlineing.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)
+                    if method == "moo+sar":
+                         base_redlineing.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)
+                    if method == "moo+sar+cr":
+                        base_redlineing_cr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)
+                    if method == "moo+sar+ps":
+                        base_redlineing_ps.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)
+                    if method == "moo+sar+lfr":
+                        base_redlineing_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)
+                    #if method == "moo+sar+cr+ps+lfr":
+                    #    base_redlineing_all.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)
+                    #if method == "sar+cr+ps+lfr":
+                    #    redlineing_all.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)
+
+
             print("all runs of {} finished".format(dataset))
     print("finished")

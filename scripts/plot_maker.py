@@ -699,14 +699,14 @@ def plot_scaled_values(results,result_folder,plot_feature, needed_methods, one_l
         "so": dict(s=15, marker="x", color="black",fullName="Optimizing for accuracy"),
         "moo_ps_ranker": dict(s=15, marker="x", color =c_color_3,fullName="Moo with optionall sampling"),
         "moo+cr": dict(s=15, marker="x", color="purple",fullName="Moo with optionall correlation remover"),
-
-        "moo+cr+lfr": dict(s=15, marker="o", color="black",fullName="Moo with optionall correlation remover and lfr"),
-        "moo+ps+cr": dict(s=15, marker="o", color ="purple", fullName="Moo with optionall correlation remover and/or sampling"),
-        "moo+ps*cr": dict(s=15, marker="o", color="red",fullName="Moo with optionall correlation remover xor sampling"),
+        "redlineing": dict(s=15, marker="x", color="grey",fullName="Moo without the senstive attribute"),
+        "moo+ps+cr": dict(s=15, marker="o", color ="purple", fullName="Moo with optionall correlation remover xor sampling"),
+        "moo+ps*cr": dict(s=15, marker="o", color="red",fullName="Moo with optionall correlation remover and/or sampling"),
         "moo+lfr":  dict(s=15, marker="o", color="blue", fullName="Moo with optioal lfr"),
         "moo+ps+cr+lfr": dict(s=15, marker="o", color="green", fullName="Moo with optional lfr/ps/cr"),
         "moo+ps+lfr": dict(s=15, marker="o", color="orange", fullName="Moo with optional lfr/ps"),
         "ps+cr+lfr": dict(s=15, marker="o", color="grey", fullName="Moo with one preprocessor"),
+        "moo+cr+lfr": dict(s=15, marker="o", color="yellow", fullName="Moo with optional lfr or cr"),
     }
     for constrain in results.keys():
     
@@ -967,9 +967,14 @@ def generate_latex_table(data, constrain, method, file, compare):
 
 if __name__ == "__main__":
     #methods = ["moo_ps_ranker","moo","moo+cr", "ps_ranker"]
-    methods = [ "moo+ps+cr","moo+ps*cr", 
-               "moo+ps+lfr", "moo+cr+lfr",
-               "moo+ps+cr+lfr","ps+cr+lfr"
+    #"moo", "so", #baslines 
+    #            "ps_ranker", "cr", #one prepreproessor
+    #            "moo_ps_ranker","moo+cr", "moo+lfr", #one prepreproessor
+    methods = [ 
+              
+               "moo", "moo_ps_ranker","so", "ps_ranker", 
+               "lfr",
+                "redlineing"
                ]
     #data = load_data("/home/till/Documents/auto-sklearn/tmp/cross_val/", "200timesstrat", methods)
     #make_plot_3(data)
@@ -983,7 +988,7 @@ if __name__ == "__main__":
     #methods = ["moo","cr"]
     
     #methods = ["moo","ps_ranker","moo_ps_ranker"]
-    data = load_data("/home/till/Desktop/cross_val/","200timesstrat", methods)
+    #data = load_data("/home/till/Desktop/cross_val/","200timesstrat", methods)
     #print()
     #calculate_shapley_values(data,methods,file="/home/till/Documents/auto-sklearn/tmp/", compare="fairness")
     #print(sv)
@@ -999,12 +1004,12 @@ if __name__ == "__main__":
     #                deep_dive[method][seed] = data["error_rate_difference"]["adult"][seed][method]["pareto_config"]
                     
         
-    file = "/home/till/Documents/auto-sklearn/tmp/hypervolumne_with_new_combinations.json"
+    file = "/home/till/Documents/auto-sklearn/tmp/scaled_results_everytime.json"
     #with open(file, 'w') as f:
-    #       json.dump(deep_dive, f, indent=4)
+    #    json.dump(deep_dive, f, indent=4)
     #calc_hypervolume(data, file)
     with open(file) as f:
        results = json.load(f)
    
-    #plot_scaled_values(results,"/home/till/Desktop/new_combinations/",'fairness_scaled_max', methods)
+    plot_scaled_values(results,"/home/till/Desktop/redlineing/",'acc_scaled_max', methods)
     #make_choice_file(data, file, methods)

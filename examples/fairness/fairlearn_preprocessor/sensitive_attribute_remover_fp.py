@@ -1,5 +1,4 @@
-from examples.fairness.fairlearn_preprocessor import FairPreprocessor
-from autosklearn.pipeline.components.base import AutoSklearnComponent
+from autosklearn.pipeline.components.base import AutoSklearnPreprocessingAlgorithm
 from ConfigSpace.configuration_space import ConfigurationSpace
 from typing import Optional
 from autosklearn.askl_typing import FEAT_TYPE_TYPE
@@ -10,7 +9,7 @@ from autosklearn.pipeline.constants import (
     SPARSE
 )
 
-class SensitiveAttributeRemover(FairPreprocessor, AutoSklearnComponent):
+class SensitiveAttributeRemover(AutoSklearnPreprocessingAlgorithm):
     index_sf = None
 
     def __init__(self, random_state):
@@ -25,7 +24,7 @@ class SensitiveAttributeRemover(FairPreprocessor, AutoSklearnComponent):
         self.fitted_ = True
         return self
 
-    def transform(self, X, y=None):
+    def transform(self, X):
         if self.preprocessor is None:
             raise NotImplementedError()
         X.drop(columns=[SensitiveAttributeRemover.index_sf], inplace=True)
