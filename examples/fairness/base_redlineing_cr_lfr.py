@@ -45,11 +45,12 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     utils_fairlearn.add_no_preprocessor()
     utils_fairlearn.add_no_fair()
     utils_fairlearn.add_preferential_sampling(X.columns.get_loc(sf))
+    utils_fairlearn.add_LFR(sf)
 
     ############################################################################
     # Build and fit a classifier
     # ==========================
-    tmp =  file + "/{}/{}/{}/{}/moo+sar+ps/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
+    tmp =  file + "/{}/{}/{}/{}/moo+sar+cr+lfr/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
     runtime = runtime
     automl = autosklearn.classification.AutoSklearnClassifier(
         time_left_for_this_task=runtime,  # 3h
@@ -68,7 +69,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
         include={
             'feature_preprocessor': ["no_preprocessing"],
             'data_preprocessor': ["no_preprocessor"],
-            "fair_preprocessor": ["NoFairPreprocessor","SensitiveAttributeRemover", "PreferentialSampling"],
+            "fair_preprocessor": ["NoFairPreprocessor","SensitiveAttributeRemover","LFR","CorrelationRemover"],
             "classifier": [
                 "random_forest"
             ], 

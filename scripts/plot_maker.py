@@ -171,7 +171,7 @@ def make_plot_3(data):
     )
     
     fig.supxlabel("error",fontsize=label_size)
-    fig.supylabel("1-erd", fontsize=label_size)
+    fig.supylabel("1-equalized_odds", fontsize=label_size)
     def rgb(r: int, g: int, b: int) -> str:
         return "#%02x%02x%02x" % (r, g, b)
 
@@ -184,11 +184,11 @@ def make_plot_3(data):
     styles = {
         "moo": dict(s=15, marker="o", color="red"),
         #"so": dict(s=15, marker="o", color="green"),
-        "moo+ps": dict(s=15, marker="o", color="blue"),
-        "moo+ps+cr": dict(s=15, marker="o", color ="green"),
+        "ps_ranker": dict(s=15, marker="o", color="blue"),
+        "cr": dict(s=15, marker="o", color ="green"),
         "lfr": dict(s=15, marker="o", color=c_color_2),
         "so":  dict(s=15, marker="o", color="black"),
-        "ps": dict(s=15, marker="o", color=c_color),
+        "redlineing": dict(s=15, marker="o", color=c_color),
     }
     for i,constrain in enumerate(data.keys()):
       
@@ -214,11 +214,11 @@ def make_plot_3(data):
             
             for seed in data[constrain][dataset].keys():
                 moo_pf.append(np.array(data[constrain][dataset][seed]['moo']['points']))
-                moo_ps_xor_cr_pf.append(np.array(data[constrain][dataset][seed]['moo+ps+cr']['points']))
-                op_pf.append(np.array(data[constrain][dataset][seed]['ps+cr+lfr']['points']))
-                moo_ps_cr_pf.append(np.array(data[constrain][dataset][seed]['moo+ps*cr']['points']))
-                moo_ps_lfr_pf.append(np.array(data[constrain][dataset][seed]['moo+ps+lfr']['points']))
-                all_pf.append(np.array(data[constrain][dataset][seed]['moo+ps+cr+lfr']['points']))
+                moo_ps_xor_cr_pf.append(np.array(data[constrain][dataset][seed]['cr']['points']))
+                #op_pf.append(np.array(data[constrain][dataset][seed]['ps+cr+lfr']['points']))
+                moo_ps_cr_pf.append(np.array(data[constrain][dataset][seed]['ps_ranker']['points']))
+                moo_ps_lfr_pf.append(np.array(data[constrain][dataset][seed]['lfr']['points']))
+                all_pf.append(np.array(data[constrain][dataset][seed]['redlineing']['points']))
               
 
                 #moo
@@ -227,29 +227,29 @@ def make_plot_3(data):
                 plot(data[constrain][dataset][seed]['moo']['points'], ax=ax, **styles["moo"], alpha = alpha)
 
                 #moo+ps+cr
-                length = len(data[constrain][dataset][seed]['moo+ps+cr']['points'])
+                length = len(data[constrain][dataset][seed]['cr']['points'])
                 max_len= length if max_len < length else max_len
-                plot(data[constrain][dataset][seed]['moo+ps+cr']['points'], ax=ax, **styles["moo+ps+cr"], alpha = alpha)
+                plot(data[constrain][dataset][seed]['cr']['points'], ax=ax, **styles["cr"], alpha = alpha)
 
                 #ps+cr+lfr
-                length = len(data[constrain][dataset][seed]['ps+cr+lfr']['points'])
+                length = len(data[constrain][dataset][seed]['ps_ranker']['points'])
                 max_len= length if max_len < length else max_len
-                plot(data[constrain][dataset][seed]['ps+cr+lfr']['points'], ax=ax, **styles["ps"], alpha = alpha)
+                plot(data[constrain][dataset][seed]['ps_ranker']['points'], ax=ax, **styles["ps_ranker"], alpha = alpha)
 
                 #moo+ps*cr
-                length = len(data[constrain][dataset][seed]['moo+ps*cr']['points'])
-                max_len= length if max_len < length else max_len
-                plot(data[constrain][dataset][seed]['moo+ps*cr']['points'], ax=ax, **styles["moo+ps"], alpha = alpha)
+                #length = len(data[constrain][dataset][seed]['lfr']['points'])
+                #max_len= length if max_len < length else max_len
+                #plot(data[constrain][dataset][seed]['lfr']['points'], ax=ax, **styles["lfr"], alpha = alpha)
 
                 #moo+ps+lfr
-                length = len(data[constrain][dataset][seed]['moo+ps+lfr']['points'])
+                length = len(data[constrain][dataset][seed]['redlineing']['points'])
                 max_len= length if max_len < length else max_len
-                plot(data[constrain][dataset][seed]['moo+ps+lfr']['points'], ax=ax, **styles["so"], alpha = alpha)
+                plot(data[constrain][dataset][seed]['redlineing']['points'], ax=ax, **styles["redlineing"], alpha = alpha)
 
                 #moo+ps+cr+lfr
-                length = len(data[constrain][dataset][seed]['moo+ps+cr+lfr']['points'])
-                max_len= length if max_len < length else max_len
-                plot(data[constrain][dataset][seed]['moo+ps+cr+lfr']['points'], ax=ax, **styles["lfr"], alpha = alpha)
+                #length = len(data[constrain][dataset][seed]['moo+ps+cr+lfr']['points'])
+                #max_len= length if max_len < length else max_len
+                #plot(data[constrain][dataset][seed]['moo+ps+cr+lfr']['points'], ax=ax, **styles["lfr"], alpha = alpha)
 
 
 
@@ -265,9 +265,9 @@ def make_plot_3(data):
                     moo_ps_xor_cr_pf[i] = np.vstack((moo_ps_xor_cr_pf[i], [moo_ps_xor_cr_pf[i][-1]]*(diff)))
                 
                 #ps+cr+lfr
-                diff = max_len-len(op_pf[i])
-                if diff:
-                    op_pf[i] = np.vstack((op_pf[i], [op_pf[i][-1]]*(diff)))
+                #diff = max_len-len(op_pf[i])
+                #if diff:
+                #    op_pf[i] = np.vstack((op_pf[i], [op_pf[i][-1]]*(diff)))
                 
                 #moo+ps*cr
                 diff = max_len-len(moo_ps_cr_pf[i])
@@ -292,34 +292,33 @@ def make_plot_3(data):
             pf = [
                 np.stack(moo_pf, axis=0),
                 np.stack(moo_ps_xor_cr_pf, axis=0),
-                np.stack(op_pf, axis=0),
+                #np.stack(op_pf, axis=0),
                 np.stack(moo_ps_cr_pf, axis=0),
-                np.stack(moo_ps_lfr_pf, axis=0),
+                #np.stack(moo_ps_lfr_pf, axis=0),
                 np.stack(all_pf, axis=0)
                 ]
             # , styles["redlineing_points"]['color'] , styles["moo_ps_pareto"]['color'],styles["ps_pareto"]['color']
             plots_we(pf, ax, [
                               styles["moo"]['color'],
-                              styles["moo+ps+cr"]['color'],
-                              styles["ps"]['color'],
-                              styles["moo+ps"]['color'],
-                              styles["so"]['color'], 
-                              styles["lfr"]['color'],
+                              styles["cr"]['color'],
+                              styles["ps_ranker"]['color'],
+                              styles["redlineing"]['color'], 
+                              #styles["lfr"]['color'],
                               ])
             ax.tick_params(axis="both", which="major", labelsize=tick_size)
     legend_elements = [
         Line2D([0], [0], color=styles["moo"]['color'], lw=4, label="Moo"),
-        Line2D([0], [0], color=styles["moo+ps+cr"]['color'], lw=4, label='moo+ps+cr'),
-        Line2D([0], [0], color=styles["ps"]['color'],lw=4, label='only preprocessor'),
-        Line2D([0], [0], color=styles["moo+ps"]['color'], lw=4, label="moo+ps*cr"),
-        Line2D([0], [0], color=styles["so"]['color'], lw=4, label='moo+ps+lfr'),
-        Line2D([0], [0], color=styles["lfr"]['color'], lw=4, label='all')
+        Line2D([0], [0], color=styles["cr"]['color'], lw=4, label='cr'),
+        Line2D([0], [0], color=styles["ps_ranker"]['color'],lw=4, label='ps'),
+        
+        Line2D([0], [0], color=styles["redlineing"]['color'], lw=4, label='redlineing')
+        
       
                    ]
     fig.tight_layout(rect=[0.03, 0.09, 1, 1], pad = 5)
     fig.legend(handles=legend_elements, loc=3,  prop={'size': 16})
     #save_folder = "/home/till/Desktop/all_prepreprocessor_plots/sampling+cr/{}".format("error_rate_difference_all")
-    save_folder = "/home/till/Desktop/new_combinations/{}".format("erd.png")
+    save_folder = "/home/till/Desktop/redlineing/{}".format("equalized_odds.png")
     #plt.show()
     plt.savefig(save_folder)
 def plot_arrows(
@@ -643,6 +642,8 @@ def calc_hypervolume(data,file):
             hypervolume_dict[constrain][dataset]["hypervolume"] = []
             hypervolume_dict[constrain][dataset]["fairness"] = []
             hypervolume_dict[constrain][dataset]["acc"] = []
+            hypervolume_dict[constrain][dataset]["fairness_best"] = []
+            hypervolume_dict[constrain][dataset]["acc_best"] = []
             hypervolume_dict[constrain][dataset]["hypervolume_seed_range"] = []
             hypervolume_dict[constrain][dataset]["fairness_seed_range"] = []
             hypervolume_dict[constrain][dataset]["acc_seed_range"] = []
@@ -664,6 +665,8 @@ def calc_hypervolume(data,file):
                         hypervolume_dict[constrain][dataset]["hypervolume"].append(mean(help_dict_hv[method]))
                         hypervolume_dict[constrain][dataset]["fairness"].append(mean(help_dict_f[method]))
                         hypervolume_dict[constrain][dataset]["acc"].append(mean(help_dict_a[method]))
+                        hypervolume_dict[constrain][dataset]["acc_best"].append(max(help_dict_a[method]))
+                        hypervolume_dict[constrain][dataset]["fairness_best"].append(max(help_dict_f[method]))
                         hypervolume_dict[constrain][dataset]["hypervolume_seed_range"].append(max(help_dict_hv[method])-min(help_dict_hv[method]))
                         hypervolume_dict[constrain][dataset]["fairness_seed_range"].append(max(help_dict_f[method])-min(help_dict_f[method]))
                         hypervolume_dict[constrain][dataset]["acc_seed_range"].append(max(help_dict_a[method])-min(help_dict_a[method]))
@@ -671,9 +674,13 @@ def calc_hypervolume(data,file):
             hv = np.array(hypervolume_dict[constrain][dataset]["hypervolume"]).reshape(-1,1)
             fairness = np.array(hypervolume_dict[constrain][dataset]["fairness"]).reshape(-1,1)
             accurancy = np.array(hypervolume_dict[constrain][dataset]["acc"]).reshape(-1,1)
+            fairness_best = np.array(hypervolume_dict[constrain][dataset]["fairness_best"]).reshape(-1,1)
+            accurancy_best = np.array(hypervolume_dict[constrain][dataset]["acc_best"]).reshape(-1,1)
             scaled_hv = scaler.fit_transform(hv).tolist()
             scaled_fairness = scaler.fit_transform(fairness).tolist()
             scaled_acc = scaler.fit_transform(accurancy).tolist()
+            scaled_fairness_best = scaler.fit_transform(fairness_best).tolist()
+            scaled_acc_best = scaler.fit_transform(accurancy_best).tolist()
             
             hypervolume_dict[constrain][dataset]["hypervolume_max_diff"] = max(hypervolume_dict[constrain][dataset]["hypervolume"]) - min(hypervolume_dict[constrain][dataset]["hypervolume"])
             hypervolume_dict[constrain][dataset]["fairness_max_diff"] =  max(hypervolume_dict[constrain][dataset]["fairness"]) - min(hypervolume_dict[constrain][dataset]["fairness"])
@@ -681,6 +688,8 @@ def calc_hypervolume(data,file):
             hypervolume_dict[constrain][dataset]["hypervolume_scaled_max"] = [value[0] for value in scaled_hv]
             hypervolume_dict[constrain][dataset]["fairness_scaled_max"] = [1-value[0] for value in scaled_fairness]
             hypervolume_dict[constrain][dataset]["acc_scaled_max"] = [1-value[0] for value in scaled_acc]
+            hypervolume_dict[constrain][dataset]["fairness_best_scaled_max"] = [1-value[0] for value in scaled_fairness]
+            hypervolume_dict[constrain][dataset]["acc_best_scaled_max"] = [1-value[0] for value in scaled_acc]
     print(hypervolume_dict)
     with open(file, 'w') as f:
         json.dump(hypervolume_dict, f, indent=4)
@@ -972,8 +981,7 @@ if __name__ == "__main__":
     #            "moo_ps_ranker","moo+cr", "moo+lfr", #one prepreproessor
     methods = [ 
               
-               "moo", "moo_ps_ranker","so", "ps_ranker", 
-               "lfr",
+               "moo",  "ps_ranker", 'cr', "so", "lfr", 
                 "redlineing"
                ]
     #data = load_data("/home/till/Documents/auto-sklearn/tmp/cross_val/", "200timesstrat", methods)
@@ -1004,12 +1012,12 @@ if __name__ == "__main__":
     #                deep_dive[method][seed] = data["error_rate_difference"]["adult"][seed][method]["pareto_config"]
                     
         
-    file = "/home/till/Documents/auto-sklearn/tmp/scaled_results_everytime.json"
+    file = "/home/till/Documents/auto-sklearn/tmp/scaled_results_everytime_without_lfr.json"
     #with open(file, 'w') as f:
     #    json.dump(deep_dive, f, indent=4)
     #calc_hypervolume(data, file)
     with open(file) as f:
-       results = json.load(f)
+      results = json.load(f)
    
-    plot_scaled_values(results,"/home/till/Desktop/redlineing/",'acc_scaled_max', methods)
+    plot_scaled_values(results,"/home/till/Desktop/redlineing/with_lfr/","fairness_best_scaled_max", methods)
     #make_choice_file(data, file, methods)
