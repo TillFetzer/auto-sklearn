@@ -46,6 +46,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     utils_fairlearn.add_no_fair()
     utils_fairlearn.add_preferential_sampling(X.columns.get_loc(sf))
     utils_fairlearn.add_LFR(sf)
+    utils_fairlearn.add_correlation_remover(sf)
 
     ############################################################################
     # Build and fit a classifier
