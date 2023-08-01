@@ -29,6 +29,7 @@ import base_redlineing_ps_cr
 import base_redlineing_ps_cr_lfr
 import redlineing_ps_cr_lfr
 
+import base_sar_ps_com
 
 def run_experiment(datasets =["adult"],
  fairness_constrains=["demographic_parity"],
@@ -108,7 +109,8 @@ def run_experiment(datasets =["adult"],
                         base_redlineing_ps_cr_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)
                     if method == "sar+ps+cr+lfr":
                         redlineing_ps_cr_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)
-
+                    if method == "moo+sar*ps":
+                        base_sar_ps_com.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)   
 
 
             print("all runs of {} finished".format(dataset))

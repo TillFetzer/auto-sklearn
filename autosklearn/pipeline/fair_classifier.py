@@ -377,6 +377,7 @@ class SimpleFairClassificationPipeline(BasePipeline, ClassifierMixin):
 
         steps.extend(
             [
+                # TODO: change locartion, because I write it difference which is not important 
                 [
                     "fair_preprocessor",
                     FairChoice(

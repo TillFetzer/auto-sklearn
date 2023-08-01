@@ -701,21 +701,23 @@ def plot_scaled_values(results,result_folder,plot_feature, needed_methods, one_l
     c_color_3 = rgb(0,128, 128)
     c_color_4 = rgb(128,128,0)
     styles = {
-        "moo": dict(s=15, marker="x", color="red",fullName="Moo"),
-        "cr": dict(s=15, marker="x", color="green",fullName="Correlation remover"),
-        "ps_ranker": dict(s=15, marker="x", color="orange",fullName="Sampling"),
-        "lfr": dict(s=15, marker="x", color="blue",fullName="LFR"),
-        "so": dict(s=15, marker="x", color="black",fullName="Optimizing for accuracy"),
-        "moo_ps_ranker": dict(s=15, marker="x", color =c_color_3,fullName="Moo with optionall sampling"),
-        "moo+cr": dict(s=15, marker="x", color="purple",fullName="Moo with optionall correlation remover"),
-        "redlineing": dict(s=15, marker="x", color="grey",fullName="Moo without the senstive attribute"),
-        "moo+ps+cr": dict(s=15, marker="o", color ="purple", fullName="Moo with optionall correlation remover xor sampling"),
-        "moo+ps*cr": dict(s=15, marker="o", color="red",fullName="Moo with optionall correlation remover and/or sampling"),
-        "moo+lfr":  dict(s=15, marker="o", color="blue", fullName="Moo with optioal lfr"),
-        "moo+ps+cr+lfr": dict(s=15, marker="o", color="green", fullName="Moo with optional lfr/ps/cr"),
-        "moo+ps+lfr": dict(s=15, marker="o", color="orange", fullName="Moo with optional lfr/ps"),
-        "ps+cr+lfr": dict(s=15, marker="o", color="grey", fullName="Moo with one preprocessor"),
-        "moo+cr+lfr": dict(s=15, marker="o", color="yellow", fullName="Moo with optional lfr or cr"),
+        "moo": dict(s=15, marker="x", color="red",fullName="Moo",  edgecolors= "black"),
+        "cr": dict(s=15, marker="x", color="green",fullName="Correlation remover",edgecolors= "black"),
+        "ps_ranker": dict(s=15, marker="x", color="orange",fullName="Sampling",edgecolors= "black"),
+        "lfr": dict(s=15, marker="x", color="blue",fullName="LFR",edgecolors= "black"),
+        "so": dict(s=15, marker="x", color="black",fullName="Optimizing for accuracy", edgecolors= "black"),
+        "moo_ps_ranker": dict(s=15, marker="x", color =c_color_3,fullName="Moo with optionall sampling",edgecolors= "black"),
+        "moo+cr": dict(s=15, marker="x", color="purple",fullName="Moo with optionall correlation remover",edgecolors= "black"),
+        "moo+sar": dict(s=15, marker="x", color="yellow",fullName="Moo with optionall remove the sensititve attribute",edgecolors= "black"),
+        "redlineing": dict(s=15, marker="x", color="grey",fullName="Moo without the senstive attribute",edgecolors= "black"),
+
+        "moo+ps+cr": dict(s=15, marker="o", color ="purple", fullName="Moo with optionall correlation remover xor sampling",edgecolors= "black"),
+        "moo+ps*cr": dict(s=15, marker="o", color="red",fullName="Moo with optionall correlation remover and/or sampling",edgecolors= "black"),
+        "moo+lfr":  dict(s=15, marker="o", color="blue", fullName="Moo with optioal lfr",edgecolors= "black"),
+        "moo+ps+cr+lfr": dict(s=15, marker="o", color="green", fullName="Moo with optional lfr/ps/cr",edgecolors= "black"),
+        "moo+ps+lfr": dict(s=15, marker="o", color="orange", fullName="Moo with optional lfr/ps",edgecolors= "black"),
+        "ps+cr+lfr": dict(s=15, marker="o", color="grey", fullName="Moo with one preprocessor",edgecolors= "black"),
+        "moo+cr+lfr": dict(s=15, marker="o", color="yellow", fullName="Moo with optional lfr or cr",edgecolors= "black"),
     }
     for constrain in results.keys():
     
@@ -981,7 +983,8 @@ if __name__ == "__main__":
     #            "moo_ps_ranker","moo+cr", "moo+lfr", #one prepreproessor
     methods = [ 
               
-               "moo",  "ps_ranker", 'cr', "so", "lfr", 
+               "moo",  "so", "cr", "ps_ranker", "lfr",
+                "moo_ps_ranker", "moo+cr",  "moo+sar", "moo+lfr",
                 "redlineing"
                ]
     #data = load_data("/home/till/Documents/auto-sklearn/tmp/cross_val/", "200timesstrat", methods)
@@ -996,7 +999,7 @@ if __name__ == "__main__":
     #methods = ["moo","cr"]
     
     #methods = ["moo","ps_ranker","moo_ps_ranker"]
-    #data = load_data("/home/till/Desktop/cross_val/","200timesstrat", methods)
+    data = load_data("/home/till/Desktop/cross_val/","200timesstrat", methods)
     #print()
     #calculate_shapley_values(data,methods,file="/home/till/Documents/auto-sklearn/tmp/", compare="fairness")
     #print(sv)
@@ -1012,12 +1015,11 @@ if __name__ == "__main__":
     #                deep_dive[method][seed] = data["error_rate_difference"]["adult"][seed][method]["pareto_config"]
                     
         
-    file = "/home/till/Documents/auto-sklearn/tmp/scaled_results_everytime_without_lfr.json"
+    file = "/home/till/Documents/auto-sklearn/tmp/scaled_results_optionall.json"
     #with open(file, 'w') as f:
     #    json.dump(deep_dive, f, indent=4)
     #calc_hypervolume(data, file)
     with open(file) as f:
       results = json.load(f)
    
-    plot_scaled_values(results,"/home/till/Desktop/redlineing/with_lfr/","fairness_best_scaled_max", methods)
-    #make_choice_file(data, file, methods)
+    plot_scaled_values(results,"/home/till/Desktop/redlineing/all/","hypervolume_scaled_max", methods)
