@@ -68,7 +68,7 @@ class LFR(FairPreprocessor, AutoSklearnComponent):
         )
         # patched something in aif360, not good
         #X = np.array(X)
-        print(os.environ['R_HOME'])
+        #print(os.environ['R_HOME'])
         self.preprocessor.fit(X, Y)
         return self
 
