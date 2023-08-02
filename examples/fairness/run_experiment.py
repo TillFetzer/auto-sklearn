@@ -112,7 +112,7 @@ def run_experiment(datasets =["adult"],
                     if method == "moo+sar*ps":
                         base_sar_ps_com.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)   
                     if method == "lfr_test":
-                        lfr.run_experiment(dataset, constrain, sf[i], 5, file, seed, runcount, under_folder, performance)
+                        lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, 5, under_folder, performance)
 
             print("all runs of {} finished".format(dataset))
     print("finished")
