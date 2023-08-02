@@ -19,7 +19,7 @@ from examples.fairness.fairlearn_preprocessor.abstract_fair_preprocessor import 
 from autosklearn.pipeline.components.base import AutoSklearnComponent
 import numpy as np
 import examples.fairness.only_label
-
+import os
 class LFR(FairPreprocessor, AutoSklearnComponent):
     index_sf = None
     sf = None
@@ -68,6 +68,7 @@ class LFR(FairPreprocessor, AutoSklearnComponent):
         )
         # patched something in aif360, not good
         #X = np.array(X)
+        print(os.environ[R_HOME])
         self.preprocessor.fit(X, Y)
         return self
 

@@ -17,6 +17,7 @@ import base_sampling_cr_lfr
 import base_sampling_cr_com
 import base_cr_lfr_com
 import base_sar_ps_com
+import redlineing_ps_cr_lfr
 import utils_fairlearn
 parser=argparse.ArgumentParser()
 
@@ -83,4 +84,6 @@ for constrain in fairness_constrains:
                     sampling_cr_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")   
                 if method == "moo+sar*ps":
                     base_sar_ps_com.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")   
+                if method == "sar+ps+cr+lfr":
+                    redlineing_ps_cr_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
 print("finished")
