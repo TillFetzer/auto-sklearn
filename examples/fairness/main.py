@@ -38,7 +38,7 @@ print(fairness_constrains)
 run_experiment(datasets =[dataset], 
                fairness_constrains=[fairness_constrains], 
                methods=[method], 
-               file="/work/ws/nemo/fr_tf167-conda-0/autosklearn", 
+               file="/work/ws/nemo/fr_tf167-conda-0/results", 
                seeds= [seed], 
                sf=[sf],
                runtime = 200000, 
