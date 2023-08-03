@@ -34,7 +34,7 @@ import base_sar_ps_com
 def run_experiment(datasets =["adult"],
  fairness_constrains=["demographic_parity"],
   methods=["moo"], 
-  file="/work/dlclarge2/fetzert-MySpace/autosklearn", 
+  file="/work/dlclarge2/fetzert-MySpace/results/", 
   seeds=[42,42,42],
    sf=["sex"] ,
    runtime = 10800, 
