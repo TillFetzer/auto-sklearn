@@ -66,6 +66,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
         seed = seed,
         disable_evaluator_output=["model"],
         tmp_folder =  tmp + "/del",
+        load_models= False,
         include={
             "fair_preprocessor": ["NoFairPreprocessor","PreferentialSampling"],
             'feature_preprocessor': ["no_preprocessing",'SensitiveAttributeRemover'],
