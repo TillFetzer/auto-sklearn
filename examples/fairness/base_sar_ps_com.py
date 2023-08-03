@@ -64,7 +64,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
         smac_scenario_args={"runcount_limit": runcount},
         memory_limit=130000,
         seed = seed,
-        disable_evaluator_output=["model"]
+        disable_evaluator_output=["model"],
         tmp_folder =  tmp + "/del",
         include={
             "fair_preprocessor": ["NoFairPreprocessor","PreferentialSampling"],
