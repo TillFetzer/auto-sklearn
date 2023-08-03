@@ -79,7 +79,7 @@ def stratified_split(
 
 def load_data(name):
     cache_dir = '/work/ws/nemo/fr_tf167-conda-0'
-    openml.config.cache_directory = cache_dir
+    openml.config.set_root_cache_directory(cache_dir)
     if name == "adult":
         X, y = sklearn.datasets.fetch_openml(
             data_id=1590, return_X_y=True, as_frame=True
