@@ -60,9 +60,11 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
         # metric=autosklearn.metrics.accuracy,
         delete_tmp_folder_after_terminate=False,
         initial_configurations_via_metalearning=0,
+        ensemble_size=0,
         smac_scenario_args={"runcount_limit": runcount},
         memory_limit=130000,
         seed = seed,
+        disable_evaluator_output=["model"]
         tmp_folder =  tmp + "/del",
         include={
             "fair_preprocessor": ["NoFairPreprocessor","PreferentialSampling"],
