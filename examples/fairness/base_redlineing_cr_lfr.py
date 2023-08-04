@@ -71,7 +71,6 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
         tmp_folder=autosklearn_directory,
         disable_evaluator_output=["model"],
         load_models= False,
-        seed = seed,
         smac_scenario_args={"runcount_limit": runcount},
         include={
             'feature_preprocessor': ["no_preprocessing"],

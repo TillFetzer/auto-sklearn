@@ -97,7 +97,7 @@ def run_experiment(datasets =["adult"],
                     if method == "moo+sar+ps":
                         base_redlineing_ps.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)
                     if method == "moo+sar+lfr":
-                        base_redlineing_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)
+                        base_redlineing_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, 5, under_folder, performance)
                     
                     if method == "moo+sar+cr+lfr":
                         base_redlineing_cr_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)
