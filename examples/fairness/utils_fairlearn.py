@@ -3,7 +3,7 @@
 
 import autosklearn
 import fairlearn
-import openml
+#import openml
 from autosklearn.askl_typing import FEAT_TYPE_TYPE
 from autosklearn.pipeline.constants import (
     DENSE,
@@ -19,7 +19,6 @@ import pandas as pd
 from pprint import pprint
 
 from sklearn.model_selection import train_test_split
-
 from examples.fairness.fairlearn_preprocessor import add_fair_preprocessor
 # TODO better import
 from examples.fairness.fairlearn_preprocessor.no_preprocessor import no_preprocessor
@@ -79,7 +78,7 @@ def stratified_split(
 
 def load_data(name):
     cache_dir = '/work/ws/nemo/fr_tf167-conda-0'
-    openml.config.set_root_cache_directory(cache_dir)
+    #openml.config.set_root_cache_directory(cache_dir)
     if name == "adult":
         X, y = sklearn.datasets.fetch_openml(
             data_id=1590, return_X_y=True, as_frame=True
@@ -351,10 +350,34 @@ def add_preferential_sampling(index_sf):
 def add_no_fair():
     add_fair_preprocessor(NoFairPreprocessor)
    
+import subprocess
 
-
-
-
+def save_history(autosklearn_directory, runhistory, result_folder):
+    
+    script = 'cp -r %s %s' % (runhistory, result_folder)
+    proc = subprocess.run(
+        script,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        shell=True,
+        executable='/bin/bash',
+    )
+    print('*' * 80)
+    print(script)
+    print(proc.stdout)
+    print(proc.stderr)
+    script = 'rm -rf %s' % autosklearn_directory
+    print('*' * 80)
+    print(script)
+    proc = subprocess.run(
+        script,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        shell=True,
+        executable='/bin/bash',
+    )
+    print(proc.stdout)
+    print(proc.stderr)
 #def add_preferential_sampling(index_sf):
 #    autosklearn.pipeline.components.feature_preprocessing.add_preprocessor(PreferentialSampling)
 #    PreferentialSampling.utils_fairlearn(index_sf)

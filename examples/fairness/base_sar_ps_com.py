@@ -1,4 +1,5 @@
 from typing import Optional
+import os
 import numpy as np
 import pandas as pd
 from ConfigSpace.configuration_space import ConfigurationSpace
@@ -17,7 +18,7 @@ import autosklearn.classification
 import autosklearn.metrics
 
 import shutil
-
+import tempfile
 # TODO change to new location if it is avaible
 import utils_fairlearn
 import json
@@ -47,7 +48,9 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     ############################################################################
     # Build and fit a classifier
     # ==========================
-    tmp =  file + "/{}/{}/{}/{}/moo+sar*ps/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
+    result_folder =  file + "/{}/{}/{}/{}/moo+sar*ps/{}".format(under_folder, fairness_constrain, dataset, seed, runcount)
+    tempdir = tempfile.mkdtemp()
+    autosklearn_directory = tempdir + 'dir_moo+sar+ps_com_{}'.format(seed)
     runtime = runtime
     automl = autosklearn.classification.AutoSklearnClassifier(
         time_left_for_this_task=runtime,  # 3h
@@ -64,8 +67,8 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
         smac_scenario_args={"runcount_limit": runcount},
         memory_limit=130000,
         seed = seed,
+        tmp_folder=autosklearn_directory,
         disable_evaluator_output=["model"],
-        tmp_folder =  tmp + "/del",
         load_models= False,
         include={
             "fair_preprocessor": ["NoFairPreprocessor","PreferentialSampling"],
@@ -92,8 +95,9 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     #    pickle.dump(cs, f)
     # sensitive attributes needs to go out
     automl.fit(X_train, y_train, dataset_name="adult")
-
-
-    shutil.copy(tmp + "/del/smac3-output/run_{}/runhistory.json".format(seed), tmp )
-    shutil.rmtree(tmp + "/del")
-   
+    import subprocess
+    import os
+    runhistory =  autosklearn_directory +  "/smac3-output/run_{}/runhistory.json".format(seed)
+    #runhistory = 
+    utils_fairlearn.save_history(autosklearn_directory, runhistory, result_folder)
+    

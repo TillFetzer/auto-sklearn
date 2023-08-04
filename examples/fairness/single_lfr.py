@@ -89,6 +89,6 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     # =================================
    
 
-    shutil.copy(tmp + "/del/smac3-output/run_{}/runhistory.json".format(seed), tmp )
-    shutil.rmtree(tmp + "/del")
+    utils_fairlearn.save_history(autosklearn_directory, runhistory, result_folder)
+    
   
