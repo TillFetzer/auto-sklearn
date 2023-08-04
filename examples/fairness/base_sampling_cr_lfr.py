@@ -51,7 +51,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     result_folder =  file + "/{}/{}/{}/{}/moo_ps_cr_lfr/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
     runtime = runtime
     tempdir = tempfile.mkdtemp()
-    autosklearn_directory = tempdir + 'dir_moo+ps+cr+lfr_{}'.format(seed)
+    autosklearn_directory = tempdir + 'dir_moo_ps_cr_lfr_{}'.format(seed)
     automl = autosklearn.classification.AutoSklearnClassifier(
         time_left_for_this_task=runtime,  # 3h
 
@@ -69,7 +69,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
         seed = seed,
         tmp_folder=autosklearn_directory,
         disable_evaluator_output=["model"],
-          load_models= False,
+        load_models= False,
         include={
             'feature_preprocessor': ["no_preprocessing"],
             'data_preprocessor': ["no_preprocessor"],
