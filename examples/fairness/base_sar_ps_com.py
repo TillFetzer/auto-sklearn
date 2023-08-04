@@ -48,9 +48,9 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     ############################################################################
     # Build and fit a classifier
     # ==========================
-    result_folder =  file + "/{}/{}/{}/{}/moo+sar*ps/{}".format(under_folder, fairness_constrain, dataset, seed, runcount)
+    result_folder =  file + "/{}/{}/{}/{}/moo_sar_ps_com/{}timestrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
     tempdir = tempfile.mkdtemp()
-    autosklearn_directory = tempdir + 'dir_moo+sar+ps_com_{}'.format(seed)
+    autosklearn_directory = tempdir + 'dir_moo_sar_ps_com_{}'.format(seed)
     runtime = runtime
     automl = autosklearn.classification.AutoSklearnClassifier(
         time_left_for_this_task=runtime,  # 3h
@@ -97,6 +97,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     automl.fit(X_train, y_train, dataset_name="adult")
     import subprocess
     import os
+
     runhistory =  autosklearn_directory +  "/smac3-output/run_{}/runhistory.json".format(seed)
     #runhistory = 
     utils_fairlearn.save_history(autosklearn_directory, runhistory, result_folder)

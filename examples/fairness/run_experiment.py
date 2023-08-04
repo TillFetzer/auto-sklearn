@@ -74,7 +74,7 @@ def run_experiment(datasets =["adult"],
                     if method == "moo+ps+cr":
                         base_sampling_cr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)
                     if method == "moo+ps*cr":
-                        base_sampling_cr_com.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance) 
+                        base_sampling_cr_com.run_experiment(dataset, constrain, sf[i], runtime, file, seed, 5, under_folder, performance) 
                     if method == "moo+lfr":
                         base_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)
                     if method == "moo+ps+cr+lfr":

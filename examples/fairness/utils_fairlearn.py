@@ -353,6 +353,18 @@ def add_no_fair():
 import subprocess
 
 def save_history(autosklearn_directory, runhistory, result_folder):
+    script = 'mkdir -p %s' % (result_folder)
+    proc = subprocess.run(
+        script,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        shell=True,
+        executable='/bin/bash',
+    )
+    print('*' * 80)
+    print(script)
+    print(proc.stdout)
+    print(proc.stderr)
     
     script = 'cp -r %s %s' % (runhistory, result_folder)
     proc = subprocess.run(

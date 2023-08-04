@@ -52,8 +52,6 @@ for constrain in fairness_constrains:
                     base.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test", performance = performance)
                 if method == "sar":
                     redlineing.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
-                
-               
                 if method == "cr":
                     corrleation_remover.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test",performance = autosklearn.metrics.f1_macro)
                 if method == "lfr":
