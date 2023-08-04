@@ -16,7 +16,7 @@ import sklearn.metrics
 import autosklearn.classification
 import autosklearn.metrics
 
-import shutil
+import tempfile
 
 # TODO change to new location if it is avaible
 import utils_fairlearn
@@ -48,8 +48,10 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     ############################################################################
     # Build and fit a classifier
     # ==========================
-    tmp =  file + "/{}/{}/{}/{}/moo+ps+cr+lfr/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
+    result_folder =  file + "/{}/{}/{}/{}/moo+ps+cr+lfr/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
     runtime = runtime
+    tempdir = tempfile.mkdtemp()
+    autosklearn_directory = tempdir + 'dir_moo+ps+cr+lfr_{}'.format(seed)
     automl = autosklearn.classification.AutoSklearnClassifier(
         time_left_for_this_task=runtime,  # 3h
 
@@ -63,8 +65,10 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
         initial_configurations_via_metalearning=0,
         smac_scenario_args={"runcount_limit": runcount},
         memory_limit=130000,
+        ensemble_size=0,
         seed = seed,
-        tmp_folder =  tmp + "/del",
+        tmp_folder=autosklearn_directory,
+        disable_evaluator_output=["model"],
         include={
             'feature_preprocessor': ["no_preprocessing"],
             'data_preprocessor': ["no_preprocessor"],
@@ -89,8 +93,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     #    pickle.dump(cs, f)
     # sensitive attributes needs to go out
     automl.fit(X_train, y_train, dataset_name="adult")
-
-
+    runhistory =  autosklearn_directory +  "/smac3-output/run_{}/runhistory.json".format(seed)
     utils_fairlearn.save_history(autosklearn_directory, runhistory, result_folder)
     
    

@@ -10,7 +10,7 @@ args=parser.parse_args()
 idx = args.idx
 under_folder = args.uf
 seeds = [12345,25,42,45451,97,13,27,39,41,53]
-methods = ["moo+sar+ps+cr+lfr","moo+sar+ps+lfr","sar+ps+cr+lfr", "moo+sar+cr+lfr"]
+methods = ["moo+sar+ps+cr+lfr"]
 
 
             
@@ -38,7 +38,7 @@ print(fairness_constrains)
 run_experiment(datasets =[dataset], 
                fairness_constrains=[fairness_constrains], 
                methods=[method], 
-               file="/work/ws/nemo/fr_tf167-conda-0/results", 
+               file="/work/ws/nemo/fr_tf167-conda-0/autosklearn", 
                seeds= [seed], 
                sf=[sf],
                runtime = 200000, 
