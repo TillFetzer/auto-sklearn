@@ -69,6 +69,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
         seed = seed,
         tmp_folder=autosklearn_directory,
         disable_evaluator_output=["model"],
+          load_models= False,
         include={
             'feature_preprocessor': ["no_preprocessing"],
             'data_preprocessor': ["no_preprocessor"],
