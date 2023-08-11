@@ -1117,7 +1117,7 @@ if __name__ == "__main__":
 
         "moo_sar_cr_lfr",
         "moo_sar_lfr",
-        "moo_sar_ps_lfr",
+        #"moo_sar_ps_lfr",
         "sar_cr_ps_lfr",
         "moo_sar_ps_com",
         #"moo+sar+cr",
