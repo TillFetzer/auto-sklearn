@@ -29,7 +29,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     tempdir = tempfile.mkdtemp()
     autosklearn_directory = tempdir + 'dir_moo_sar_lfr_{}'.format(seed)
     runhistory =  autosklearn_directory +  "/smac3-output/run_{}/runhistory.json".format(seed)
-    if os.path.exists(runhistory):
+    if os.path.exists(result_folder):
         return
     X, y = utils_fairlearn.load_data(dataset)
 
