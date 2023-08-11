@@ -28,13 +28,11 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     result_folder =  file + "/{}/{}/{}/{}/moo_sar_lfr/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
     runtime = runtime
     tempdir = tempfile.mkdtemp()
-    autosklearn_directory = tempdir + 'dir_moo_lfr_{}'.format(seed)
+    autosklearn_directory = tempdir + 'dir_moo_sar_lfr_{}'.format(seed)
     runhistory =  autosklearn_directory +  "/smac3-output/run_{}/runhistory.json".format(seed)
     if os.path.exists(runhistory):
         return
    
-    X, y = utils_fairlearn.load_data(dataset)
-
     X, y = utils_fairlearn.load_data(dataset)
     utils_fairlearn.add_no_preprocessor()
     utils_fairlearn.add_no_fair()
@@ -58,7 +56,6 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     ############################################################################
     # Build and fit a classifier
     # ==========================
-    tmp =  file + "/{}/{}/{}/{}/moo+ps+lfr/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
     runtime = runtime
     automl = autosklearn.classification.AutoSklearnClassifier(
         time_left_for_this_task=runtime,  # 3h
@@ -74,7 +71,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
         smac_scenario_args={"runcount_limit": runcount},
         memory_limit=130000,
         seed = seed,
-        tmp_folder =  tmp + "/del",
+        tmp_folder = autosklearn_directory, 
         include={
             'feature_preprocessor': ["no_preprocessing"],
             'data_preprocessor': ["no_preprocessor"],
