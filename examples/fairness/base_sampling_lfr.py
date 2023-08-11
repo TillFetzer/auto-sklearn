@@ -22,9 +22,14 @@ import shutil
 import utils_fairlearn
 import json
 from collections import defaultdict
-
+import os
 
 def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcount, under_folder, performance =  autosklearn.metrics.accuracy):
+    runhistory =  autosklearn_directory +  "/smac3-output/run_{}/runhistory.json".format(seed)
+    if os.path.exists(runhistory):
+        return
+    X, y = utils_fairlearn.load_data(dataset)
+
     X, y = utils_fairlearn.load_data(dataset)
     utils_fairlearn.add_no_preprocessor()
     utils_fairlearn.add_no_fair()

@@ -663,10 +663,10 @@ def calc_hypervolume(data,file):
                     help_dict_a[method].append(mean(pareto_front[0]))
                     if len( help_dict_hv[method]) == len(data[constrain][dataset].keys()):
                         hypervolume_dict[constrain][dataset]["hypervolume"].append(mean(help_dict_hv[method]))
-                        hypervolume_dict[constrain][dataset]["fairness"].append(mean(help_dict_f[method]))
-                        hypervolume_dict[constrain][dataset]["acc"].append(mean(help_dict_a[method]))
-                        hypervolume_dict[constrain][dataset]["acc_best"].append(max(help_dict_a[method]))
-                        hypervolume_dict[constrain][dataset]["fairness_best"].append(max(help_dict_f[method]))
+                        hypervolume_dict[constrain][dataset]["fairness"].append(1-mean(help_dict_f[method]))
+                        hypervolume_dict[constrain][dataset]["acc"].append(1-mean(help_dict_a[method]))
+                        hypervolume_dict[constrain][dataset]["acc_best"].append(1-min(help_dict_a[method]))
+                        hypervolume_dict[constrain][dataset]["fairness_best"].append(1-min(help_dict_f[method]))
                         hypervolume_dict[constrain][dataset]["hypervolume_seed_range"].append(max(help_dict_hv[method])-min(help_dict_hv[method]))
                         hypervolume_dict[constrain][dataset]["fairness_seed_range"].append(max(help_dict_f[method])-min(help_dict_f[method]))
                         hypervolume_dict[constrain][dataset]["acc_seed_range"].append(max(help_dict_a[method])-min(help_dict_a[method]))
@@ -686,10 +686,10 @@ def calc_hypervolume(data,file):
             hypervolume_dict[constrain][dataset]["fairness_max_diff"] =  max(hypervolume_dict[constrain][dataset]["fairness"]) - min(hypervolume_dict[constrain][dataset]["fairness"])
             hypervolume_dict[constrain][dataset]["acc_max_diff"] = max(hypervolume_dict[constrain][dataset]["acc"]) - min(hypervolume_dict[constrain][dataset]["acc"])
             hypervolume_dict[constrain][dataset]["hypervolume_scaled_max"] = [value[0] for value in scaled_hv]
-            hypervolume_dict[constrain][dataset]["fairness_scaled_max"] = [1-value[0] for value in scaled_fairness]
-            hypervolume_dict[constrain][dataset]["acc_scaled_max"] = [1-value[0] for value in scaled_acc]
-            hypervolume_dict[constrain][dataset]["fairness_best_scaled_max"] = [1-value[0] for value in scaled_fairness]
-            hypervolume_dict[constrain][dataset]["acc_best_scaled_max"] = [1-value[0] for value in scaled_acc]
+            hypervolume_dict[constrain][dataset]["fairness_scaled_max"] = [value[0] for value in scaled_fairness]
+            hypervolume_dict[constrain][dataset]["acc_scaled_max"] = [value[0] for value in scaled_acc]
+            hypervolume_dict[constrain][dataset]["fairness_best_scaled_max"] = [value[0] for value in scaled_fairness_best]
+            hypervolume_dict[constrain][dataset]["acc_best_scaled_max"] = [value[0] for value in scaled_acc_best]
     print(hypervolume_dict)
     with open(file, 'w') as f:
         json.dump(hypervolume_dict, f, indent=4)
@@ -972,9 +972,119 @@ def generate_latex_table(data, constrain, method, file, compare):
     
     with open(file + 'table_{}_{}.tex'.format(constrain,method), 'w') as file:
         file.write(table)
+# Create an empty list to store processed data
+from collections import OrderedDict
+method_mapping = OrderedDict([
+    # Baselines
+    ("moo", {"name": "Moo", "type": "baseline"}),
+    ("so", {"name": "Optimizing for accuracy", "type": "baseline"}),
+    
+    # Preprocessor every time
+    ("redlineing", {"name": "Moo with SAR every time", "type": "everytime"}),
+    ("cr", {"name": "Moo with CR every time", "type": "everytime"}),
+    ("ps_ranker", {"name": "Moo with Sampling every time", "type": "everytime"}),
+    ("lfr", {"name": "Moo with LFR every time", "type": "everytime"}),
+    
+    # Preprocessor optional
+    ("moo+sar", {"name": "Moo with optional SAR", "type": "optional"}),
+    ("moo_ps_ranker", {"name": "Moo with optional sampling", "type": "optional"}),
+    ("moo+cr", {"name": "Moo with optional CR", "type": "optional"}),
+    ("moo+lfr", {"name": "Moo with optional LFR", "type": "optional"}),
+    
+    # Different combinations of optional preprocessor (TODO: Order them if all are there)
+    # ("moo+ps+cr", {"name": "Moo with optional CR xor sampling", "type": "optional"}),
+    # ("moo+ps*cr", {"name": "Moo with optional CR and/or sampling", "type": "optional"}),
+    # ("moo+ps+cr+lfr", {"name": "Moo with optional LFR/Sampling/CR", "type": "optional"}),
+    # ("moo+ps+lfr", {"name": "Moo with optional LFR/Sampling", "type": "optional"}),
+    # ("ps+cr+lfr", {"name": "Moo with one preprocessor everytime", "type": "optional"}),
+    # ("moo+cr+lfr", {"name": "Moo with optional LFR or CR", "type": "optional"}),
+])
 
 
+def barplot_results(data, comparison, shortName, save_folder):
+    dataset_order = ['german',"compass", "lawschool", "adult"] 
+    method_order = [details['name'] for method, details in method_mapping.items()]
+    # TODO: think about vissaualize the different methods:
+    # baselines optically awy from the rest
+    # everytime 
+    # optional
+    # rest compinations
+    # mark the best of every group and the best overall
+    #create an empty list to store processed data  
+    all_dfs = []
 
+    # Process data for each metric
+    for metric, metric_data in data.items():
+        # Process sub-metrics within each metric
+        for dataset, dataset_data in metric_data.items():
+            # Create a list of dictionaries for the DataFrame
+            df_data = []
+            for i, method in enumerate(dataset_data['methods']):
+                # rename stranged named methods
+                method = method_mapping[method]["name"]
+                #method_type = method_mapping[method]["type"]
+                df_data.append({
+                    'dataset': dataset,
+                    'method': method,
+                    'metric': metric,
+                    'value': dataset_data[comparison][i],
+                    #'type': method_type
+                })
+
+            # Create a DataFrame from the list of dictionaries
+            sub_metric_df = pd.DataFrame(df_data)
+
+            # Append the processed DataFrame to the list
+            all_dfs.append(sub_metric_df)
+
+    # Concatenate all DataFrames
+    final_df = pd.concat(all_dfs)
+    # Set up Seaborn aesthetics
+    
+
+    # Create separate bar plots for each metric
+    
+    
+    for metric in final_df['metric'].unique():
+        sns.set(style="whitegrid")
+        plt.figure(figsize=(15, 15))
+        metric_df = final_df[final_df['metric'] == metric]
+        metric_df['method'] = pd.Categorical(metric_df['method'], categories=method_order, ordered=True)
+        metric_df['dataset'] = pd.Categorical(metric_df['dataset'], categories=dataset_order, ordered=True)
+        metric_df = metric_df.sort_values(['dataset','method']).reset_index(drop=True)
+        ax = sns.barplot(data=metric_df, y="dataset",x="value", hue="method", orient="h", 
+                         hue_order=method_order)
+        y_min = sub_metric_df['value'].min()
+        x_max =  sub_metric_df['value'].max()
+        #ax.set_ylim(y_min-0.1, 1)
+         # Add vertical lines to mark specific methods for each dataset
+        #split_lines = [-0.24, 0.08]
+        best_indicies = list(enumerate(metric_df.groupby('dataset')['value'].idxmax()))
+        new_index = [(x%len(metric_df["method"].unique()))*len(metric_df["dataset"].unique()) + i for i,x in best_indicies]
+        
+        for i,p in enumerate(ax.patches):
+            text_color = "black"
+            #print("%.4f" % p.get_width())
+            if i in [4,5,6,7,20,21,22,23]:
+                ax.axhline(y=p.get_y()+p.get_height(), color='gray', linestyle='--')
+            if i in new_index:
+                text_color = "red"
+            ax.annotate("%.3f" % p.get_width(), xy=(p.get_width(), p.get_y()+p.get_height()/2),
+                    xytext=(5, 0), textcoords='offset points', ha="left", va="center", color=text_color)
+            
+               
+        #for index, row in best_methods_dataset.iterrows():
+        #    
+        plt.title(f"Comparison of {metric} by Dataset and Method")
+        plt.xlabel("Dataset")
+        plt.ylabel(f"{shortName}")
+        plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))  # Position legend outside the plot
+        plt.tight_layout()  # Ensure proper layout
+        plt.show()
+        #break
+        #plt.savefig("{}{}/{}_comparison.png".format(save_folder, comparison, metric))  # Save the plot as an image
+        #plt.close()  # Close the current plot
+     
 
 if __name__ == "__main__":
     #methods = ["moo_ps_ranker","moo","moo+cr", "ps_ranker"]
@@ -982,10 +1092,28 @@ if __name__ == "__main__":
     #            "ps_ranker", "cr", #one prepreproessor
     #            "moo_ps_ranker","moo+cr", "moo+lfr", #one prepreproessor
     methods = [ 
-              
-               "moo",  "so", "cr", "ps_ranker", "lfr",
-                "moo_ps_ranker", "moo+cr",  "moo+sar", "moo+lfr",
-                "redlineing"
+        "moo",
+        "so",
+        #preprocessor every time
+        "redlineing",
+        "cr",
+        "ps_ranker",
+        "lfr",
+        #preprocessor optional
+        "moo+sar",     
+        "moo_ps_ranker",
+        "moo+cr",
+        "moo+lfr",
+        #multiple preprocessor 
+        #two:
+
+        "moo_sar_cr_lfr",
+        "moo_sar_lfr",
+        "moo_sar_ps_lfr",
+        "sar_cr_ps_lfr",
+        "moo_sar_ps_com",
+        "moo+sar+cr",
+        "moo+sar+ps",    
                ]
     #data = load_data("/home/till/Documents/auto-sklearn/tmp/cross_val/", "200timesstrat", methods)
     #make_plot_3(data)
@@ -1019,7 +1147,22 @@ if __name__ == "__main__":
     #with open(file, 'w') as f:
     #    json.dump(deep_dive, f, indent=4)
     #calc_hypervolume(data, file)
-    with open(file) as f:
-      results = json.load(f)
-   
-    plot_scaled_values(results,"/home/till/Desktop/redlineing/all/","hypervolume_scaled_max", methods)
+    #with open(file) as f:
+    #  results = json.load(f)
+    #names = ["hypervolume[scaled]","accurancy[bestScaled]", "fairness[bestScaled]",
+                                    "accurancy[avgScaled]", "fairness[avgScaled]",
+                                    "accurancy[best]", "fairness[best]",
+                                    "accurancy[avg]", "fairness[avg]"]
+    #for i, comparison in enumerate(["hypervolume_scaled_max","acc_best_scaled_max", "fairness_best_scaled_max", 
+    #                               "acc_scaled_max", "fairness_scaled_max",
+    #                               "acc_best", "fairness_best",
+    #                              "acc", "fairness"]):
+    #    barplot_results(results, comparison, names[i],"/home/till/Desktop/redlineing/all/")
+        
+    #plot_scaled_values(results,"/home/till/Desktop/redlineing/all/","hypervolume_scaled_max", methods)
+
+
+    #["hypervolume_scaled_max","acc_best_scaled_max", "fairness_best_scaled_max", 
+    #                                "acc_scaled_max", "fairness_scaled_max",
+    #                               "acc_best", "fairness_best",
+    #                              "acc", "fairness"]

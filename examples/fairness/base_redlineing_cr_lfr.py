@@ -2,28 +2,34 @@ from typing import Optional
 import numpy as np
 import pandas as pd
 from ConfigSpace.configuration_space import ConfigurationSpace
-import fairlearn.reductions
+
 from autosklearn.askl_typing import FEAT_TYPE_TYPE
 import autosklearn.pipeline.components.classification
 from autosklearn.pipeline.constants import DENSE, PREDICTIONS, SPARSE
 from autosklearn.util.common import check_none
 from pprint import pprint
 import fairlearn.metrics
-import matplotlib.pyplot as plt
 import numpy as np
-import sklearn.datasets
-import sklearn.metrics
 import autosklearn.classification
 import autosklearn.metrics
-import shutil
+
 import tempfile
 # TODO change to new location if it is avaible
 import utils_fairlearn
 import json
 from collections import defaultdict
-
+import os
 
 def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcount, under_folder, performance =  autosklearn.metrics.accuracy):
+    result_folder =  file + "/{}/{}/{}/{}/moo_ps_cr_lfr/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
+    runtime = runtime
+    tempdir = tempfile.mkdtemp()
+    autosklearn_directory = tempdir + 'dir_moo_ps_cr_lfr_{}'.format(seed)
+    runhistory =  autosklearn_directory +  "/smac3-output/run_{}/runhistory.json".format(seed)
+    if os.path.exists(runhistory):
+        return
+    X, y = utils_fairlearn.load_data(dataset)
+
     X, y = utils_fairlearn.load_data(dataset)
 
     # ==========================
@@ -53,7 +59,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     # ==========================
     result_folder =  file + "/{}/{}/{}/{}/moo_sar_cr_lfr/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
     tempdir = tempfile.mkdtemp()
-    autosklearn_directory = tempdir + 'dir_moo+ps+cr+lfr_{}'.format(seed)
+    autosklearn_directory = tempdir + 'dir_moo_ps_cr_lfr_{}'.format(seed)
     runtime = runtime
     automl = autosklearn.classification.AutoSklearnClassifier(
         time_left_for_this_task=runtime,  # 3h
@@ -97,7 +103,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     # Compute the two competing metrics
     # =================================
     #sensitive_features = X_test[sf]
-    runhistory =  autosklearn_directory +  "/smac3-output/run_{}/runhistory.json".format(seed)
+    
     utils_fairlearn.save_history(autosklearn_directory, runhistory, result_folder)
     
 

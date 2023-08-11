@@ -10,12 +10,9 @@ args=parser.parse_args()
 idx = args.idx
 under_folder = args.uf
 seeds = [12345,25,42,45451,97,13,27,39,41,53]
-methods = [ "moo+sar+lfr",
-            "moo+sar*ps",
+methods = [ 
            "moo+sar+ps+cr+lfr",
-           "moo+sar+cr+lfr", 
-           "moo+sar+ps+lfr",
-           "sar+ps+cr+lfr"]
+           ]
 
 
             
@@ -47,6 +44,6 @@ run_experiment(datasets =[dataset],
                seeds= [seed], 
                sf=[sf],
                runtime = 200000, 
-               runcount=runcount, 
+              runcount=runcount, 
                under_folder=under_folder, 
-               performance = performance)
+              performance = performance)
