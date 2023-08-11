@@ -24,13 +24,14 @@ from collections import defaultdict
 import os
 
 def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcount, under_folder, performance =  autosklearn.metrics.accuracy):
-    result_folder =  file + "/{}/{}/{}/{}/moo_ps_cr_lfr/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
+    result_folder =  file + "/{}/{}/{}/{}/moo_sar_ps_lfr/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
     runtime = runtime
     tempdir = tempfile.mkdtemp()
-    autosklearn_directory = tempdir + 'dir_moo_ps_cr_lfr_{}'.format(seed)
+    autosklearn_directory = tempdir + 'dir_moo_sar_ps_lfr_{}'.format(seed)
     runhistory =  autosklearn_directory +  "/smac3-output/run_{}/runhistory.json".format(seed)
     if os.path.exists(runhistory):
         return
+    X, y = utils_fairlearn.load_data(dataset)
 
     # ==========================
 

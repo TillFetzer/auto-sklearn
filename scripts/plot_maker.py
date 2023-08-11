@@ -72,7 +72,15 @@ def load_data(filepath, runetime, methods):
                     
                     file  = "{}/{}/{}/runhistory.json".format(seed_path,method,runetime_folder)
                     if not(os.path.exists(file)):
-                                    file  = "{}/{}/{}/del/smac3-output/run_{}/runhistory.json".format(seed_path,method,runetime_folder,seed) 
+                        file  = "{}/{}/{}/runhistory.json".format(seed_path,method,"200timestrat")
+                        if not(os.path.exists(file)):
+                            file  = "{}/{}/{}/del/smac3-output/run_{}/runhistory.json".format(seed_path,method,runetime_folder,seed) 
+                            if not(os.path.exists(file)):
+                                print(file)
+                                continue        
+                                    
+            
+                                    
                     with open(file) as f:
                         ds = json.load(f)
                     for d in ds["data"]:
@@ -1092,18 +1100,18 @@ if __name__ == "__main__":
     #            "ps_ranker", "cr", #one prepreproessor
     #            "moo_ps_ranker","moo+cr", "moo+lfr", #one prepreproessor
     methods = [ 
-        "moo",
-        "so",
+        #"moo",
+        #"so",
         #preprocessor every time
-        "redlineing",
-        "cr",
-        "ps_ranker",
-        "lfr",
+        #"redlineing",
+        #"cr",
+        #"ps_ranker",
+        #"lfr",
         #preprocessor optional
-        "moo+sar",     
-        "moo_ps_ranker",
-        "moo+cr",
-        "moo+lfr",
+        #"moo+sar",     
+        #"moo_ps_ranker",
+        #"moo+cr",
+        #"moo+lfr",
         #multiple preprocessor 
         #two:
 
@@ -1112,8 +1120,8 @@ if __name__ == "__main__":
         "moo_sar_ps_lfr",
         "sar_cr_ps_lfr",
         "moo_sar_ps_com",
-        "moo+sar+cr",
-        "moo+sar+ps",    
+        #"moo+sar+cr",
+        #"moo+sar+ps",    
                ]
     #data = load_data("/home/till/Documents/auto-sklearn/tmp/cross_val/", "200timesstrat", methods)
     #make_plot_3(data)
@@ -1150,9 +1158,9 @@ if __name__ == "__main__":
     #with open(file) as f:
     #  results = json.load(f)
     #names = ["hypervolume[scaled]","accurancy[bestScaled]", "fairness[bestScaled]",
-                                    "accurancy[avgScaled]", "fairness[avgScaled]",
-                                    "accurancy[best]", "fairness[best]",
-                                    "accurancy[avg]", "fairness[avg]"]
+    #                                "accurancy[avgScaled]", "fairness[avgScaled]",
+    #                                "accurancy[best]", "fairness[best]",
+    #                                 "accurancy[avg]", "fairness[avg]"]
     #for i, comparison in enumerate(["hypervolume_scaled_max","acc_best_scaled_max", "fairness_best_scaled_max", 
     #                               "acc_scaled_max", "fairness_scaled_max",
     #                               "acc_best", "fairness_best",
