@@ -1,5 +1,4 @@
 from typing import Optional
-import os
 import numpy as np
 import pandas as pd
 from ConfigSpace.configuration_space import ConfigurationSpace
