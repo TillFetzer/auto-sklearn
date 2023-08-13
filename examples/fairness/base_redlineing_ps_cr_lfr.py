@@ -27,7 +27,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     result_folder =  file + "/{}/{}/{}/{}/moo_sar_ps_cr_lfr/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
     runtime = runtime
     tempdir = tempfile.mkdtemp()
-    autosklearn_directory = tempdir + 'dir_moo_sar_ps_cr_lfr_{}'.format(seed)
+    autosklearn_directory = tempdir + 'dir_moo_sar_ps_cr_lfr_2_{}'.format(seed)
     runhistory =  autosklearn_directory +  "/smac3-output/run_{}/runhistory.json".format(seed)
     if os.path.exists(result_folder):
         return

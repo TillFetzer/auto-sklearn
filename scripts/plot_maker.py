@@ -76,9 +76,12 @@ def load_data(filepath, runetime, methods):
                         if not(os.path.exists(file)):
                             file  = "{}/{}/{}/del/smac3-output/run_{}/runhistory.json".format(seed_path,method,runetime_folder,seed) 
                             if not(os.path.exists(file)):
-                                print(file)
+                                #print(file)
                                 continue        
-                                    
+                        else:
+                            print(file)   
+                    else:
+                        print(file)             
             
                                     
                     with open(file) as f:
@@ -1141,8 +1144,8 @@ if __name__ == "__main__":
     #            "ps_ranker", "cr", #one prepreproessor
     #            "moo_ps_ranker","moo+cr", "moo+lfr", #one prepreproessor
     methods = [ 
-        "moo",
-        "so",
+        #"moo",
+        #"so",
         #preprocessor every time
         #"redlineing",
         #"cr",
@@ -1155,30 +1158,30 @@ if __name__ == "__main__":
         #"moo+lfr",
         #multiple preprocessor 
         #two:
-        "moo+sar+cr",
-        "moo+sar+ps", 
-        "moo+ps+cr",
-        "moo+cr+lfr",
-        "moo+ps+lfr",
-        "moo_sar_lfr",
-        "moo+sar+ps",
+        #"moo+sar+cr",
+        #"moo+sar+ps", 
+        #"moo+ps+cr",
+        #"moo+cr+lfr",
+        #"moo+ps+lfr",
+        #"moo_sar_lfr",
+        #"moo+sar+ps",
 
 
         #and/or combinations:
-        "moo+ps*cr",
-        "moo+cr*lfr",
+        #"moo+ps*cr",
+        #"moo+cr*lfr",
         #"moo_sar_ps_com",
 
         #three:
-        "moo_sar_cr_lfr",
-        "moo_sar_ps_lfr",
-        "moo+sar+cr+ps",
-        "moo+ps+cr+lfr",
-        "moo+sar+cr+ps",
+        #"moo_sar_cr_lfr",
+        #"moo_sar_ps_lfr",
+        #"moo+sar+cr+ps",
+        #"moo+ps+cr+lfr",
+        #"moo+sar+cr+ps",
 
         #all:
-        #"moo_sar_ps_cr_lfr",
-        "sar_cr_ps_lfr"
+        "moo_sar_ps_cr_lfr",
+        #"sar_cr_ps_lfr"
         
           
         ]
