@@ -15,9 +15,9 @@ methods = [ "moo+sar*ps"]
 
             
 #methods = ["moo","so","ps","cr", "moo+cr", "moo_ps","moo+ps+cr","moo+ps*cr","lfr"]
-datasets = ["adult","compass"]
+datasets = ["adult"]
 #datasets = ["german"]
-sfs = ["sex", "race"]
+sfs = ["sex"]
 #sfs = ["personal_status"]
 fairness_constrains=["equalized_odds"]
 #performance = utils_fairlearn.set_f1_score()
