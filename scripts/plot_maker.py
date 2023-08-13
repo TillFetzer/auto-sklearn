@@ -1167,11 +1167,11 @@ if __name__ == "__main__":
         #and/or combinations:
         "moo+ps*cr",
         "moo+cr*lfr",
-        "moo_sar_ps_com",
+        #"moo_sar_ps_com",
 
         #three:
         "moo_sar_cr_lfr",
-        #"moo_sar_ps_lfr",
+        "moo_sar_ps_lfr",
         "moo+sar+cr+ps",
         "moo+ps+cr+lfr",
         "moo+sar+cr+ps",
