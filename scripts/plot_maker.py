@@ -986,18 +986,49 @@ method_mapping = OrderedDict([
     # Baselines
     ("moo", {"name": "Moo", "type": "baseline"}),
     ("so", {"name": "Optimizing for accuracy", "type": "baseline"}),
+
+   
     
     # Preprocessor every time
-    ("redlineing", {"name": "Moo with SAR every time", "type": "everytime"}),
-    ("cr", {"name": "Moo with CR every time", "type": "everytime"}),
-    ("ps_ranker", {"name": "Moo with Sampling every time", "type": "everytime"}),
-    ("lfr", {"name": "Moo with LFR every time", "type": "everytime"}),
+    #("redlineing", {"name": "Moo with SAR every time", "type": "everytime"}),
+    #("cr", {"name": "Moo with CR every time", "type": "everytime"}),
+    #("ps_ranker", {"name": "Moo with Sampling every time", "type": "everytime"}),
+    #("lfr", {"name": "Moo with LFR every time", "type": "everytime"}),
     
     # Preprocessor optional
-    ("moo+sar", {"name": "Moo with optional SAR", "type": "optional"}),
-    ("moo_ps_ranker", {"name": "Moo with optional sampling", "type": "optional"}),
-    ("moo+cr", {"name": "Moo with optional CR", "type": "optional"}),
-    ("moo+lfr", {"name": "Moo with optional LFR", "type": "optional"}),
+    #("moo+sar", {"name": "Moo with optional SAR", "type": "optional"}),
+    #("moo_ps_ranker", {"name": "Moo with optional sampling", "type": "optional"}),
+    #("moo+cr", {"name": "Moo with optional CR", "type": "optional"}),
+    #("moo+lfr", {"name": "Moo with optional LFR", "type": "optional"}),
+
+    # Preprocessor combinations
+    ("moo+sar+cr", {"name": "Moo with optional SAR or CR", "type": "combination"}),
+    ("moo+sar+ps", {"name": "Moo with optional SAR or sampling", "type": "combination"}),
+    ("moo+sar+ps", {"name": "Moo with optional SAR and sampling", "type": "combination"}),
+    ("moo+ps+cr", {"name": "Moo with optional CR or sampling", "type": "combination"}),
+    ("moo+cr+lfr", {"name": "Moo with optional CR or LFR", "type": "combination"}),
+    ("moo+ps+lfr", {"name": "Moo with optional sampling or LFR", "type": "combination"}),
+    ("moo_sar_lfr", {"name": "Moo with optional SAR and LFR", "type": "combination"}),
+    
+
+    #and/or combinations:
+    # please notice that other and/or combinations are not possible, detail in the maseter thessis
+    ("moo+ps*cr", {"name": "Moo with optional CR and/or sampling", "type": "combination"}),
+    ("moo+cr*lfr", {"name": "Moo with optional CR and/or LFR", "type": "combination"}),
+    #("moo_sar_ps_com", {"name": "Moo with optional SAR and/or sampling", "type": "combination"}),
+
+    #three:
+    ("moo_sar_cr_lfr", {"name": "Moo with optional SAR, CR and LFR", "type": "combination"}),
+    ("moo_sar_ps_lfr", {"name": "Moo with optional SAR, sampling and LFR", "type": "combination"}),
+    ("moo+sar+cr+ps", {"name": "Moo with optional SAR, CR and sampling", "type": "combination"}),
+    ("moo+ps+cr+lfr", {"name": "Moo with optional CR, sampling and LFR", "type": "combination"}),
+    ("moo+sar+cr+ps", {"name": "Moo with optional SAR, CR and sampling", "type": "combination"}),
+
+    #all:
+    #"moo_sar_ps_cr_lfr",
+    ("sar_cr_ps_lfr", {"name": "Moo with SAR or CR or sampling or LFR", "type": "combination"})
+        
+          
     
     # Different combinations of optional preprocessor (TODO: Order them if all are there)
     # ("moo+ps+cr", {"name": "Moo with optional CR xor sampling", "type": "optional"}),
@@ -1007,6 +1038,15 @@ method_mapping = OrderedDict([
     # ("ps+cr+lfr", {"name": "Moo with one preprocessor everytime", "type": "optional"}),
     # ("moo+cr+lfr", {"name": "Moo with optional LFR or CR", "type": "optional"}),
 ])
+colors = [
+    "#008000", "#0000FF", "#FFFF00", "#FFA500", 
+    "#800080", "#FFC0CB", "#008080", "#A52A2A", "#00FFFF", 
+    "#FF00FF", "#00FF00", "#4B0082", "#E6E6FA", "#800000", 
+    "#808000", "#000080", "#FFDAB9", "#40E0D0", "#FFD700", 
+    "#C0C0C0", "#EE82EE", "#00FFFF", "#FF6F61", "#DC143C", 
+    "#2E8B57", "#FF00FF", "#FFFFF0", "#E0115F", "#007FFF"
+]
+
 
 
 def barplot_results(data, comparison, shortName, save_folder):
@@ -1060,8 +1100,9 @@ def barplot_results(data, comparison, shortName, save_folder):
         metric_df['method'] = pd.Categorical(metric_df['method'], categories=method_order, ordered=True)
         metric_df['dataset'] = pd.Categorical(metric_df['dataset'], categories=dataset_order, ordered=True)
         metric_df = metric_df.sort_values(['dataset','method']).reset_index(drop=True)
+        #sns.set_palette(colors)
         ax = sns.barplot(data=metric_df, y="dataset",x="value", hue="method", orient="h", 
-                         hue_order=method_order)
+                         hue_order=method_order, palette=sns.color_palette(colors, len(colors)),)
         y_min = sub_metric_df['value'].min()
         x_max =  sub_metric_df['value'].max()
         #ax.set_ylim(y_min-0.1, 1)
@@ -1073,8 +1114,8 @@ def barplot_results(data, comparison, shortName, save_folder):
         for i,p in enumerate(ax.patches):
             text_color = "black"
             #print("%.4f" % p.get_width())
-            if i in [4,5,6,7,20,21,22,23]:
-                ax.axhline(y=p.get_y()+p.get_height(), color='gray', linestyle='--')
+            #if i in [4,5,6,7,20,21,22,23, 36,37,38]:
+            #    ax.axhline(y=p.get_y()+p.get_height(), color='gray', linestyle='--')
             if i in new_index:
                 text_color = "red"
             ax.annotate("%.3f" % p.get_width(), xy=(p.get_width(), p.get_y()+p.get_height()/2),
@@ -1088,10 +1129,10 @@ def barplot_results(data, comparison, shortName, save_folder):
         plt.ylabel(f"{shortName}")
         plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))  # Position legend outside the plot
         plt.tight_layout()  # Ensure proper layout
-        plt.show()
+        #plt.show()
         #break
-        #plt.savefig("{}{}/{}_comparison.png".format(save_folder, comparison, metric))  # Save the plot as an image
-        #plt.close()  # Close the current plot
+        plt.savefig("{}{}/{}_o_erd_comparison.png".format(save_folder, comparison, metric))  # Save the plot as an image
+        plt.close()  # Close the current plot
      
 
 if __name__ == "__main__":
@@ -1100,8 +1141,8 @@ if __name__ == "__main__":
     #            "ps_ranker", "cr", #one prepreproessor
     #            "moo_ps_ranker","moo+cr", "moo+lfr", #one prepreproessor
     methods = [ 
-        #"moo",
-        #"so",
+        "moo",
+        "so",
         #preprocessor every time
         #"redlineing",
         #"cr",
@@ -1114,15 +1155,33 @@ if __name__ == "__main__":
         #"moo+lfr",
         #multiple preprocessor 
         #two:
-
-        "moo_sar_cr_lfr",
+        "moo+sar+cr",
+        "moo+sar+ps", 
+        "moo+ps+cr",
+        "moo+cr+lfr",
+        "moo+ps+lfr",
         "moo_sar_lfr",
-        #"moo_sar_ps_lfr",
-        "sar_cr_ps_lfr",
+        "moo+sar+ps",
+
+
+        #and/or combinations:
+        "moo+ps*cr",
+        "moo+cr*lfr",
         "moo_sar_ps_com",
-        #"moo+sar+cr",
-        #"moo+sar+ps",    
-               ]
+
+        #three:
+        "moo_sar_cr_lfr",
+        #"moo_sar_ps_lfr",
+        "moo+sar+cr+ps",
+        "moo+ps+cr+lfr",
+        "moo+sar+cr+ps",
+
+        #all:
+        #"moo_sar_ps_cr_lfr",
+        "sar_cr_ps_lfr"
+        
+          
+        ]
     #data = load_data("/home/till/Documents/auto-sklearn/tmp/cross_val/", "200timesstrat", methods)
     #make_plot_3(data)
     #data = load_data_particully("/home/till/Desktop/psoss_val/", "200timesstrat",
@@ -1151,21 +1210,21 @@ if __name__ == "__main__":
     #                deep_dive[method][seed] = data["error_rate_difference"]["adult"][seed][method]["pareto_config"]
                     
         
-    file = "/home/till/Documents/auto-sklearn/tmp/scaled_results_optionall.json"
+    file = "/home/till/Documents/auto-sklearn/tmp/scaled_results_all_optionall.json"
     #with open(file, 'w') as f:
     #    json.dump(deep_dive, f, indent=4)
-    #calc_hypervolume(data, file)
-    #with open(file) as f:
-    #  results = json.load(f)
-    #names = ["hypervolume[scaled]","accurancy[bestScaled]", "fairness[bestScaled]",
-    #                                "accurancy[avgScaled]", "fairness[avgScaled]",
-    #                                "accurancy[best]", "fairness[best]",
-    #                                 "accurancy[avg]", "fairness[avg]"]
-    #for i, comparison in enumerate(["hypervolume_scaled_max","acc_best_scaled_max", "fairness_best_scaled_max", 
-    #                               "acc_scaled_max", "fairness_scaled_max",
-    #                               "acc_best", "fairness_best",
-    #                              "acc", "fairness"]):
-    #    barplot_results(results, comparison, names[i],"/home/till/Desktop/redlineing/all/")
+    calc_hypervolume(data, file)
+    with open(file) as f:
+      results = json.load(f)
+    names = ["hypervolume[scaled]","accurancy[bestScaled]", "fairness[bestScaled]",
+                                    "accurancy[avgScaled]", "fairness[avgScaled]",
+                                    "accurancy[best]", "fairness[best]",
+                                     "accurancy[avg]", "fairness[avg]"]
+    for i, comparison in enumerate(["hypervolume_scaled_max","acc_best_scaled_max", "fairness_best_scaled_max", 
+                                   "acc_scaled_max", "fairness_scaled_max",
+                                   "acc_best", "fairness_best",
+                                  "acc", "fairness"]):
+        barplot_results(results, comparison, names[i],"/home/till/Desktop/redlineing/all/")
         
     #plot_scaled_values(results,"/home/till/Desktop/redlineing/all/","hypervolume_scaled_max", methods)
 
