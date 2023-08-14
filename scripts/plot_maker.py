@@ -783,6 +783,7 @@ def get_possible_pre(method):
     preprocessors += ["PreferentialSampling"] if "ps" in method else []
     preprocessors += ["CorrelationRemover"] if "cr" in method else []
     preprocessors += ["LFR"] if "lfr" in method else []
+    preprocessors += ["SensitiveAttributeRemover"] if "sar" in method else []
     return preprocessors
 def calc_pareto_contribution(data,file, methods):
     scaler = MinMaxScaler()
@@ -855,10 +856,8 @@ def calc_pareto_contribution(data,file, methods):
 
 import numpy as np
 
-def calculate_shape_value(pareto_set,score):
+def calculate_shapley_value(pareto_set,score):
     # Calculate the shape value using your desired method
-    # This function is specific to your shape value calculation method
-    # Replace this with your own implementation
     if len(pareto_set) == 0:
         return 0
     if(score=="hypervolumne"):
@@ -904,7 +903,7 @@ def filter_points(pareto_front, pareto_config, preprocessors,scale = False, ref_
         score_dict[pre] = np.array(points)
     return score_dict   
 from itertools import permutations
-def calculate_shapley_values(data, methods, file, compare = "hypervolumne", latex_table = True):
+def calculate_shapley_values(data, methods, file, compare = "acc", latex_table = True):
     #shaling should be done in these function
     shapley_values = defaultdict() 
     for constrain in data.keys():
@@ -920,7 +919,7 @@ def calculate_shapley_values(data, methods, file, compare = "hypervolumne", late
                     preprocessors = get_possible_pre(method)
                     methods_points = filter_points(pareto_front, pareto_config, preprocessors)
                     preprocessors = preprocessors[1:]
-                    div = np.math.factorial(len(preprocessors)) * len(data[constrain][dataset].keys()) * calculate_shape_value(pareto_front,compare)
+                    div = np.math.factorial(len(preprocessors)) * len(data[constrain][dataset].keys()) * calculate_shapley_value(pareto_front,compare)
                     for perm in permutations(preprocessors):
                         points = np.array(methods_points["no"])
                         for idx,pre in enumerate(perm):
@@ -928,7 +927,7 @@ def calculate_shapley_values(data, methods, file, compare = "hypervolumne", late
                             if pre not in shapley_values[constrain][dataset][method].keys():
                                 shapley_values[constrain][dataset][method][pre] = defaultdict() 
                                 shapley_values[constrain][dataset][method][pre][compare] = 0    
-                            shapley_values[constrain][dataset][method][pre][compare] += ((calculate_shape_value(new_points,compare))- (calculate_shape_value(points, compare)))/div
+                            shapley_values[constrain][dataset][method][pre][compare] += ((calculate_shapley_value(new_points,compare))- (calculate_shapley_value(points, compare)))/div
                             points = new_points   
                 #shapley_values[constrain][dataset][method]["all"]["hypervolumne"] += hypervolume_obj(points) / len(data[constrain][dataset].keys())                                 
         with open(file + "shapley_{}.json".format(compare), 'w') as f:
@@ -1018,7 +1017,7 @@ method_mapping = OrderedDict([
     # please notice that other and/or combinations are not possible, detail in the maseter thessis
     ("moo+ps*cr", {"name": "Moo with optional CR and/or sampling", "type": "combination"}),
     ("moo+cr*lfr", {"name": "Moo with optional CR and/or LFR", "type": "combination"}),
-    #("moo_sar_ps_com", {"name": "Moo with optional SAR and/or sampling", "type": "combination"}),
+    ("moo_sar_ps_com", {"name": "Moo with optional SAR and/or sampling", "type": "combination"}),
 
     #three:
     ("moo_sar_cr_lfr", {"name": "Moo with optional SAR, CR and LFR", "type": "combination"}),
@@ -1031,16 +1030,9 @@ method_mapping = OrderedDict([
     #"moo_sar_ps_cr_lfr",
     ("sar_cr_ps_lfr", {"name": "Moo with SAR or CR or sampling or LFR", "type": "combination"})
         
-          
+])    
     
-    # Different combinations of optional preprocessor (TODO: Order them if all are there)
-    # ("moo+ps+cr", {"name": "Moo with optional CR xor sampling", "type": "optional"}),
-    # ("moo+ps*cr", {"name": "Moo with optional CR and/or sampling", "type": "optional"}),
-    # ("moo+ps+cr+lfr", {"name": "Moo with optional LFR/Sampling/CR", "type": "optional"}),
-    # ("moo+ps+lfr", {"name": "Moo with optional LFR/Sampling", "type": "optional"}),
-    # ("ps+cr+lfr", {"name": "Moo with one preprocessor everytime", "type": "optional"}),
-    # ("moo+cr+lfr", {"name": "Moo with optional LFR or CR", "type": "optional"}),
-])
+   
 colors = [
     "#008000", "#0000FF", "#FFFF00", "#FFA500", 
     "#800080", "#FFC0CB", "#008080", "#A52A2A", "#00FFFF", 
@@ -1134,7 +1126,7 @@ def barplot_results(data, comparison, shortName, save_folder):
         plt.tight_layout()  # Ensure proper layout
         #plt.show()
         #break
-        plt.savefig("{}{}/{}_o_erd_comparison.png".format(save_folder, comparison, metric))  # Save the plot as an image
+        plt.savefig("{}{}/{}_o_eo_comparison.png".format(save_folder, comparison, metric))  # Save the plot as an image
         plt.close()  # Close the current plot
      
 
@@ -1199,7 +1191,7 @@ if __name__ == "__main__":
     #methods = ["moo","ps_ranker","moo_ps_ranker"]
     data = load_data("/home/till/Desktop/cross_val/","200timesstrat", methods)
     #print()
-    #calculate_shapley_values(data,methods,file="/home/till/Documents/auto-sklearn/tmp/", compare="fairness")
+    calculate_shapley_values(data,methods,file="/home/till/Desktop/shapley_values/", compare="hypervolumne")
     #print(sv)
     #make_plot_3(data)
     #deep_dive = defaultdict()
@@ -1213,21 +1205,21 @@ if __name__ == "__main__":
     #                deep_dive[method][seed] = data["error_rate_difference"]["adult"][seed][method]["pareto_config"]
                     
         
-    file = "/home/till/Documents/auto-sklearn/tmp/scaled_results_all_optionall.json"
+    #file = "/home/till/Documents/auto-sklearn/tmp/scaled_results_all_optionall.json"
     #with open(file, 'w') as f:
     #    json.dump(deep_dive, f, indent=4)
-    calc_hypervolume(data, file)
-    with open(file) as f:
-      results = json.load(f)
-    names = ["hypervolume[scaled]","accurancy[bestScaled]", "fairness[bestScaled]",
-                                    "accurancy[avgScaled]", "fairness[avgScaled]",
-                                    "accurancy[best]", "fairness[best]",
-                                     "accurancy[avg]", "fairness[avg]"]
-    for i, comparison in enumerate(["hypervolume_scaled_max","acc_best_scaled_max", "fairness_best_scaled_max", 
-                                   "acc_scaled_max", "fairness_scaled_max",
-                                   "acc_best", "fairness_best",
-                                  "acc", "fairness"]):
-        barplot_results(results, comparison, names[i],"/home/till/Desktop/redlineing/all/")
+    #calc_hypervolume(data, file)
+    #with open(file) as f:
+    #  results = json.load(f)
+    #names = ["hypervolume[scaled]","accurancy[bestScaled]", "fairness[bestScaled]",
+    #                                "accurancy[avgScaled]", "fairness[avgScaled]",
+    #                                "accurancy[best]", "fairness[best]",
+    #                                 "accurancy[avg]", "fairness[avg]", "hypervolume"]
+    #for i, comparison in enumerate(["hypervolume_scaled_max","acc_best_scaled_max", "fairness_best_scaled_max", 
+    #                               "acc_scaled_max", "fairness_scaled_max",
+    #                               "acc_best", "fairness_best",
+    #                              "acc", "fairness", "hypervolume"]):
+    #    barplot_results(results, comparison, names[i],"/home/till/Desktop/redlineing/all/")
         
     #plot_scaled_values(results,"/home/till/Desktop/redlineing/all/","hypervolume_scaled_max", methods)
 
