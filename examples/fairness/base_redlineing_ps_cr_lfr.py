@@ -60,10 +60,6 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     ############################################################################
     # Build and fit a classifier
     # ==========================
-    result_folder =  file + "/{}/{}/{}/{}/moo+sar+cr+ps+lfr/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
-    runtime = runtime
-    tempdir = tempfile.mkdtemp()
-    autosklearn_directory = tempdir + 'dir_moo+ps+cr+lfr_{}'.format(seed)
     automl = autosklearn.classification.AutoSklearnClassifier(
         time_left_for_this_task=runtime,  # 3h
         #per_run_time_limit=runtime / 2,
