@@ -56,7 +56,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     ############################################################################
     # Build and fit a classifier
     # ==========================
-    tmp =  file + "/{}/{}/{}/{}/moo+ps*cr/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
+    #tmp =  file + "/{}/{}/{}/{}/moo+ps*cr/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
     runtime = runtime
     automl = autosklearn.classification.AutoSklearnClassifier(
         time_left_for_this_task=runtime,  # 3h
@@ -72,7 +72,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
         smac_scenario_args={"runcount_limit": runcount},
         memory_limit=130000,
         seed = seed,
-        tmp_folder =  tmp + "/del",
+        tmp_folder =  autosklearn_directory,
         include={
             'feature_preprocessor': ["no_preprocessing",'CorrelationRemover'],
             "fair_preprocessor": ["NoFairPreprocessor","PreferentialSampling"],
