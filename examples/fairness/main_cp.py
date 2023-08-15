@@ -10,16 +10,18 @@ args=parser.parse_args()
 idx = args.idx
 under_folder = args.uf
 seeds = [12345,25,42,45451,97,13,27,39,41,53]
-methods = ["moo+sar*ps"]
+methods = [ 
+           "cp"
+        ]
 
 
             
 #methods = ["moo","so","ps","cr", "moo+cr", "moo_ps","moo+ps+cr","moo+ps*cr","lfr"]
-datasets = ["adult","compass"]
+datasets = ["german","lawschool","compass"]
 #datasets = ["german"]
-sfs = ["sex", "race"]
+sfs = ["personal_status", "race", "race"]
 #sfs = ["personal_status"]
-fairness_constrains=["equalized_odds"]
+fairness_constrains=["consistency_score","demographic_parity","equalized_odds", "error_rate_difference"]
 #performance = utils_fairlearn.set_f1_score()
 performance = autosklearn.metrics.accuracy
 dataset = datasets[int(idx/(len(seeds)*len(methods)))%len(datasets)]
@@ -41,7 +43,7 @@ run_experiment(datasets =[dataset],
                file="/work/ws/nemo/fr_tf167-conda-0/autosklearn", 
                seeds= [seed], 
                sf=[sf],
-               runtime = 20000000, 
-               runcount=runcount, 
+               runtime = 2000000, 
+              runcount=runcount, 
                under_folder=under_folder, 
-               performance = performance)
+              performance = performance)

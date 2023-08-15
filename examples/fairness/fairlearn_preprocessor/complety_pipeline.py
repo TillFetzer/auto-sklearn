@@ -22,19 +22,18 @@ import utils_fairlearn
 import json
 from collections import defaultdict
 import os
-
 def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcount, under_folder, performance =  autosklearn.metrics.accuracy):
-    number = 0
-    result_folder =  file + "/{}/{}/{}/{}/moo_sar_ps_cr_lfr/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
+    result_folder =  file + "/{}/{}/{}/{}/cp/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
     runtime = runtime
     tempdir = tempfile.mkdtemp()
-    autosklearn_directory = tempdir + 'dir_moo_sar_ps_cr_lfr_{}_{}'.format(number, seed)
+    autosklearn_directory = tempdir + 'dir_cp_{}'.format(seed)
     runhistory =  autosklearn_directory +  "/smac3-output/run_{}/runhistory.json".format(seed)
-    while  not(os.path.exists(autosklearn_directory)):
-        number += 1
-        autosklearn_directory = tempdir + 'dir_moo_sar_ps_cr_lfr_{}_{}'.format(number, seed)
-        
+    if os.path.exists(result_folder):
+        return
     X, y = utils_fairlearn.load_data(dataset)
+
+    X, y = utils_fairlearn.load_data(dataset)
+
     # ==========================
 
     on = pd.concat([X[sf], y],axis=1)
@@ -78,13 +77,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
         load_models= False,
         smac_scenario_args={"runcount_limit": runcount},
         include={
-            'feature_preprocessor': ["no_preprocessing"],
-            'data_preprocessor': ["no_preprocessor"],
-            "fair_preprocessor": ["NoFairPreprocessor","SensitiveAttributeRemover", "PreferentialSampling","LFR","CorrelationRemover"],
-            "classifier": [
-                "random_forest"
-            ], 
-           
+            "fair_preprocessor": ["NoFairPreprocessor","SensitiveAttributeRemover", "PreferentialSampling","LFR","CorrelationRemover"]
         },
         resampling_strategy='fairness-cv',
         resampling_strategy_arguments= {
@@ -96,13 +89,13 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
         }
     )
     # sensitive attributes needs to go out
-    automl.fit(X_train, y_train, dataset_name="adult")
+    automl.fit(X_train, y_train, dataset_name="cp")
 
     ############################################################################
     # Compute the two competing metrics
     # =================================
     sensitive_features = X_test[sf]
-    automl.fit(X_train, y_train, dataset_name="adult")
+    automl.fit(X_train, y_train, dataset_name="cp")
     utils_fairlearn.save_history(autosklearn_directory, runhistory, result_folder)
 
    

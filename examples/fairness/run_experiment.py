@@ -30,6 +30,7 @@ import base_redlineing_ps_cr_lfr
 import redlineing_ps_cr_lfr
 
 import base_sar_ps_com
+import complety_pipeline
 
 def run_experiment(datasets =["adult"],
  fairness_constrains=["demographic_parity"],
@@ -112,7 +113,8 @@ def run_experiment(datasets =["adult"],
                     if method == "moo+sar*ps":
                         base_sar_ps_com.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)   
                     if method == "lfr_test":
-                        lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, 5, under_folder, performance)
-
+                        lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, 5, under_folder, performance)#
+                    if method == "cp":
+                        complety_pipeline.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)
             print("all runs of {} finished".format(dataset))
     print("finished")
