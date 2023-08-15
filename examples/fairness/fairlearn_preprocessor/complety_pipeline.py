@@ -31,9 +31,6 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     if os.path.exists(result_folder):
         return
     X, y = utils_fairlearn.load_data(dataset)
-
-    X, y = utils_fairlearn.load_data(dataset)
-
     # ==========================
 
     on = pd.concat([X[sf], y],axis=1)
