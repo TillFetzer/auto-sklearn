@@ -33,7 +33,8 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     while  not(os.path.exists(autosklearn_directory)):
         number += 1
         autosklearn_directory = tempdir + 'dir_moo_sar_ps_cr_lfr_{}_{}'.format(number, seed)
-        
+    if os.path.exists(result_folder):
+        return:q   
     X, y = utils_fairlearn.load_data(dataset)
     # ==========================
 

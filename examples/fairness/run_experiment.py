@@ -30,7 +30,7 @@ import base_redlineing_ps_cr_lfr
 import redlineing_ps_cr_lfr
 
 import base_sar_ps_com
-import complety_pipeline
+import examples.fairness.complety_pipeline as complety_pipeline
 
 def run_experiment(datasets =["adult"],
  fairness_constrains=["demographic_parity"],
