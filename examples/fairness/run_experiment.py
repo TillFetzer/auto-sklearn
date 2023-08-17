@@ -44,7 +44,7 @@ def run_experiment(datasets =["adult"],
    performance = autosklearn.metrics.accuracy):
     # sf= ["foreign_worker"]
     print("start")
-    runcount -= 50
+    #runcount -= 50
     if len(sf) == 1:
         sf = len(datasets) * sf
     for constrain in fairness_constrains:
