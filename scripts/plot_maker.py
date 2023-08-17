@@ -80,8 +80,8 @@ def load_data(filepath, runetime, methods):
                                 continue        
                         else:
                             print(file)   
-                    #else:
-                    #    print(file)             
+                    else:
+                        print(file)             
             
                                     
                     with open(file) as f:
@@ -1206,23 +1206,23 @@ if __name__ == "__main__":
     #                deep_dive[method][seed] = data["error_rate_difference"]["adult"][seed][method]["pareto_config"]
                     
         
-    file = "/home/till/Documents/auto-sklearn/tmp/scaled_results_optionall.json"
+    #file = "/home/till/Documents/auto-sklearn/tmp/scaled_results_optionall.json"
     #with open(file, 'w') as f:
     #    json.dump(deep_dive, f, indent=4)
-    calc_hypervolume(data, file)
-    with open(file) as f:
-      results = json.load(f)
-    names = ["hypervolume[scaled]","accurancy[bestScaled]", "fairness[bestScaled]",
-                                    "accurancy[avgScaled]", "fairness[avgScaled]",
-                                    "accurancy[best]", "fairness[best]",
-                                     "accurancy[avg]", "fairness[avg]", "hypervolume"]
+    #calc_hypervolume(data, file)
+    #with open(file) as f:
+    #  results = json.load(f)
+    #names = ["hypervolume[scaled]","accurancy[bestScaled]", "fairness[bestScaled]",
+    #                                "accurancy[avgScaled]", "fairness[avgScaled]",
+    #                               "accurancy[best]", "fairness[best]",
+    #                                 "accurancy[avg]", "fairness[avg]", "hypervolume"]
     #names = ["test"]
-    comparisons = ["hypervolume_scaled_max","acc_best_scaled_max", "fairness_best_scaled_max", 
-                                   "acc_scaled_max", "fairness_scaled_max",
-                                   "acc_best", "fairness_best",
-                                  "acc", "fairness", "hypervolume"]
-    for i, comparison in enumerate(comparisons):
-        barplot_results(results, comparison, names[i],"/home/till/Desktop/redlineing/optional/")
+    #comparisons = ["hypervolume_scaled_max","acc_best_scaled_max", "fairness_best_scaled_max", 
+    #                               "acc_scaled_max", "fairness_scaled_max",
+    #                               "acc_best", "fairness_best",
+    #                             "acc", "fairness", "hypervolume"]
+    #for i, comparison in enumerate(comparisons):
+    #    barplot_results(results, comparison, names[i],"/home/till/Desktop/redlineing/optional/")
         
     #plot_scaled_values(results,"/home/till/Desktop/redlineing/all/","hypervolume_scaled_max", methods)
 
