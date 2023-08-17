@@ -30,7 +30,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     tempdir = tempfile.mkdtemp()
     autosklearn_directory = tempdir + 'dir_moo_sar_ps_cr_lfr_{}_{}'.format(number, seed)
     runhistory =  autosklearn_directory +  "/smac3-output/run_{}/runhistory.json".format(seed)
-    while  not(os.path.exists(autosklearn_directory)):
+    while  os.path.exists(autosklearn_directory):
         number += 1
         autosklearn_directory = tempdir + 'dir_moo_sar_ps_cr_lfr_{}_{}'.format(number, seed)
     if os.path.exists(result_folder):
@@ -96,6 +96,10 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
         "seed": seed             
         }
     )
+    #cs = automl.get_configuration_space(X_train, y_train)
+    #import pickle
+    #with open("/home/till/Documents/auto-sklearn/tmp/configspace/moo_sar_ps_cr_lfr_config_space.pickle", "wb") as f:
+    #    pickle.dump(cs, f)
     # sensitive attributes needs to go out
     automl.fit(X_train, y_train, dataset_name="adult")
 
