@@ -25,7 +25,7 @@ import os
 
 def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcount, under_folder, performance =  autosklearn.metrics.accuracy):
     number = 0
-    result_folder =  file + "/{}/{}/{}/{}/moo_sar_ps_cr_lfr/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
+    result_folder =  file + "/{}/{}/{}/{}/moo_sar_ps_cr_lfr/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, 200)
     runtime = runtime
     tempdir = tempfile.mkdtemp()
     autosklearn_directory = tempdir + 'dir_moo_sar_ps_cr_lfr_{}_{}'.format(number, seed)
@@ -71,11 +71,11 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
         # metric=autosklearn.metrics.accuracy,
         delete_tmp_folder_after_terminate=False,
         initial_configurations_via_metalearning=0,
-        memory_limit=130000,
+        memory_limit=1300000,
         ensemble_size=0,
         seed = seed,
         tmp_folder=autosklearn_directory,
-        disable_evaluator_output=["model"],
+        #disable_evaluator_output=["model"],
         load_models= False,
         smac_scenario_args={"runcount_limit": runcount},
         include={
@@ -99,7 +99,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     #cs = automl.get_configuration_space(X_train, y_train)
     #import pickle
     #with open("/home/till/Documents/auto-sklearn/tmp/configspace/moo_sar_ps_cr_lfr_config_space.pickle", "wb") as f:
-    #    pickle.dump(cs, f)
+    #:q    pickle.dump(cs, f)
     # sensitive attributes needs to go out
     automl.fit(X_train, y_train, dataset_name="adult")
 

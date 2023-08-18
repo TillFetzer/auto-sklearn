@@ -19,6 +19,22 @@ import base_cr_lfr_com
 import base_sar_ps_com
 import redlineing_ps_cr_lfr
 import utils_fairlearn
+
+import base_redlineing
+import base_redlineing_cr
+import base_redlineing_ps
+import base_redlineing_lfr
+
+import base_redlineing_cr_lfr
+import base_redlineing_ps_lfr
+import base_redlineing_ps_cr
+import base_redlineing_ps_cr_lfr
+import redlineing_ps_cr_lfr
+
+import base_sar_ps_com
+import complety_pipeline
+
+
 parser=argparse.ArgumentParser()
 
 parser.add_argument("--d", help="datsets",nargs="*")
@@ -84,4 +100,32 @@ for constrain in fairness_constrains:
                     base_sar_ps_com.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")   
                 if method == "sar+ps+cr+lfr":
                     redlineing_ps_cr_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
+                if method == "redlineing":
+                    redlineing.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test")
+                if method == "moo+sar":
+                    base_redlineing.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test")
+                if method == "moo+sar+cr":
+                    base_redlineing_cr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test")
+                if method == "moo+sar+ps":
+                    base_redlineing_ps.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test")
+                if method == "moo+sar+lfr":
+                    base_redlineing_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, 5, under_folder = "test")    
+                if method == "moo+sar+cr+lfr":
+                    base_redlineing_cr_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test")
+                if method == "moo+sar+ps+lfr":
+                    base_redlineing_ps_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test")
+                if method == "moo+sar+ps+cr":
+                    base_redlineing_ps_cr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test")
+                if method == "moo+sar+ps+cr+lfr":
+                    base_redlineing_ps_cr_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test")
+                if method == "sar+ps+cr+lfr":
+                    redlineing_ps_cr_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test")
+                if method == "moo+sar*ps":
+                    base_sar_ps_com.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test")   
+                if method == "lfr_test":
+                    lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, 5, under_folder = "test")#
+                if method == "cp":
+                    complety_pipeline.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test")
+                if method == "moo_sar_lfr":
+                    base_redlineing_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test")
 print("finished")

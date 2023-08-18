@@ -44,7 +44,7 @@ def run_experiment(datasets =["adult"],
    performance = autosklearn.metrics.accuracy):
     # sf= ["foreign_worker"]
     print("start")
-    #runcount -= 50
+    runcount -= 50
     if len(sf) == 1:
         sf = len(datasets) * sf
     for constrain in fairness_constrains:
@@ -116,6 +116,6 @@ def run_experiment(datasets =["adult"],
                     if method == "lfr_test":
                         lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, 5, under_folder, performance)#
                     if method == "cp":
-                        complety_pipeline.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)
+                        complety_pipeline.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount-50, under_folder, performance)
             print("all runs of {} finished".format(dataset))
     print("finished")

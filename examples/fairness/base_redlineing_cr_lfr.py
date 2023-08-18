@@ -21,7 +21,7 @@ from collections import defaultdict
 import os
 
 def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcount, under_folder, performance =  autosklearn.metrics.accuracy):
-    result_folder =  file + "/{}/{}/{}/{}/moo_sar_cr_lfr/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
+    result_folder =  file + "/{}/{}/{}/{}/moo_sar_cr_lfr/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, 200)
     runtime = runtime
     tempdir = tempfile.mkdtemp()
     autosklearn_directory = tempdir + 'dir_moo_sar_cr_lfr_{}'.format(seed)
@@ -57,7 +57,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     ############################################################################
     # Build and fit a classifier
     # ==========================
-    result_folder =  file + "/{}/{}/{}/{}/moo_sar_cr_lfr/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
+    result_folder =  file + "/{}/{}/{}/{}/moo_sar_cr_lfr/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, 200)
     tempdir = tempfile.mkdtemp()
     autosklearn_directory = tempdir + 'dir_moo_ps_cr_lfr_{}'.format(seed)
     runtime = runtime
@@ -97,6 +97,11 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
         }
     )
     # sensitive attributes needs to go out
+    cs = automl.get_configuration_space(X_train, y_train)
+    import pickle
+    with open("/home/till/Documents/auto-sklearn/tmp/configspace/moo_sar_cr_lfr_config_space.pickle", "wb") as f:
+        pickle.dump(cs, f)
+    
     automl.fit(X_train, y_train, dataset_name="adult")
 
     ############################################################################

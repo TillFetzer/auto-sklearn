@@ -25,7 +25,9 @@ def format_data(method, constrain, dataset,  data_path, y_format, ocs):
     Y = []
     base_file = data_path + constrain + "/" + dataset
     for seed in os.listdir(base_file):
-        file  = "{}/{}/{}/200timesstrat/runhistory.json".format(base_file, seed, method)         
+        file  = "{}/{}/{}/200timesstrat/runhistory.json".format(base_file, seed, method)  
+        if not os.path.exists(file):
+            file  = "{}/{}/{}/200timesstrat/runhistory.json".format(base_file, seed, method)      
         with open(file) as f:
             ds = json.load(f)
         for i, d in enumerate(ds["data"]):
@@ -109,7 +111,37 @@ if __name__ == '__main__':
     #  "moo+ps+cr+lfr","ps+cr+lfr",
     #  "moo_ps_ranker","moo+lfr","moo+cr"
     methods = [  
-             "moo+ps+cr"
+          #preprocessor optional
+        #"moo+sar",     
+        #"moo_ps_ranker",
+        "moo+cr",
+        "moo+lfr",
+        #multiple preprocessor 
+        #two:
+        "moo+sar+cr",
+        "moo+sar+ps", 
+        "moo+ps+cr",
+        "moo+cr+lfr",
+        "moo+ps+lfr",
+        "moo_sar_lfr",
+        "moo+sar+ps",
+
+
+        #and/or combinations:
+        "moo+ps*cr",
+        "moo+cr*lfr",
+        "moo_sar_ps_com",
+
+        #three:
+        "moo_sar_ps_lfr",
+        "moo_sar_cr_lfr",
+        "moo+sar+cr+ps",
+        "moo+ps+cr+lfr",
+        "moo+sar+cr+ps",
+
+        #all:
+        #"moo_sar_ps_cr_lfr",
+        "sar_cr_ps_lfr"     
                ]
     file = "/home/till/Desktop/fanova/"
     y_formats = ["fairness","performance"]
