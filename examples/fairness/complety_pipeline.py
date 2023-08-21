@@ -66,7 +66,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
         # metric=autosklearn.metrics.accuracy,
         delete_tmp_folder_after_terminate=False,
         initial_configurations_via_metalearning=0,
-        memory_limit=130000,
+        memory_limit=345000,
         ensemble_size=0,
         seed = seed,
         tmp_folder=autosklearn_directory,
