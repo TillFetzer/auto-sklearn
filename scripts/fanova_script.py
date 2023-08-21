@@ -10,7 +10,7 @@ import pickle
 from collections import defaultdict
 import argparse
 
-
+from pymoo.indicators.hv import HV
 
 
 
@@ -48,11 +48,15 @@ def format_data(method, constrain, dataset,  data_path, y_format, ocs):
             
             X.append(config)
             #print(list(ds["configs"][str(i+1)].values())[:-1])
-            y_index = 0 if y_format == "performance" else 1
-            if constrain == "error_rate_difference":
-                Y.append(d[1][0][y_index])
+            if y_format != "hypervolume":
+                y_index = 0 if y_format == "performance" else 1
+                if constrain == "error_rate_difference":
+                    Y.append(d[1][0][y_index])
+                else:
+                    Y.append(1-d[1][0][y_index])
             else:
-                Y.append(1-d[1][0][y_index])
+                hypervolume_obj =  HV(ref_point=np.array([1,1]))
+                Y.append(hypervolume_obj.compute(d[1][0][0], d[1][0][1]))
     X = pd.DataFrame(X)
     #that could be more difficult for different methods
     X.columns = list(ds["configs"][str(i+1)].keys())[0:13]
@@ -134,50 +138,66 @@ if __name__ == '__main__':
 
         #three:
        
-        "moo_sar_cr_lfr",
-        "moo+sar+cr+ps",
-        "moo+ps+cr+lfr",
-        "moo+sar+cr+ps",
+        #"moo_sar_cr_lfr",
+        #"moo+sar+cr+ps",
+        #"moo+ps+cr+lfr",
+        #"moo+sar+cr+ps",
 
         #all:
         #"moo_sar_ps_cr_lfr",
-        "sar_cr_ps_lfr",
+        #"sar_cr_ps_lfr",
          "moo_sar_ps_lfr"    
                ]
     file = "/home/till/Desktop/fanova/"
-    y_formats = ["fairness","performance"]
+    y_formats = ["fairness","performance", "hypervolume"]
     for method in methods:
         file_cs = open("/home/till/Documents/auto-sklearn/tmp/configspace/{}_config_space.pickle".format(method),'rb')
         ocs = pickle.load(file_cs)
         for  y_format in y_formats:
             results = defaultdict()
-            for dataset in ["lawschool", "adult", "compass","german"]:
+            for dataset in ["lawschool", "adult", "compass"]:
                 results[dataset] = defaultdict()
                 for constrain in ["equalized_odds", "demographic_parity", "consistency_score", "error_rate_difference"]:
                     results[dataset][constrain] = defaultdict()
                     data_path = "/home/till/Desktop/cross_val/"
                     X,Y = format_data(method, constrain, dataset, data_path, y_format,ocs) 
                     X = X.drop(columns = ["balancing:strategy"]) # never is the pareto front.
-                    # create an instance of fanova with data for the random forest and the configSpace
                     cs = ConfigurationSpace()
                     for hp in X.columns:
                         #if  isinstance(ocs[hp], CategoricalHyperparameter):
-                        #    setattr(ocs[hp], "choices", tuple(abs(hash(x)%10) for x in getattr(ocs[hp],"choices")))
-                        #    setattr(ocs[hp], "default_value", abs(hash(getattr(ocs[hp],"choices")[0])%10))
+                        #    setattr(ocs[hp], "choices", tuple(abs(hash(x)%100) for x in getattr(ocs[hp],"choices")))
+                        #    setattr(ocs[hp], "default_value", abs(hash(getattr(ocs[hp],"choices")[0])%100))
                         cs.add_hyperparameter(ocs[hp])   
                         #if categorical change to hash
                     assert len(cs.get_hyperparameters()) == len(X.columns)
                     fan = fANOVA(X = X, Y = np.array(Y), config_space = cs)
-                    print("{}, {}, {}".format(dataset, constrain, method))
+                    #print("{}, {}, {}".format(dataset, constrain, method))
+                    plot_dir =  '{}/{}/{}/{}'.format(file, method, constrain, dataset)
+                    if not os.path.exists(plot_dir):
+                        os.makedirs(plot_dir)
+                    # first create an instance of the visualizer with fanova object and configspace
+                    if y_format == "hypervolume":
+                        label = "1-{}".format(constrain) if constrain != "error_rate_difference" else "{}".format(constrain)
+                    else:
+                        label = y_format
+                    vis = fanova.visualizer.Visualizer(fan, cs, plot_dir, y_label="{}".format(
+                        label))
+                    # generating plot data for col0
+                    vis.plot_marginal(10)
+
+                    # creating all plots in the directory
+                    #vis.create_all_plots()
+                    # create an instance of fanova with data for the random forest and the configSpace
+                    
                     # marginal for first parameter
-                    for i in list(cs.get_hyperparameters()):
+                    #for i in list(cs.get_hyperparameters()):
         
                         #if i.name != "feature_preprocessor:__choice__" and i.name != "fair_preprocessor:__choice__":
                         #    continue
-                        results[dataset][constrain][i.name] = list(fan.quantify_importance([i.name]).values())[0]
-            with open("{}{}_{}.json".format(file,y_format, method), "w") as f:
-                print("{}{}_{}.json".format(file,y_format, method))
-                json.dump(results, f, indent=4)   
+                    #    results[dataset][constrain][i.name] = list(fan.quantify_importance([i.name]).values())[0]
+            #with open("{}{}_{}.json".format(file,y_format, method), "w") as f:
+                #print("{}{}_{}.json".format(file,y_format, method))
+                #json.dump(results, f, indent=4)   
             
             #p_list = (0,1,2,3,4,5,6,7,8,9,10,11,12,)
             #res = f.quantify_importance(p_list)
@@ -186,14 +206,4 @@ if __name__ == '__main__':
             #best_p_margs = f.get_most_important_pairwise_marginals(n=5)
             
 
-            # directory in which you can find all plots
-            #plot_dir =  '/home/till/Documents/auto-sklearn/tmp/plots/moo+ps+cr+lfr/{}/{}'.format(constrain, dataset)
-            # first create an instance of the visualizer with fanova object and configspace
-            #label = "1-{}".format(constrain) if constrain != "error_rate_difference" else "{}".format(constrain)
-            #vis = fanova.visualizer.Visualizer(f, cs, plot_dir, y_label="{}".format(constrain))
-            # generating plot data for col0
-            #vis.generate_marginal(3)
-
-            # creating all plots in the directory
-            #vis.create_all_plots()
-
+           
