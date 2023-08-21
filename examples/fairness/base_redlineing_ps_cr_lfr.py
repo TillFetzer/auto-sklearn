@@ -30,9 +30,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     tempdir = tempfile.mkdtemp()
     autosklearn_directory = tempdir + 'dir_moo_sar_ps_cr_lfr_{}_{}'.format(number, seed)
     runhistory =  autosklearn_directory +  "/smac3-output/run_{}/runhistory.json".format(seed)
-    while  os.path.exists(autosklearn_directory):
-        number += 1
-        autosklearn_directory = tempdir + 'dir_moo_sar_ps_cr_lfr_{}_{}'.format(number, seed)
+ 
     if os.path.exists(result_folder):
         return  
     X, y = utils_fairlearn.load_data(dataset)
@@ -75,7 +73,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
         ensemble_size=0,
         seed = seed,
         tmp_folder=autosklearn_directory,
-        #disable_evaluator_output=["model"],
+        disable_evaluator_output=["model"],
         load_models= False,
         smac_scenario_args={"runcount_limit": runcount},
         include={
@@ -101,12 +99,6 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     #with open("/home/till/Documents/auto-sklearn/tmp/configspace/moo_sar_ps_cr_lfr_config_space.pickle", "wb") as f:
     #:q    pickle.dump(cs, f)
     # sensitive attributes needs to go out
-    automl.fit(X_train, y_train, dataset_name="adult")
-
-    ############################################################################
-    # Compute the two competing metrics
-    # =================================
-    sensitive_features = X_test[sf]
     automl.fit(X_train, y_train, dataset_name="adult")
     utils_fairlearn.save_history(autosklearn_directory, runhistory, result_folder)
 

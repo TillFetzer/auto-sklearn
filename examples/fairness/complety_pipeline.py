@@ -91,8 +91,6 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     ############################################################################
     # Compute the two competing metrics
     # =================================
-    sensitive_features = X_test[sf]
-    automl.fit(X_train, y_train, dataset_name="cp")
     utils_fairlearn.save_history(autosklearn_directory, runhistory, result_folder)
 
    
