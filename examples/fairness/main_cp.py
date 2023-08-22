@@ -14,8 +14,7 @@ methods = [
            "cp"
         ]
 
-
-            
+          
 #methods = ["moo","so","ps","cr", "moo+cr", "moo_ps","moo+ps+cr","moo+ps*cr","lfr"]
 datasets = ["german","lawschool","compass"]
 #datasets = ["german"]
