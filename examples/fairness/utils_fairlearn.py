@@ -332,9 +332,9 @@ def add_sensitive_attribute_remover_fp(sf, sf_index):
     )
     SAR.utils_fairlearn(sf_index, sf)
 
-def add_sensitive_remover(sf):
+def add_sensitive_remover(sf, index_sf):
     add_fair_preprocessor(SensitiveAttributeRemover)
-    SensitiveAttributeRemover.utils_fairlearn(sf)
+    SensitiveAttributeRemover.utils_fairlearn(sf, index_sf)
 
 
 

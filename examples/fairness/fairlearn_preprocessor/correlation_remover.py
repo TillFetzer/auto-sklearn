@@ -26,7 +26,7 @@ class CorrelationRemover(FairPreprocessor, AutoSklearnComponent):
             setattr(self, key, val)
 
     @classmethod
-    def utils_fairlearn(cls, index_sf):
+    def utils_fairlearn(cls,  index_sf):
         cls.index_sf.append(index_sf)
 
     def fit(self, X, y=None):

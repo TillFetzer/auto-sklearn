@@ -101,31 +101,22 @@ class  PreferentialSampling(FairPreprocessor, AutoSklearnComponent):
                     indices += list(current_case)
 
                 elif expected < actual:
-                    if type == 'uniform':
-                        indices += list(np.random.choice(current_case, expected, replace=False))
-                    else:
-                        sorted_current_case = current_case[np.argsort(probs[current_case])]
-                        if value == 0:
-                            indices += list(sorted_current_case[:expected])
-                        if value == 1:
-                            indices += list(sorted_current_case[-expected:])
+                   
+                    sorted_current_case = current_case[np.argsort(probs[current_case])]
+                    if value == 0:
+                        indices += list(sorted_current_case[:expected])
+                    if value == 1:
+                        indices += list(sorted_current_case[-expected:])
                 else:
-                    if type == 'uniform':
-                        u_ind = list(np.repeat(current_case, expected // actual))
-                        u_ind += list(np.random.choice(current_case, expected % actual))
+                    sorted_current_case = current_case[np.argsort(probs[current_case])]
+                    p_ind = list(np.repeat(current_case, expected // actual))
 
-                        indices += u_ind
-
-                    else:
-                        sorted_current_case = current_case[np.argsort(probs[current_case])]
-                        p_ind = list(np.repeat(current_case, expected // actual))
-
-                        if expected % actual != 0:
-                            if value == 0:
-                                p_ind += list(sorted_current_case[-(expected % actual):])
-                            if value == 1:
-                                p_ind += list(sorted_current_case[:(expected % actual)])
-                        indices += p_ind
+                    if expected % actual != 0:
+                        if value == 0:
+                            p_ind += list(sorted_current_case[-(expected % actual):])
+                        if value == 1:
+                            p_ind += list(sorted_current_case[:(expected % actual)])
+                    indices += p_ind
         #these is a small own, extention,which does not conflict the pseudocode of the original paper
         indices = random.shuffle(indices)
         return np.squeeze(X[indices,:]), np.squeeze(y[indices,:])

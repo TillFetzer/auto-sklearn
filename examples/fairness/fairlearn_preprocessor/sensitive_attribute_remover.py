@@ -3,6 +3,7 @@ from autosklearn.pipeline.components.base import AutoSklearnComponent
 from ConfigSpace.configuration_space import ConfigurationSpace
 from typing import Optional
 from autosklearn.askl_typing import FEAT_TYPE_TYPE
+import pandas as pd
 from autosklearn.pipeline.constants import (
     DENSE,
     UNSIGNED_DATA,
@@ -17,7 +18,8 @@ class SensitiveAttributeRemover(FairPreprocessor, AutoSklearnComponent):
         """This preprocessors only remove the sensitive attributes"""
 
     @classmethod
-    def utils_fairlearn(cls, index_sf):
+    def utils_fairlearn(cls, sf, index_sf):
+        cls.sf = sf
         cls.index_sf = index_sf
 
     def fit(self, X, Y=None):
@@ -28,7 +30,11 @@ class SensitiveAttributeRemover(FairPreprocessor, AutoSklearnComponent):
     def transform(self, X, y=None):
         if self.preprocessor is None:
             raise NotImplementedError()
-        X.drop(columns=[SensitiveAttributeRemover.index_sf], inplace=True)
+        if type(X) != pd.DataFrame:
+            X = pd.DataFrame(X)
+            X.drop(columns=[SensitiveAttributeRemover.index_sf], inplace=True)
+        else:
+            X.drop(columns=[SensitiveAttributeRemover.sf], inplace=True)
         return X
 
     @staticmethod

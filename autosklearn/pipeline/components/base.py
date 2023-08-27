@@ -470,6 +470,8 @@ class AutoSklearnChoice(object):
     def fit(self, X, y, **kwargs):
         # Allows to use check_is_fitted on the choice object
         self.fitted_ = True
+        if type(X) == tuple:
+            raise Exception("X is a tuple")
         if kwargs is None:
             kwargs = {}
         return self.choice.fit(X, y, **kwargs)

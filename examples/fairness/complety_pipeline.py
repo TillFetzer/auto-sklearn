@@ -37,19 +37,19 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     X_train , X_test, y_train, y_test= utils_fairlearn.stratified_split(
         *(X.to_numpy(), y.to_numpy(), X[sf].to_numpy()),columns=X.columns,  on = on ,size=0.8,  seed=seed
     )
-
-
-    # that can outsorced in another script.
+    
 
     ############################################################################
     # Build and fit a classifier
     # ==========================
-
+    sf = X.columns.get_loc(sf)
     fair_metric = utils_fairlearn.set_fair_metric(sf, fairness_constrain)
-    utils_fairlearn.add_sensitive_remover(sf)
+    #that is to cahnge names to index
+    X_train = pd.DataFrame(np.array(X_train))
+    utils_fairlearn.add_sensitive_remover(sf, sf)
     utils_fairlearn.add_no_preprocessor()
     utils_fairlearn.add_no_fair()
-    utils_fairlearn.add_preferential_sampling(X.columns.get_loc(sf))
+    utils_fairlearn.add_preferential_sampling(sf)
     utils_fairlearn.add_LFR(sf)
     utils_fairlearn.add_correlation_remover(sf)
 
@@ -74,7 +74,9 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
         load_models= False,
         smac_scenario_args={"runcount_limit": runcount},
         include={
-            "fair_preprocessor": ["NoFairPreprocessor","SensitiveAttributeRemover", "PreferentialSampling","LFR","CorrelationRemover"]
+            'feature_preprocessor': ["no_preprocessing"],
+            "data_preprocessor": ["no_preprocessor"],
+            "fair_preprocessor": ["NoFairPreprocessor",  "CorrelationRemover", "SensitiveAttributeRemover", "LFR", "PreferentialSampling"] #,,
         },
         resampling_strategy='fairness-cv',
         resampling_strategy_arguments= {
