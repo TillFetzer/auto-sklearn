@@ -116,9 +116,9 @@ def run_experiment(datasets =["adult"],
                     if method == "lfr_test":
                         lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, 5, under_folder, performance)#
                     if method == "bp":
-                        base_pipeline.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount-50, under_folder, performance)
+                        base_pipeline.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)
                     if method == "cp":
-                        complety_pipeline.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount-50, under_folder, performance)
+                        complety_pipeline.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)
                     
             print("all runs of {} finished".format(dataset))
     print("finished")
