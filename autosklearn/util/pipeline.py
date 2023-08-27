@@ -152,14 +152,15 @@ def _get_classification_configuration_space(
         "multiclass": multiclass,
         "sparse": sparse,
     }
-    if "fair_preprocessor" in include.keys() or include.keys() == None:
-        return   SimpleFairClassificationPipeline(
-        feat_type=datamanager.feat_type,
-        dataset_properties=dataset_properties,
-        include=include,
-        exclude=exclude,
-        random_state=random_state,
-    ).get_hyperparameter_search_space(feat_type=datamanager.feat_type)
+    if include != None:
+        if "fair_preprocessor" in include.keys():
+            return   SimpleFairClassificationPipeline(
+            feat_type=datamanager.feat_type,
+            dataset_properties=dataset_properties,
+            include=include,
+            exclude=exclude,
+            random_state=random_state,
+        ).get_hyperparameter_search_space(feat_type=datamanager.feat_type)
 
     return SimpleClassificationPipeline(
         feat_type=datamanager.feat_type,

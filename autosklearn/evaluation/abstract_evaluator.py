@@ -249,7 +249,8 @@ class AbstractEvaluator(object):
                     autosklearn.pipeline.regression.SimpleRegressionPipeline
                 )
             self.predict_function = self._predict_regression
-        elif "fair_preprocessor" in include.keys():
+        elif include is not None and "fair_preprocessor" in include.keys():
+        #elif "fair_preprocessor" in include.keys():
             if not isinstance(self.configuration, Configuration):
                 self.model_class = MyDummyClassifier
             else:
