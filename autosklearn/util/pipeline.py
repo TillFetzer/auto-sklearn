@@ -152,7 +152,7 @@ def _get_classification_configuration_space(
         "multiclass": multiclass,
         "sparse": sparse,
     }
-    if "fair_preprocessor" in include.keys():
+    if "fair_preprocessor" in include.keys() or include.keys() == None:
         return   SimpleFairClassificationPipeline(
         feat_type=datamanager.feat_type,
         dataset_properties=dataset_properties,

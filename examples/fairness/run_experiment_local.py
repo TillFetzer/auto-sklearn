@@ -33,7 +33,7 @@ import redlineing_ps_cr_lfr
 
 import base_sar_ps_com
 import complety_pipeline
-
+import base_pipeline
 
 parser=argparse.ArgumentParser()
 
@@ -128,4 +128,6 @@ for constrain in fairness_constrains:
                     complety_pipeline.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test")
                 if method == "moo_sar_lfr":
                     base_redlineing_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test")
+                if method == "bp":
+                    base_pipeline.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test")
 print("finished")
