@@ -23,10 +23,10 @@ import json
 from collections import defaultdict
 import os
 def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcount, under_folder, performance =  autosklearn.metrics.accuracy):
-    result_folder =  file + "/{}/{}/{}/{}/cp/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
+    result_folder =  file + "/{}/{}/{}/{}/bp/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
     runtime = runtime
     tempdir = tempfile.mkdtemp()
-    autosklearn_directory = tempdir + 'dir_cp_{}'.format(seed)
+    autosklearn_directory = tempdir + 'dir_bp_{}'.format(seed)
     runhistory =  autosklearn_directory +  "/smac3-output/run_{}/runhistory.json".format(seed)
     if os.path.exists(result_folder):
         return
