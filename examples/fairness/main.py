@@ -30,7 +30,7 @@ method = methods[int(idx/len(seeds))%len(methods)]
 seed = seeds[idx%len(seeds)]
 fairness_constrains = fairness_constrains[int(idx/(len(seeds)*len(methods)*len(datasets)))]
 
-runcount = 150
+runcount = 100
 
 
 print(dataset)
