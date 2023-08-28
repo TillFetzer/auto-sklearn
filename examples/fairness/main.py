@@ -17,11 +17,11 @@ methods = [
 
             
 #methods = ["moo","so","ps","cr", "moo+cr", "moo_ps","moo+ps+cr","moo+ps*cr","lfr"]
-datasets = ["german","adult","lawschool","compass"]
+datasets = ["compass"]
 #datasets = ["german"]
-sfs = ["personal_status", "sex", "race", "race"]
+sfs = ["race"]
 #sfs = ["personal_status"]
-fairness_constrains=["consistency_score","demographic_parity","equalized_odds", "error_rate_difference"]
+fairness_constrains=["error_rate_difference"]
 #performance = utils_fairlearn.set_f1_score()
 performance = autosklearn.metrics.accuracy
 dataset = datasets[int(idx/(len(seeds)*len(methods)))%len(datasets)]
@@ -30,7 +30,7 @@ method = methods[int(idx/len(seeds))%len(methods)]
 seed = seeds[idx%len(seeds)]
 fairness_constrains = fairness_constrains[int(idx/(len(seeds)*len(methods)*len(datasets)))]
 
-runcount = 200
+runcount = 150
 
 
 print(dataset)

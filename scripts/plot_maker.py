@@ -76,12 +76,12 @@ def load_data(filepath, runetime, methods):
                         if not(os.path.exists(file)):
                             file  = "{}/{}/{}/del/smac3-output/run_{}/runhistory.json".format(seed_path,method,runetime_folder,seed) 
                             if not(os.path.exists(file)):
-                                #print(file)
+                                print(file)
                                 continue        
-                        else:
-                            print(file)   
-                    else:
-                        print(file)             
+                        #else:
+                        #    print(file)   
+                    #else:
+                    #    print(file)             
             
                                     
                     with open(file) as f:
