@@ -102,5 +102,5 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     # =================================
     sensitive_features = X_test[sf]
     #runhistory =  autosklearn_directory +  "/smac3-output/run_{}/runhistory.json".format(seed)
-    #utils_fairlearn.save_history(autosklearn_directory, runhistory, result_folder)
+    utils_fairlearn.save_history(autosklearn_directory, runhistory, result_folder)
     

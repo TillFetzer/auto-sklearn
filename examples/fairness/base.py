@@ -22,9 +22,20 @@ import shutil
 import utils_fairlearn
 import json
 from collections import defaultdict
+import os
+import tempfile
 
+def run_experiment(dataset, fairness_constrain, sf, runtime, 
+                   file, seed, runcount, under_folder,
+                    performance =  autosklearn.metrics.accuracy, test=False):
+    result_folder =  file + "/{}/{}/{}/{}/moo/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
+    runtime = runtime
+    tempdir = tempfile.mkdtemp()
+    autosklearn_directory = tempdir + 'dir_moo_{}'.format(seed)
+    runhistory =  autosklearn_directory +  "/smac3-output/run_{}/runhistory.json".format(seed)
+    if os.path.exists(result_folder):
+        return
 
-def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcount, under_folder, performance =  autosklearn.metrics.accuracy):
     X, y = utils_fairlearn.load_data(dataset)
    
     # ==========================
@@ -37,7 +48,8 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     ############################################################################
     # Build and fit a classifier
     # ==========================
-
+    sf = X.columns.get_loc(sf)
+    X_train = pd.DataFrame(np.array(X_train))
     fair_metric = utils_fairlearn.set_fair_metric(sf, fairness_constrain)
     utils_fairlearn.add_sensitive_remover(X.columns.get_loc(sf))
     utils_fairlearn.add_no_preprocessor()
@@ -45,7 +57,6 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     ############################################################################
     # Build and fit a classifier
     # ==========================
-    tmp =  file + "/{}/{}/{}/{}/moo/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount, test=True)
     runtime = runtime
     automl = autosklearn.classification.AutoSklearnClassifier(
         time_left_for_this_task=runtime,  # 3h
@@ -61,7 +72,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
         smac_scenario_args={"runcount_limit": runcount},
         memory_limit=130000,
         seed = seed,
-        tmp_folder =  tmp + "/del",
+        tmp_folder =  autosklearn_directory,
         include={
             'feature_preprocessor': ["no_preprocessing"],
             'data_preprocessor': ["no_preprocessor"],
@@ -81,42 +92,9 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     )
     # sensitive attributes needs to go out
     automl.fit(X_train, y_train, dataset_name="adult")
-    runhistory_file = tmp + "/del/smac3-output/run_{}/runhistory.json".format(seed), tmp
     if test:
-        predictions = automl.predict(X_test)
-        print("Precision", sklearn.metrics.precision_score(y_test, predictions))
-        print("Recall", sklearn.metrics.recall_score(y_test, predictions))
-        sensitive_features = X_test[sf]
-        pareto_front = automl.get_pareto_set()
-        for ensemble in pareto_front:
-            predictions = ensemble[0].predict(X_test)
-            acc = sklearn.metrics.accuracy_score(y_test, predictions)
-            fairness = fairlearn.metrics.demographic_parity_difference(
-            y_test, predictions, sensitive_features=sensitive_features
-            )
-            with open(runhistory_file, "a+") as f:
-                json.dump({"config": str(ensemble[0].estimators[0].config),"acc": acc, "fairness": fairness}, f)
-                f.write("\n")
-        
-
-    shutil.copy(runhistory_file)
-    shutil.rmtree(tmp + "/del")
-    ############################################################################
-    # Compute the two competing metrics
-    # =================================
-    #sensitive_features = X_test[sf]
-   # utils_fairlearn.save_pareto(
-    #    automl,
-    #    X_test,
-    #    y_test,
-    #    sensitive_features,
-    #    runtime,
-    #    fairness_constrain,
-    #    "moo",
-    #    dataset,
-    #    file
-    #)
-
-    #utils_fairlearn.save_history(autosklearn_directory, runhistory, result_folder)
+       utils_fairlearn.run_test_data(X_test, y_test, sf, fairness_constrain, automl, runhistory) 
+    utils_fairlearn.save_history(autosklearn_directory, runhistory, result_folder)
+    
     
    

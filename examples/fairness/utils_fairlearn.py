@@ -351,8 +351,7 @@ def add_sensitive_remover(sf):
 
 
 def run_test_data(X_test, y_test, sf, fairness_constrain, automl, runhistory_file):
-    X_test = pd.DataFrame(np.array(X_test))
-        
+    X_test = pd.DataFrame(np.array(X_test))        
     pareto_front = automl.get_pareto_set()
     models,scores = pareto_front [0], pareto_front [1]
     for i, model in enumerate(models):
@@ -360,7 +359,7 @@ def run_test_data(X_test, y_test, sf, fairness_constrain, automl, runhistory_fil
         acc = sklearn.metrics.accuracy_score(y_test, predictions)
         fairness = calc_fair_metric(y_test, predictions, X_test, sf, fairness_constrain)
         with open(runhistory_file, "a+") as f:
-            json.dump({"scores":str(scores[i]), "acc": acc, "fairness": fairness}, f)
+            json.dump({"scores":str(scores[i]), "acc": 1-acc, "fairness": 1-fairness}, f)
             f.write("\n")
 
 def add_LFR(index_sf):

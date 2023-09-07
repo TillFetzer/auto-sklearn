@@ -21,9 +21,20 @@ import shutil
 import utils_fairlearn
 import json
 from collections import defaultdict
+import os
+import tempfile
 
-
-def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcount, under_folder, performance =  autosklearn.metrics.accuracy):
+def run_experiment(dataset, fairness_constrain, sf, runtime, 
+                   file, seed, runcount, under_folder,
+                    performance =  autosklearn.metrics.accuracy, test=False):
+    result_folder =  file + "/{}/{}/{}/{}/moo_sar/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
+    runtime = runtime
+    tempdir = tempfile.mkdtemp()
+    autosklearn_directory = tempdir + 'dir_moo_sar_{}'.format(seed)
+    runhistory =  autosklearn_directory +  "/smac3-output/run_{}/runhistory.json".format(seed)
+    if os.path.exists(result_folder):
+        return
+    
     X, y = utils_fairlearn.load_data(dataset)
 
     # ==========================
@@ -39,7 +50,10 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     ############################################################################
     # Build and fit a classifier
     # ==========================
-
+    X_train = pd.DataFrame(np.array(X_train))
+    
+    sf = X.columns.get_loc(sf)
+    X_train = pd.DataFrame(np.array(X_train))
     fair_metric = utils_fairlearn.set_fair_metric(sf, fairness_constrain)
     utils_fairlearn.add_sensitive_remover(sf)
     utils_fairlearn.add_no_preprocessor()
@@ -48,7 +62,6 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     ############################################################################
     # Build and fit a classifier
     # ==========================
-    tmp =  file + "/{}/{}/{}/{}/moo+sar/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
     runtime = runtime
     automl = autosklearn.classification.AutoSklearnClassifier(
         time_left_for_this_task=runtime,  # 3h
@@ -63,7 +76,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
         memory_limit=6174,
         seed = seed,
         smac_scenario_args={"runcount_limit": runcount},
-        tmp_folder =  tmp + "/del",
+        tmp_folder =  autosklearn_directory,
         include={
             'feature_preprocessor': ["no_preprocessing"],
             'data_preprocessor': ["no_preprocessor"],
@@ -81,10 +94,10 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
         "seed": seed             
         }
     )
-    cs = automl.get_configuration_space(X_train, y_train)
-    import pickle
-    with open("/home/till/Documents/auto-sklearn/tmp/configspace/moo+sar_config_space.pickle", "wb") as f:
-        pickle.dump(cs, f)
+    #cs = automl.get_configuration_space(X_train, y_train)
+    #import pickle
+    #with open("/home/till/Documents/auto-sklearn/tmp/configspace/moo+sar_config_space.pickle", "wb") as f:
+    #    pickle.dump(cs, f)
 
     # sensitive attributes needs to go out
     automl.fit(X_train, y_train, dataset_name="adult")
@@ -92,9 +105,6 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     ############################################################################
     # Compute the two competing metrics
     # =================================
-    sensitive_features = X_test[sf]
-   
-
-    shutil.copy(tmp + "/del/smac3-output/run_{}/runhistory.json".format(seed), tmp)
-    shutil.rmtree(tmp + "/del")
-  
+    if test:
+       utils_fairlearn.run_test_data(X_test, y_test, sf, fairness_constrain, automl, runhistory) 
+    utils_fairlearn.save_history(autosklearn_directory, runhistory, result_folder)
