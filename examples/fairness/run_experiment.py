@@ -41,10 +41,9 @@ def run_experiment(datasets =["adult"],
    runtime = 108000, 
    runcount=-1,
    under_folder="dummy",
-   performance = autosklearn.metrics.accuracy):
+   performance = autosklearn.metrics.accuracy,
+   test = False):
     # sf= ["foreign_worker"]
-    print("start")
-    runcount -= 50
     if len(sf) == 1:
         sf = len(datasets) * sf
     for constrain in fairness_constrains:
@@ -93,7 +92,7 @@ def run_experiment(datasets =["adult"],
                     if method == "redlineing":
                         redlineing.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)
                     if method == "moo+sar":
-                         base_redlineing.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)
+                         base_redlineing.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance, test)
                     if method == "moo+sar+cr":
                         base_redlineing_cr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder, performance)
                     if method == "moo+sar+ps":

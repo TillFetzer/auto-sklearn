@@ -10,7 +10,8 @@ args=parser.parse_args()
 idx = args.idx
 under_folder = args.uf
 seeds = [12345,25,42,45451,97,13,27,39,41,53]          
-methods = ["moo","so","ps","cr", "moo+cr", "moo_ps","moo+ps+cr","moo+ps*cr","lfr"]
+#methods = ["moo","so","ps","cr", "moo+cr", "moo_ps","moo+ps+cr","moo+ps*cr","lfr"]
+methods = ["moo+sar+cr"]
 datasets = ["german"]
 #datasets = ["german"]
 sfs = ["personal_status"]
@@ -24,8 +25,8 @@ method = methods[int(idx/len(seeds))%len(methods)]
 seed = seeds[idx%len(seeds)]
 fairness_constrains = fairness_constrains[int(idx/(len(seeds)*len(methods)*len(datasets)))]
 
-runcount = 200
-
+#runcount = 10
+runcount=200
 
 print(dataset)
 print(method)
@@ -39,5 +40,6 @@ run_experiment(datasets =[dataset],
                sf=[sf],
                runtime = 2000000, 
               runcount=runcount, 
-               under_folder=under_folder, 
-              performance = performance)
+              under_folder=under_folder, 
+              performance = performance,
+              test=True)
