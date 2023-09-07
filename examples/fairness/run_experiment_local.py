@@ -105,9 +105,9 @@ for constrain in fairness_constrains:
                 if method == "moo+sar":
                     base_redlineing.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test")
                 if method == "moo+sar+cr":
-                    base_redlineing_cr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test")
+                    base_redlineing_cr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test", test=True)
                 if method == "moo+sar+ps":
-                    base_redlineing_ps.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test")
+                    base_redlineing_ps.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test", test=True)
                 if method == "moo+sar+lfr":
                     base_redlineing_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, 5, under_folder = "test")    
                 if method == "moo+sar+cr+lfr":

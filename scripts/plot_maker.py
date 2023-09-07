@@ -57,6 +57,8 @@ def load_data(filepath, runetime, methods):
         data[constrain] = defaultdict()
         constrain_path = "{}{}".format(filepath, constrain)
         for dataset in os.listdir(constrain_path):
+            if dataset == "adult":
+                continue
             data[constrain][dataset] = defaultdict()
             dataset_path = "{}/{}".format(constrain_path, dataset)
             for seed in os.listdir(dataset_path):
@@ -121,8 +123,10 @@ def load_data(filepath, runetime, methods):
                     
     return data
 def pareto_set(all_costs):
+
     confs = all_costs["configs"]
     all_costs = np.array(all_costs["points"])
+    assert len(all_costs) == len(confs)
     moo_psrt_by_first_metric = np.argsort(all_costs[:, 0])
     efficient_points = pareto_front(all_costs, is_loss=True)
     pareto_set = []
@@ -947,6 +951,134 @@ def calculate_shapley_values(data, methods, file, compare = "acc", latex_table =
     shapley_values[constrain][dataset][method][pre]["fairness"]  += (post_fair-pre_fair)/div
     shapley_values[constrain][dataset][method][pre]["hypervolumne"] +=  (post_vol-pre_vol)/div 
 """
+def generate_result_table(data):
+    
+    # Open the LaTeX table format
+    for value_key, value_type in {"acc": "acc_best", "fairness": "fairness_best"}.items():
+        latex_table = r"""
+        \begin{table}[]
+        \centering
+        \caption{fairness metrics one}
+        \label{tab:my-table}
+        \begin{tabular}{@{}|l|"""
+        
+        # Extract unique methods and their count
+        datasets = list(set(data))
+        num_datasets = len(datasets)
+        
+        # Add method columns to the table format
+        for _ in range(num_datasets):
+            latex_table += "l|"
+        
+        latex_table += r"}\n \toprule \n &"
+        
+        # Add method names to the table header
+        latex_table += " & ".join(datasets) + r" \\ \midrule"
+        
+        # Iterate through the data and fill in the table
+    
+        latex_table += f"\n {value_key} &\multicolumn{num_datasets}" +r"{l|}{} \\ \midrule"
+        for i, method  in enumerate(data["lawschool"]["methods"]):  
+            #lawschool is just a random dataset here because is everytime the same methods  
+            latex_table += f"\n {i}"
+            for dataset in data.keys():
+                val = round(data[dataset][value_type][i], 4)
+                latex_table += f"& {val}"
+        latex_table += r"\\ \midrule"
+        
+        # Close the table
+        latex_table += r"""
+        \bottomrule
+        \end{tabular}
+        \end{table}
+        """
+        
+    return latex_table
+def get_method_name(method):
+    method_mapping = {
+        "moo": "Moo -s",
+        "so": "So",
+        "cr": "CR -a",
+        "ps_ranker": "PS -a",
+        "redlineing": "SAR -a",
+        "lfr": "LFR -a",
+        
+        "moo+sar": "SAR -o",
+    "moo_ps_ranker": "PS -o",
+    "moo+cr": "CR -o",
+    "moo+lfr": "LFR -o",
+
+    "moo+sar+cr": "[SAR, CR] -o",
+    "moo+sar+ps": "[SAR, PS] -o",
+    "moo+sar+ps": "[SAR, PS] -o",
+    "moo+ps+cr": "[PS, CR] -o",
+    "moo+cr+lfr": "[CR, LFR] -o",
+    "moo+ps+lfr": "[PS, LFR] -o",
+    "moo_sar_lfr": "[SAR, LFR] -o",
+
+    "moo+ps*cr": "[PS, CR] -m",
+    "moo+cr*lfr": "[CR, LFR] -m",
+    "moo_sar_ps_com": "[SAR, PS] -m ",
+
+    "moo_sar_cr_lfr": "[SAR, CR, LFR] -o",
+    "moo_sar_ps_lfr": "[SAR, PS, LFR] -o",
+    "moo+sar+cr+ps": "[SAR, CR, PS] -o",
+    "moo+ps+cr+lfr": "[PS, CR, LFR] -o",
+    "moo+sar+cr+ps": "[SAR, CR, PS] -o",
+
+    "moo_sar_ps_cr_lfr": "[all] -o",
+    "sar_cr_ps_lfr": "[all] -of",
+    "cp": "CP",
+    "bp": "BP",
+    }
+    return method_mapping[method]
+
+method_groups = [[range(2,5)], [range(6,9)],[range(10,28)]]
+
+
+def test_table(alldata, file = "/home/till/Desktop/redlineing/table_cp.txt"):
+    for constrain, data in alldata.items():
+        latex_table = ""
+        
+        latex_table += fr"""
+        \begin{{table}}
+        \caption{{Results of \text{constrain}}}
+        \begin{{center}}"""
+        latex_table += r"\scalebox{0.55}{" +"\n"
+        latex_table += fr"""\centering
+        \label{{tab:{constrain}}}
+        \begin{{tabular}}{{l cccc c cccc c cccc}}
+        \hline
+        Method & \multicolumn{{{len(data)}}}{{c}}{{Accuracy}} & & \multicolumn{{{len(data)}}}{{c}}{{Fairness}}  & & \multicolumn{{{len(data)}}}{{c}}{{Hypervolume}}\\
+        \cline{{2-5}} \cline{{7-10}} \cline{{12-15}}
+        & {' & '.join(data.keys())} & & {' & '.join(data.keys())} & & {' & '.join(data.keys())} \\
+            """    
+        method_count = len(data[list(data.keys())[0]]["methods"])  # Assuming the count is consistent across datasets    
+        for i in range(method_count):
+            method_name = get_method_name(data[list(data.keys())[0]]["methods"][i])
+            latex_table +=  "\n"+ r"\text{" + f"{method_name}" + r"}"
+            for value_type in ["acc_best", "fairness_best", "hypervolume"]:
+                for dataset in data.keys():
+                    val = round(data[dataset][value_type][i], 4)
+                    if data[dataset][value_type][i] == max(data[dataset][value_type]):
+                        latex_table += r" & \textbf{" + str(val) + r"}"
+                    else:
+                        latex_table += f" & {val}"
+                    latex_table += r" & " if dataset == "compass"  and value_type != "hypervolume" else r""
+            latex_table += r" \\"
+            
+        latex_table += r"""
+        \bottomrule
+        \end{tabular}
+        }
+        \end{center}
+        \end{table}
+        """
+        latex_table += "\n"
+        #print(latex_table)
+        with open(file, "a+") as f:
+            f.write(latex_table)
+    
 
 
 
@@ -992,43 +1124,43 @@ method_mapping = OrderedDict([
    
     
     # Preprocessor every time
-    ("redlineing", {"name": "Moo with SAR every time", "type": "everytime"}),
-    ("cr", {"name": "Moo with CR every time", "type": "everytime"}),
-    ("ps_ranker", {"name": "Moo with Sampling every time", "type": "everytime"}),
-    ("lfr", {"name": "Moo with LFR every time", "type": "everytime"}),
+    #("redlineing", {"name": "Moo with SAR every time", "type": "everytime"}),
+    #("cr", {"name": "Moo with CR every time", "type": "everytime"}),
+    #("ps_ranker", {"name": "Moo with Sampling every time", "type": "everytime"}),
+    #("lfr", {"name": "Moo with LFR every time", "type": "everytime"}),
     
     # Preprocessor optional
-    ("moo+sar", {"name": "Moo with optional SAR", "type": "optional"}),
-    ("moo_ps_ranker", {"name": "Moo with optional sampling", "type": "optional"}),
-    ("moo+cr", {"name": "Moo with optional CR", "type": "optional"}),
-    ("moo+lfr", {"name": "Moo with optional LFR", "type": "optional"}),
+    #("moo+sar", {"name": "Moo with optional SAR", "type": "optional"}),
+    #("moo_ps_ranker", {"name": "Moo with optional sampling", "type": "optional"}),
+    #("moo+cr", {"name": "Moo with optional CR", "type": "optional"}),
+    #("moo+lfr", {"name": "Moo with optional LFR", "type": "optional"}),
 
     # Preprocessor combinations
-    #("moo+sar+cr", {"name": "Moo with optional SAR or CR", "type": "combination"}),
-    #("moo+sar+ps", {"name": "Moo with optional SAR or sampling", "type": "combination"}),
-    #("moo+sar+ps", {"name": "Moo with optional SAR and sampling", "type": "combination"}),
-    #("moo+ps+cr", {"name": "Moo with optional CR or sampling", "type": "combination"}),
-    #("moo+cr+lfr", {"name": "Moo with optional CR or LFR", "type": "combination"}),
-    #("moo+ps+lfr", {"name": "Moo with optional sampling or LFR", "type": "combination"}),
-    #("moo_sar_lfr", {"name": "Moo with optional SAR and LFR", "type": "combination"}),
+    ("moo+sar+cr", {"name": "Moo with optional SAR or CR", "type": "combination"}),
+    ("moo+sar+ps", {"name": "Moo with optional SAR or sampling", "type": "combination"}),
+    ("moo+sar+ps", {"name": "Moo with optional SAR and sampling", "type": "combination"}),
+    ("moo+ps+cr", {"name": "Moo with optional CR or sampling", "type": "combination"}),
+    ("moo+cr+lfr", {"name": "Moo with optional CR or LFR", "type": "combination"}),
+    ("moo+ps+lfr", {"name": "Moo with optional sampling or LFR", "type": "combination"}),
+    ("moo_sar_lfr", {"name": "Moo with optional SAR and LFR", "type": "combination"}),
     
 
     #and/or combinations:
     # please notice that other and/or combinations are not possible, detail in the maseter thessis
-    #("moo+ps*cr", {"name": "Moo with optional CR and/or sampling", "type": "combination"}),
-    #("moo+cr*lfr", {"name": "Moo with optional CR and/or LFR", "type": "combination"}),
-    #("moo_sar_ps_com", {"name": "Moo with optional SAR and/or sampling", "type": "combination"}),
+    ("moo+ps*cr", {"name": "Moo with optional CR and/or sampling", "type": "combination"}),
+    ("moo+cr*lfr", {"name": "Moo with optional CR and/or LFR", "type": "combination"}),
+    ("moo_sar_ps_com", {"name": "Moo with optional SAR and/or sampling", "type": "combination"}),
 
     #three:
-    #("moo_sar_cr_lfr", {"name": "Moo with optional SAR, CR and LFR", "type": "combination"}),
-    #("moo_sar_ps_lfr", {"name": "Moo with optional SAR, sampling and LFR", "type": "combination"}),
-    #("moo+sar+cr+ps", {"name": "Moo with optional SAR, CR and sampling", "type": "combination"}),
-    #("moo+ps+cr+lfr", {"name": "Moo with optional CR, sampling and LFR", "type": "combination"}),
-    #("moo+sar+cr+ps", {"name": "Moo with optional SAR, CR and sampling", "type": "combination"}),
+    ("moo_sar_cr_lfr", {"name": "Moo with optional SAR, CR and LFR", "type": "combination"}),
+    ("moo_sar_ps_lfr", {"name": "Moo with optional SAR, sampling and LFR", "type": "combination"}),
+    ("moo+sar+cr+ps", {"name": "Moo with optional SAR, CR and sampling", "type": "combination"}),
+    ("moo+ps+cr+lfr", {"name": "Moo with optional CR, sampling and LFR", "type": "combination"}),
+    ("moo+sar+cr+ps", {"name": "Moo with optional SAR, CR and sampling", "type": "combination"}),
 
     #all:
-    #("moo_sar_ps_cr_lfr", {"name": "Moo with optionally all preprocessor", "type": "combination"}),
-    #("sar_cr_ps_lfr", {"name": "Moo with SAR or CR or sampling or LFR", "type": "combination"})
+    ("moo_sar_ps_cr_lfr", {"name": "Moo with optionally all preprocessor", "type": "combination"}),
+    ("sar_cr_ps_lfr", {"name": "Moo with SAR or CR or sampling or LFR", "type": "combination"})
         
 ])    
     
@@ -1090,14 +1222,14 @@ def barplot_results(data, comparison, shortName, save_folder):
     
     for metric in final_df['metric'].unique():
         sns.set(style="whitegrid")
-        plt.figure(figsize=(6, 7.8))  #6, 7.8
+        plt.figure(figsize=(20, 10))  #6, 7.8
         metric_df = final_df[final_df['metric'] == metric]
         metric_df['method'] = pd.Categorical(metric_df['method'], categories=method_order, ordered=True)
         metric_df['dataset'] = pd.Categorical(metric_df['dataset'], categories=dataset_order, ordered=True)
         metric_df = metric_df.sort_values(['dataset','method']).reset_index(drop=True)
         #sns.set_palette(colors)
         ax = sns.barplot(data=metric_df, y="dataset",x="value", hue="method", orient="h", 
-                         hue_order=method_order,) # palette=sns.color_palette(colors, len(colors)),
+                         hue_order=method_order,palette=sns.color_palette(colors, len(colors)),) # palette=sns.color_palette(colors, len(colors)),
         y_min = sub_metric_df['value'].min()
         x_max =  sub_metric_df['value'].max()
         ax.set_xlim(0, 1.1)
@@ -1109,8 +1241,8 @@ def barplot_results(data, comparison, shortName, save_folder):
         for i,p in enumerate(ax.patches):
             text_color = "black"
             #print("%.4f" % p.get_width())
-            if i in [4,5,6,720,21,22,23, 36,37,38]: #,7,
-                ax.axhline(y=p.get_y()+p.get_height(), color='gray', linestyle='--')
+            #if i in [4,5,6,720,21,22,23, 36,37,38]: #,7,
+            #    ax.axhline(y=p.get_y()+p.get_height(), color='gray', linestyle='--')
             if i in new_index:
                 text_color = "red"
             ax.annotate("%.3f" % p.get_width(), xy=(p.get_width(), p.get_y()+p.get_height()/2),
@@ -1122,14 +1254,45 @@ def barplot_results(data, comparison, shortName, save_folder):
         plt.title(f"Comparison of {metric} by Dataset and Method")
         plt.ylabel("Dataset")
         plt.xlabel(f"{shortName}")
-        #plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))  # Position legend outside the plot
-        plt.legend([],[], frameon=False)
+        plt.legend(loc='center left', bbox_to_anchor=(1, 0.5))  # Position legend outside the plot
+        #plt.legend([],[], frameon=False)
         plt.tight_layout()  # Ensure proper layout
         #plt.show()
         #break
         plt.savefig("{}{}/{}_pv_comparison.png".format(save_folder, comparison, metric))  # Save the plot as an image
         plt.close()  # Close the current plot
-     
+
+def check_pareto_front(data):
+    domination = defaultdict()
+    for constrain, constrain_data in data.items():
+        domination[constrain] = defaultdict()
+        # Process sub-metrics within each metric
+        for dataset, dataset_data in constrain_data.items():
+            domination[constrain][dataset] = defaultdict()
+            for seed, seed_data in dataset_data.items():
+                moo_front = seed_data["moo"]["pareto_set"]
+                #dataset_data["moo"]["pareto_config"] = 
+                moo_config = [{'method': 'moo', **item} for item in  seed_data["moo"]["pareto_config"]]
+                # Create a list of dictionaries for the DataFrame
+                for method, method_data in seed_data.items():
+                    if method == "moo" or method == "so":
+                        continue
+                    new_front = defaultdict()
+                    new_front["points"] = pd.concat([moo_front, method_data["pareto_set"]], ignore_index= True)
+                    new_front["configs"] = moo_config + [{'method': method, **item} for item in  method_data["pareto_config"]]
+                    pareto_points, pareto_config = pareto_set(new_front)
+                    #get new pareto front and check if only method is the pareto front
+                    #dominates = if pareto_config
+                    if all(item.get('method') == method for item in pareto_config):
+                        
+                        if  method not in domination[constrain][dataset].keys():
+                            domination[constrain][dataset][method] = 1
+                        else:
+                            domination[constrain][dataset][method] += 1
+    #write domination to file
+    with open("/home/till/Desktop/domination.json", 'w') as f:  
+        json.dump(domination, f, indent=4)
+    return
 
 if __name__ == "__main__":
     #methods = ["moo_ps_ranker","moo","moo+cr", "ps_ranker"]
@@ -1145,40 +1308,41 @@ if __name__ == "__main__":
         #"ps_ranker",
         #"lfr",
         #preprocessor optional
-        #"moo+sar",     
-        #"moo_ps_ranker",
-        #"moo+cr",
-        #"moo+lfr",
+        "moo+sar",     
+        "moo_ps_ranker",
+        "moo+cr",
+        "moo+lfr",
         #multiple preprocessor 
         #two:
-        #"moo+sar+cr",
-        #"moo+sar+ps", 
-        #"moo+ps+cr",
-        #"moo+cr+lfr",
-        #"moo+ps+lfr",
-        #"moo_sar_lfr",
-        #"moo+sar+ps",
+        "moo+sar+cr",
+        "moo+sar+ps", 
+        "moo+ps+cr",
+        "moo+cr+lfr",
+        "moo+ps+lfr",
+        "moo_sar_lfr",
+        "moo+sar+ps",
 
 
         #and/or combinations:
-        #"moo+ps*cr",
-        #"moo+cr*lfr",
-        #"moo_sar_ps_com",
+        "moo+ps*cr",
+        "moo+cr*lfr",
+        "moo_sar_ps_com",
 
         #three:
-        #"moo_sar_cr_lfr",
-        #"moo_sar_ps_lfr",
-        #"moo+sar+cr+ps",
-        #"moo+ps+cr+lfr",
-        #"moo+sar+cr+ps",
+        "moo_sar_cr_lfr",
+        "moo_sar_ps_lfr",
+        "moo+sar+cr+ps",
+        "moo+ps+cr+lfr",
+        "moo+sar+cr+ps",
 
         #all:
         "moo_sar_ps_cr_lfr",
-        #"sar_cr_ps_lfr"
-        
+        "sar_cr_ps_lfr"
+        #"cp",
+        #"bp"
           
         ]
-    #data = load_data("/home/till/Documents/auto-sklearn/tmp/cross_val/", "200timesstrat", methods)
+  
     #make_plot_3(data)
     #data = load_data_particully("/home/till/Desktop/psoss_val/", "200timesstrat",
     #datasets = ["german","adult", "compass","lawschool"],
@@ -1188,11 +1352,10 @@ if __name__ == "__main__":
     #seeds= ["12345","25","42","45451", "97","13","27","39","41","53"]
     #make_difference_plot(data,"best")
     #methods = ["moo","cr"]
-    
+    data = load_data("/home/till/Desktop/cross_val/", "200timesstrat", methods)
     #methods = ["moo","ps_ranker","moo_ps_ranker"]
-    data = load_data("/home/till/Desktop/cross_val/","200timesstrat", methods)
     #print()
-    #calculate_shapley_values(data,methods,file="/home/till/Desktop/shapley_values/", compare="hypervolumne")
+    calculate_shapley_values(data,methods,file="/home/till/Desktop/shapley_values/", compare="hypervolumne")
     #print(sv)
     #make_plot_3(data)
     #deep_dive = defaultdict()
@@ -1206,24 +1369,26 @@ if __name__ == "__main__":
     #                deep_dive[method][seed] = data["error_rate_difference"]["adult"][seed][method]["pareto_config"]
                     
         
-    #file = "/home/till/Documents/auto-sklearn/tmp/scaled_results_optionall.json"
+    #file = "/home/till/Documents/auto-sklearn/tmp/scaled_results_all_cp.json"
     #with open(file, 'w') as f:
     #    json.dump(deep_dive, f, indent=4)
     #calc_hypervolume(data, file)
     #with open(file) as f:
     #  results = json.load(f)
-    #names = ["hypervolume[scaled]","accurancy[bestScaled]", "fairness[bestScaled]",
-    #                                "accurancy[avgScaled]", "fairness[avgScaled]",
-    #                               "accurancy[best]", "fairness[best]",
-    #                                 "accurancy[avg]", "fairness[avg]", "hypervolume"]
+    #check_pareto_front(data)
+    #test_table(results)
+    names = ["hypervolume[scaled]","accurancy[bestScaled]", "fairness[bestScaled]",
+                                    "accurancy[avgScaled]", "fairness[avgScaled]",
+                                   "accurancy[best]", "fairness[best]",
+                                     "accurancy[avg]", "fairness[avg]", "hypervolume"]
     #names = ["test"]
-    #comparisons = ["hypervolume_scaled_max","acc_best_scaled_max", "fairness_best_scaled_max", 
-    #                               "acc_scaled_max", "fairness_scaled_max",
-    #                               "acc_best", "fairness_best",
-    #                             "acc", "fairness", "hypervolume"]
+    comparisons = ["hypervolume_scaled_max","acc_best_scaled_max", "fairness_best_scaled_max", 
+                                   "acc_scaled_max", "fairness_scaled_max",
+                                   "acc_best", "fairness_best",
+                                    "acc", "fairness", "hypervolume"]
     #for i, comparison in enumerate(comparisons):
-    #    barplot_results(results, comparison, names[i],"/home/till/Desktop/redlineing/optional/")
-        
+    #    barplot_results(results, comparison, names[i],"/home/till/Desktop/redlineing/all/")
+       
     #plot_scaled_values(results,"/home/till/Desktop/redlineing/all/","hypervolume_scaled_max", methods)
 
 

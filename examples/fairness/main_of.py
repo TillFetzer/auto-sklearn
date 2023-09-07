@@ -9,16 +9,11 @@ args=parser.parse_args()
 
 idx = args.idx
 under_folder = args.uf
-seeds = [12345,25,42,45451,97,13,27,39,41,53]
-methods = [ 
-           "cp"
-        ]
-
-          
-#methods = ["moo","so","ps","cr", "moo+cr", "moo_ps","moo+ps+cr","moo+ps*cr","lfr"]
-datasets = ["german","lawschool","compass"]
+seeds = [12345,25,42,45451,97,13,27,39,41,53]          
+methods = ["moo","so","ps","cr", "moo+cr", "moo_ps","moo+ps+cr","moo+ps*cr","lfr"]
+datasets = ["german"]
 #datasets = ["german"]
-sfs = ["personal_status", "race", "race"]
+sfs = ["personal_status"]
 #sfs = ["personal_status"]
 fairness_constrains=["consistency_score","demographic_parity","equalized_odds", "error_rate_difference"]
 #performance = utils_fairlearn.set_f1_score()

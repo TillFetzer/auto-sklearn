@@ -173,10 +173,7 @@ class ExecuteTaFuncWithQueue(AbstractTAFunc):
             eval_function = (
                 autosklearn.evaluation.train_evaluator.eval_iterative_holdout
             )
-        elif resampling_strategy == "fairness-holdout":
-            eval_function = (
-                autosklearn.evaluation.train_evaluator.eval_holdout
-            )
+       
         elif resampling_strategy == "fairness-cv":
             eval_function = (
                 autosklearn.evaluation.train_evaluator.eval_cv

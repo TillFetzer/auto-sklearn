@@ -146,9 +146,6 @@ class RandomForest(
             raise NotImplementedError()
         probas = self.estimator.predict_proba(X)
         probas = convert_multioutput_multiclass_to_multilabel(probas)
-        if probas.shape[1] != 1:
-            print("why")
-            #probas = softmax(probas)
         return probas
 
     @staticmethod

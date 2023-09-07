@@ -18,9 +18,8 @@ class SensitiveAttributeRemover(FairPreprocessor, AutoSklearnComponent):
         """This preprocessors only remove the sensitive attributes"""
 
     @classmethod
-    def utils_fairlearn(cls, sf, index_sf):
+    def utils_fairlearn(cls, sf):
         cls.sf = sf
-        cls.index_sf = index_sf
 
     def fit(self, X, Y=None):
         self.preprocessor = "remover"
@@ -30,12 +29,8 @@ class SensitiveAttributeRemover(FairPreprocessor, AutoSklearnComponent):
     def transform(self, X, y=None):
         if self.preprocessor is None:
             raise NotImplementedError()
-        if type(X) != pd.DataFrame:
-            X = pd.DataFrame(X)
-            X.drop(columns=[SensitiveAttributeRemover.index_sf], inplace=True)
-        else:
-            X.drop(columns=[SensitiveAttributeRemover.sf], inplace=True)
-        return X
+        Xt = X.drop(columns=[SensitiveAttributeRemover.sf])
+        return Xt
 
     @staticmethod
     def get_properties(dataset_properties=None):

@@ -1389,7 +1389,7 @@ class AutoML(BaseEstimator):
         if kwargs["disable_file_output"] or kwargs["resampling_strategy"] == "test":
             self._logger.warning("File output is disabled. No pipeline can returned")
         elif run_value.status == StatusType.SUCCESS:
-            if kwargs["resampling_strategy"] in ("cv", "cv-iterative-fit"):
+            if kwargs["resampling_strategy"] in ("cv", "cv-iterative-fit", "fairness-cv"):
                 load_function = self._backend.load_cv_model_by_seed_and_id_and_budget
             else:
                 load_function = self._backend.load_model_by_seed_and_id_and_budget
@@ -1423,7 +1423,7 @@ class AutoML(BaseEstimator):
 
         if (
             self._resampling_strategy
-            not in ("holdout", "holdout-iterative-fit", "cv", "cv-iterative-fit")
+            not in ("holdout", "holdout-iterative-fit", "cv", "cv-iterative-fit", "fairness-cv")
             and not self._can_predict
         ):
             raise NotImplementedError(
@@ -1627,7 +1627,7 @@ class AutoML(BaseEstimator):
             identifiers = self.ensemble_.get_selected_model_identifiers()
             self.models_ = self._backend.load_models_by_identifiers(identifiers)
 
-            if self._resampling_strategy in ("cv", "cv-iterative-fit"):
+            if self._resampling_strategy in ("cv", "cv-iterative-fit", "fairness-cv"):
                 self.cv_models_ = self._backend.load_cv_models_by_identifiers(
                     identifiers
                 )
@@ -1706,7 +1706,7 @@ class AutoML(BaseEstimator):
                 voter = VotingRegressor(estimators=None)
                 kind = "regeressor"
 
-            if self._resampling_strategy in ("cv", "cv-iterative-fit"):
+            if self._resampling_strategy in ("cv", "cv-iterative-fit", "fairness-cv"):
                 models = self._backend.load_cv_models_by_identifiers(identifiers)
             else:
                 models = self._backend.load_models_by_identifiers(identifiers)
@@ -2193,7 +2193,7 @@ class AutoML(BaseEstimator):
         table["rank"] = np.arange(1, len(table.index) + 1)
 
         # Check which resampling strategy is chosen and selecting the appropriate models
-        is_cv = self._resampling_strategy == "cv"
+        is_cv = self._resampling_strategy == "cv" or "fairness-cv"
         models = self.cv_models_ if is_cv else self.models_
 
         for (_, model_id, _), model in models.items():

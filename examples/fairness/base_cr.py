@@ -22,9 +22,19 @@ import shutil
 import utils_fairlearn
 import json
 from collections import defaultdict
+import os
+import tempfile
 
-
-def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcount, under_folder, performance =  autosklearn.metrics.accuracy):
+def run_experiment(dataset, fairness_constrain, sf, runtime, 
+                   file, seed, runcount, under_folder,
+                    performance =  autosklearn.metrics.accuracy, test=False):
+    result_folder =  file + "/{}/{}/{}/{}/moo_ps_cr_lfr/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
+    runtime = runtime
+    tempdir = tempfile.mkdtemp()
+    autosklearn_directory = tempdir + 'dir_moo_ps_cr_lfr_{}'.format(seed)
+    runhistory =  autosklearn_directory +  "/smac3-output/run_{}/runhistory.json".format(seed)
+    if os.path.exists(result_folder):
+        return
     X, y = utils_fairlearn.load_data(dataset)
     
     utils_fairlearn.add_correlation_remover(sf)
@@ -38,8 +48,9 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     ############################################################################
     # Build and fit a classifier
     # ==========================
-
+    sf = X.columns.get_loc(sf)
     fair_metric = utils_fairlearn.set_fair_metric(sf, fairness_constrain)
+    X_train = pd.DataFrame(np.array(X_train))
     utils_fairlearn.add_no_fair()
     utils_fairlearn.add_no_preprocessor()
     #utils_fairlearn.add_correlation_remover(sf)
@@ -105,7 +116,9 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     #    dataset,
     #    file
     #)
-
+    if test:
+       utils_fairlearn.run_test_data(X_test, y_test, sf, fairness_constrain, automl, runhistory_file) 
     utils_fairlearn.save_history(autosklearn_directory, runhistory, result_folder)
+    
     
    

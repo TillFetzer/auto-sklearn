@@ -18,7 +18,8 @@ class NoPreprocessing(AutoSklearnPreprocessingAlgorithm):
 
     def transform(self, X):
         if self.preprocessor is None:
-            raise NotImplementedError()
+            return X
+            #raise NotImplementedError()
         return X
 
     @staticmethod

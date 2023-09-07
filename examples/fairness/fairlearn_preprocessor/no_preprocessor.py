@@ -15,7 +15,7 @@ class  no_preprocessor(AutoSklearnPreprocessingAlgorithm):
         """This preprocessors only remove the sensitive attributes"""
         for key, val in kwargs.items():
             setattr(self, key, val)
-    
+        self.preprocessor = None
 
     def fit(self, X, Y=None):
         self.preprocessor = "no"
@@ -24,7 +24,8 @@ class  no_preprocessor(AutoSklearnPreprocessingAlgorithm):
 
     def transform(self, X):
         if self.preprocessor is None:
-            raise NotImplementedError()
+            return X
+            #raise NotImplementedError()
         
         return X
     

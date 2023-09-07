@@ -33,8 +33,6 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     if os.path.exists(result_folder):
         return
     X, y = utils_fairlearn.load_data(dataset)
-
-    X, y = utils_fairlearn.load_data(dataset)
     utils_fairlearn.add_no_preprocessor()
     utils_fairlearn.add_no_fair()
     utils_fairlearn.add_preferential_sampling(X.columns.get_loc(sf))

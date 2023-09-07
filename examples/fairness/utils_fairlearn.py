@@ -263,6 +263,7 @@ def set_fair_metric(sf, metric):
             needs_threshold=False,
             sensitive_features=sf,
         )
+    #it not tested and run in the experiements yet
     if metric == "equal_opportunity_difference":
         return autosklearn.metrics.make_scorer(
             name="equal_opportunity_difference",
@@ -307,6 +308,18 @@ def set_fair_metric(sf, metric):
                 sensitive_features=sf,
             )
     raise NotImplementedError
+def calc_fair_metric(solution, prediction, X_data, sensitive_features, metric):
+    if metric == "demographic_parity":
+        return demographic_parity_difference(solution, prediction, X_data, sensitive_features)
+    if metric == "equal_opportunity_difference":
+        return equal_opportunity_difference(solution, prediction, X_data, sensitive_features)
+    if metric == "equalized_odds":
+        return equalized_odds_difference(solution, prediction, X_data, sensitive_features)
+    if metric == "consistency_score":
+        return consistency_score(solution, prediction, X_data)
+    if metric == "error_rate_difference":
+        return error_rate_difference(solution, prediction, X_data, sensitive_features)
+    raise NotImplementedError
 def add_correlation_remover_dp(sf_index,sf):
     autosklearn.pipeline.components.feature_preprocessing.add_preprocessor(
         CR
@@ -332,13 +345,23 @@ def add_sensitive_attribute_remover_fp(sf, sf_index):
     )
     SAR.utils_fairlearn(sf_index, sf)
 
-def add_sensitive_remover(sf, index_sf):
+def add_sensitive_remover(sf):
     add_fair_preprocessor(SensitiveAttributeRemover)
-    SensitiveAttributeRemover.utils_fairlearn(sf, index_sf)
+    SensitiveAttributeRemover.utils_fairlearn(sf)
 
 
-
-
+def run_test_data(X_test, y_test, sf, fairness_constrain, automl, runhistory_file):
+    X_test = pd.DataFrame(np.array(X_test))
+        
+    pareto_front = automl.get_pareto_set()
+    models,scores = pareto_front [0], pareto_front [1]
+    for i, model in enumerate(models):
+        predictions = model.predict(X_test)
+        acc = sklearn.metrics.accuracy_score(y_test, predictions)
+        fairness = calc_fair_metric(y_test, predictions, X_test, sf, fairness_constrain)
+        with open(runhistory_file, "a+") as f:
+            json.dump({"scores":str(scores[i]), "acc": acc, "fairness": fairness}, f)
+            f.write("\n")
 
 def add_LFR(index_sf):
     add_fair_preprocessor(LFR)
