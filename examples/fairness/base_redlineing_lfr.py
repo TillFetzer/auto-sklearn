@@ -23,7 +23,11 @@ import json
 from collections import defaultdict
 import os
 
-def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcount, under_folder, performance =  autosklearn.metrics.accuracy):
+def run_experiment(dataset, fairness_constrain, sf, runtime,
+                    file, seed, runcount, 
+                    under_folder, 
+                    performance =  autosklearn.metrics.accuracy,
+                    test = False):
     result_folder =  file + "/{}/{}/{}/{}/moo_sar_lfr/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, 200)
     runtime = runtime
     tempdir = tempfile.mkdtemp()
@@ -46,7 +50,8 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     ############################################################################
     # Build and fit a classifier
     # ==========================
-
+    sf = X.columns.get_loc(sf)
+    fair_metric = utils_fairlearn.set_fair_metric(sf, fairness_constrain)
     fair_metric = utils_fairlearn.set_fair_metric(sf, fairness_constrain)
     utils_fairlearn.add_sensitive_remover(sf)
     utils_fairlearn.add_no_preprocessor()
@@ -100,9 +105,8 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     ############################################################################
     # Compute the two competing metrics
     # =================================
-    sensitive_features = X_test[sf]
-   
-
-    runhistory =  autosklearn_directory +  "/smac3-output/run_{}/runhistory.json".format(seed)
+    if test:
+       utils_fairlearn.run_test_data(X_test, y_test, sf, fairness_constrain, automl, runhistory) 
     utils_fairlearn.save_history(autosklearn_directory, runhistory, result_folder)
+   
     

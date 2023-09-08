@@ -38,6 +38,9 @@ def run_experiment(dataset, fairness_constrain, sf, runtime,
 
 
     X, y = utils_fairlearn.load_data(dataset)
+    sf = X.columns.get_loc(sf)
+    X_train = pd.DataFrame(np.array(X_train))
+    
     utils_fairlearn.add_no_preprocessor()
     utils_fairlearn.add_no_fair()
     utils_fairlearn.add_LFR(sf)
@@ -53,9 +56,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime,
     
     fair_metric = utils_fairlearn.set_fair_metric(sf, fairness_constrain)
     # ==========================
-    sf = X.columns.get_loc(sf)
-    X_train = pd.DataFrame(np.array(X_train))
-    
+   
 
     ############################################################################
     # Build and fit a classifier
@@ -105,6 +106,6 @@ def run_experiment(dataset, fairness_constrain, sf, runtime,
     if test:
        utils_fairlearn.run_test_data(X_test, y_test, sf, fairness_constrain, automl, runhistory) 
     utils_fairlearn.save_history(autosklearn_directory, runhistory, result_folder)
-    utils_fairlearn.save_history(autosklearn_directory, runhistory, result_folder)
+    
     
    

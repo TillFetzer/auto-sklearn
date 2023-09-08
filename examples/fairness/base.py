@@ -51,7 +51,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime,
     sf = X.columns.get_loc(sf)
     X_train = pd.DataFrame(np.array(X_train))
     fair_metric = utils_fairlearn.set_fair_metric(sf, fairness_constrain)
-    utils_fairlearn.add_sensitive_remover(X.columns.get_loc(sf))
+    utils_fairlearn.add_sensitive_remover(sf)
     utils_fairlearn.add_no_preprocessor()
 
     ############################################################################
@@ -70,7 +70,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime,
         delete_tmp_folder_after_terminate=False,
         initial_configurations_via_metalearning=0,
         smac_scenario_args={"runcount_limit": runcount},
-        memory_limit=130000,
+        memory_limit=345600,
         seed = seed,
         tmp_folder =  autosklearn_directory,
         include={

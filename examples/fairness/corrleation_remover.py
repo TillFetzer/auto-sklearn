@@ -23,22 +23,19 @@ import utils_fairlearn
 
 
 
-############################################################################
-# Data Loading
-# ============
-def run_experiment(
-    dataset, 
-    fairness_constrain, 
-    sf, 
-    runtime, 
-    file, 
-    seed, 
-    runcount=None, 
-    under_folder="no_name", 
-    configs = None,
-    rf_seed = None,
-    performance =  autosklearn.metrics.accuracy
-    ):
+import os
+import tempfile
+
+def run_experiment(dataset, fairness_constrain, sf, runtime, 
+                   file, seed, runcount, under_folder,
+                    performance =  autosklearn.metrics.accuracy, test=False):
+    result_folder =  file + "/{}/{}/{}/{}/cr/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
+    runtime = runtime
+    tempdir = tempfile.mkdtemp()
+    autosklearn_directory = tempdir + 'dir_cr_{}'.format(seed)
+    runhistory =  autosklearn_directory +  "/smac3-output/run_{}/runhistory.json".format(seed)
+    if os.path.exists(result_folder):
+        return
     X, y = utils_fairlearn.load_data(dataset)
     # utils_fairlearn.set_fairlearn_attributes(X.columns.get_loc("sex"), "sex", "DemographicParity")
     # Change the target to align with scikit-learn's convention that
@@ -48,10 +45,13 @@ def run_experiment(
     X_train , X_test, y_train, y_test = utils_fairlearn.stratified_split(
         *(X.to_numpy(), y.to_numpy(), X[sf].to_numpy()),columns=X.columns, on = on ,size=0.8,  seed=seed
     )
+
    
     ############################################################################
     # Build and fit a classifier
     # ==========================
+    sf = X.columns.get_loc(sf)
+    X_train = pd.DataFrame(np.array(X_train))
     fair_metric = utils_fairlearn.set_fair_metric(sf, fairness_constrain)
     utils_fairlearn.add_correlation_remover(sf)
     utils_fairlearn.add_no_preprocessor()
@@ -59,14 +59,13 @@ def run_experiment(
     ############################################################################
     # Build and fit a classifier
     # ==========================train_ev
-    tmp =  file + "/{}/{}/{}/{}/cr/{}timesstrat/".format(under_folder, fairness_constrain, dataset, seed, runcount)
+    
 
     automl = autosklearn.classification.AutoSklearnClassifier(
         time_left_for_this_task=runtime,
         memory_limit=130000,
         seed = seed,
-        tmp_folder =  tmp, 
-         # 3h
+        tmp_folder =  autosklearn_directory, 
         metric=[
            performance,
             fair_metric,
@@ -103,10 +102,7 @@ def run_experiment(
     # Compute the two competing metrics
     # =================================
     #sensitive_features = X_test[sf]
-    shutil.copy(tmp + "smac3-output/run_{}/runhistory.json".format(seed), tmp )
-    shutil.rmtree(tmp)
-    print(
-        "finished correlation remover {}s long on the {} dataset".format(
-            runtime, dataset
-        )
-    )
+    if test:
+       utils_fairlearn.run_test_data(X_test, y_test, sf, fairness_constrain, automl, runhistory) 
+    utils_fairlearn.save_history(autosklearn_directory, runhistory, result_folder)
+    

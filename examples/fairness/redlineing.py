@@ -34,25 +34,23 @@ def run_experiment(dataset, fairness_constrain, sf, runtime,
     runhistory =  autosklearn_directory +  "/smac3-output/run_{}/runhistory.json".format(seed)
     if os.path.exists(result_folder):
         return
-    sf = X.columns.get_loc(sf)
-    X_train = pd.DataFrame(np.array(X_train))
     X, y = utils_fairlearn.load_data(dataset)
-
+    
+    
     # ==========================
 
     on = pd.concat([X[sf], y],axis=1)
     X_train , X_test, y_train, y_test= utils_fairlearn.stratified_split(
         *(X.to_numpy(), y.to_numpy(), X[sf].to_numpy()),columns=X.columns,  on = on ,size=0.8,  seed=seed
     )
-
+    sf = X.columns.get_loc(sf)
+    X_train = pd.DataFrame(np.array(X_train))
 
     # that can outsorced in another script.
 
     ############################################################################
     # Build and fit a classifier
     # ==========================
-    sf = X.columns.get_loc(sf)
-    X_train = pd.DataFrame(np.array(X_train))
     fair_metric = utils_fairlearn.set_fair_metric(sf, fairness_constrain)
     utils_fairlearn.add_sensitive_remover(sf)
     utils_fairlearn.add_no_preprocessor()

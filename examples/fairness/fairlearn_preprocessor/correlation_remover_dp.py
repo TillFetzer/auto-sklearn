@@ -17,8 +17,8 @@ from autosklearn.pipeline.constants import (
 
 
 class CorrelationRemover( AutoSklearnPreprocessingAlgorithm):
-    index_sf = []
-    sf = []
+    
+    sf = None
 
     def __init__(self, alpha, **kwargs):
         self.alpha = float(alpha)
@@ -26,9 +26,8 @@ class CorrelationRemover( AutoSklearnPreprocessingAlgorithm):
             setattr(self, key, val)
 
     @classmethod
-    def utils_fairlearn(cls, index_sf, sf):
-        cls.index_sf.append(index_sf)
-        cls.sf.append(sf)
+    def utils_fairlearn(cls, sf):
+        sf =sf 
 
     def fit(self, X, y=None):
         from fairlearn.preprocessing import CorrelationRemover as FCR

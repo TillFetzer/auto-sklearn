@@ -37,7 +37,6 @@ def run_experiment(dataset, fairness_constrain, sf, runtime,
         return
     X, y = utils_fairlearn.load_data(dataset)
     
-    utils_fairlearn.add_correlation_remover(sf)
     # ==========================
     on = pd.concat([X[sf], y],axis=1)
     X_train , X_test, y_train, y_test= utils_fairlearn.stratified_split(
@@ -54,7 +53,9 @@ def run_experiment(dataset, fairness_constrain, sf, runtime,
     utils_fairlearn.add_no_fair()
     utils_fairlearn.add_no_preprocessor()
     #utils_fairlearn.add_correlation_remover(sf)
-    utils_fairlearn.add_correlation_remover_dp(X.columns.get_loc(sf), sf)
+    utils_fairlearn.add_correlation_remover_dp(sf)
+
+    utils_fairlearn.add_correlation_remover(sf)
 
     ############################################################################
     # Build and fit a classifier

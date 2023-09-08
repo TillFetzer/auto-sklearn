@@ -65,45 +65,45 @@ for constrain in fairness_constrains:
         for seed in seeds:
             for method in methods:
                 if method == "moo":
-                    base.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test", performance = performance)
+                    base.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test", performance = performance, test=True)
                 if method == "sar":
-                    redlineing.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
+                    redlineing.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test", test =True)
                 if method == "cr":
-                    corrleation_remover.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test",performance = autosklearn.metrics.f1_macro)
+                    corrleation_remover.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test",performance = autosklearn.metrics.f1_macro, test=True)
                 if method == "lfr":
-                   lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
+                   lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test", test =True)
                 if method == "moo+lfr":
-                    base_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
+                    base_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test", test =True)
                 if method == "moo+cr":
-                    base_cr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test", performance = autosklearn.metrics.f1_macro)
+                    base_cr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test", performance = autosklearn.metrics.f1_macro, test=True)
                 if method == "so":
-                    single_base.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
+                    single_base.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test", test =True)
                 if method == "ps":
-                    sampling.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
+                    sampling.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test", test =True)
                 if method == "moo+ps":
-                    base_sampling.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
+                    base_sampling.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test", test =True)
                 if method == "moo+ps+cr":
-                    base_sampling_cr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
+                    base_sampling_cr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test", test =True)
                 if method == "moo+ps+cr+lfr":
-                    base_sampling_cr_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
+                    base_sampling_cr_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test", test =True)
                 if method == "moo+ps*cr":
-                    base_sampling_cr_com.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test") 
+                    base_sampling_cr_com.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test", test =True) 
                 if method == "moo+cr*lfr":
-                    base_cr_lfr_com.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
+                    base_cr_lfr_com.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test", test =True)
                 if method == "moo+ps+lfr":
-                    base_sampling_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")        
+                    base_sampling_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test", test =True)        
                 if method == "moo+cr+lfr":
-                    base_cr_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")        
+                    base_cr_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test", test =True)        
                 if method == "ps+cr+lfr":
-                    sampling_cr_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")   
+                    sampling_cr_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test", test =True)   
                 if method == "moo+sar*ps":
-                    base_sar_ps_com.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")   
+                    base_sar_ps_com.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test", test =True)   
                 if method == "sar+ps+cr+lfr":
-                    redlineing_ps_cr_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder="test")
+                    redlineing_ps_cr_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test", test =True)
                 if method == "redlineing":
-                    redlineing.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test")
+                    redlineing.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test", test =True)
                 if method == "moo+sar":
-                    base_redlineing.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test")
+                    base_redlineing.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test", test =True)
                 if method == "moo+sar+cr":
                     base_redlineing_cr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test", test=True)
                 if method == "moo+sar+ps":
@@ -111,23 +111,23 @@ for constrain in fairness_constrains:
                 if method == "moo+sar+lfr":
                     base_redlineing_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, 5, under_folder = "test")    
                 if method == "moo+sar+cr+lfr":
-                    base_redlineing_cr_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test")
+                    base_redlineing_cr_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test", test =True)
                 if method == "moo+sar+ps+lfr":
-                    base_redlineing_ps_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test")
+                    base_redlineing_ps_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test", test =True)
                 if method == "moo+sar+ps+cr":
-                    base_redlineing_ps_cr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test")
+                    base_redlineing_ps_cr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test", test =True)
                 if method == "moo+sar+ps+cr+lfr":
-                    base_redlineing_ps_cr_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test")
+                    base_redlineing_ps_cr_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test", test =True)
                 if method == "sar+ps+cr+lfr":
-                    redlineing_ps_cr_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test")
+                    redlineing_ps_cr_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test", test =True)
                 if method == "moo+sar*ps":
-                    base_sar_ps_com.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test")   
+                    base_sar_ps_com.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test", test =True)   
                 if method == "lfr_test":
                     lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, 5, under_folder = "test")#
                 if method == "cp":
-                    complety_pipeline.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test")
+                    complety_pipeline.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test", test =True)
                 if method == "moo_sar_lfr":
-                    base_redlineing_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test")
+                    base_redlineing_lfr.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test", test =True)
                 if method == "bp":
-                    base_pipeline.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test")
+                    base_pipeline.run_experiment(dataset, constrain, sf[i], runtime, file, seed, runcount, under_folder = "test", test =True)
 print("finished")

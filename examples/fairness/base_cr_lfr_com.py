@@ -22,15 +22,21 @@ import shutil
 import utils_fairlearn
 import json
 from collections import defaultdict
+import os
+import tempfile
 
-
-def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcount, under_folder, performance =  autosklearn.metrics.accuracy):
+def run_experiment(dataset, fairness_constrain, sf, runtime, 
+                   file, seed, runcount, under_folder,
+                    performance =  autosklearn.metrics.accuracy, test=False):
+    result_folder =  file + "/{}/{}/{}/{}/moo_cr_lfr_com/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
+    runtime = runtime
+    tempdir = tempfile.mkdtemp()
+    autosklearn_directory = tempdir + 'dir_moo_cr_lfr_com_{}'.format(seed)
+    runhistory =  autosklearn_directory +  "/smac3-output/run_{}/runhistory.json".format(seed)
+    if os.path.exists(result_folder):
+        return
     X, y = utils_fairlearn.load_data(dataset)
-    utils_fairlearn.add_no_preprocessor()
-    utils_fairlearn.add_no_fair()
-    utils_fairlearn.add_correlation_remover_dp(X.columns.get_loc(sf), sf)
-    #utils_fairlearn.add_correlation_remover(sf)
-    utils_fairlearn.add_LFR(sf)
+    
     # ==========================
     on = pd.concat([X[sf], y],axis=1)
     X_train , X_test, y_train, y_test= utils_fairlearn.stratified_split(
@@ -41,14 +47,18 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     ############################################################################
     # Build and fit a classifier
     # ==========================
-
+    sf = X.columns.get_loc(sf)
+    X_train = pd.DataFrame(np.array(X_train))
     fair_metric = utils_fairlearn.set_fair_metric(sf, fairness_constrain)
-
+    utils_fairlearn.add_no_preprocessor()
+    utils_fairlearn.add_no_fair()
+    utils_fairlearn.add_correlation_remover_dp(sf)
+    #utils_fairlearn.add_correlation_remover(sf)
+    utils_fairlearn.add_LFR(sf)
 
     ############################################################################
     # Build and fit a classifier
     # ==========================
-    tmp =  file + "/{}/{}/{}/{}/moo+cr*lfr/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
     runtime = runtime
     automl = autosklearn.classification.AutoSklearnClassifier(
         time_left_for_this_task=runtime,  # 3h
@@ -64,7 +74,7 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
         smac_scenario_args={"runcount_limit": runcount},
         memory_limit=130000,
         seed = seed,
-        tmp_folder =  tmp + "/del",
+        tmp_folder = autosklearn_directory,
         include={
             'feature_preprocessor': ["no_preprocessing",'CorrelationRemover'],
             "fair_preprocessor": ["NoFairPreprocessor","LFR"],
@@ -91,8 +101,8 @@ def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcoun
     # sensitive attributes needs to go out
     # sensitive attributes needs to go out
     automl.fit(X_train, y_train, dataset_name="adult")
-
-
+    if test:
+       utils_fairlearn.run_test_data(X_test, y_test, sf, fairness_constrain, automl, runhistory) 
     utils_fairlearn.save_history(autosklearn_directory, runhistory, result_folder)
     
    

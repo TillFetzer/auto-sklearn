@@ -320,11 +320,11 @@ def calc_fair_metric(solution, prediction, X_data, sensitive_features, metric):
     if metric == "error_rate_difference":
         return error_rate_difference(solution, prediction, X_data, sensitive_features)
     raise NotImplementedError
-def add_correlation_remover_dp(sf_index,sf):
+def add_correlation_remover_dp(sf):
     autosklearn.pipeline.components.feature_preprocessing.add_preprocessor(
         CR
     )
-    CR.utils_fairlearn(sf_index, sf)
+    CR.utils_fairlearn(sf)
 def add_correlation_remover(sf):
     add_fair_preprocessor(CorrelationRemover)
     CorrelationRemover.utils_fairlearn(sf)   

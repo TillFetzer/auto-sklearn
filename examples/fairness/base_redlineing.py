@@ -51,7 +51,6 @@ def run_experiment(dataset, fairness_constrain, sf, runtime,
     # Build and fit a classifier
     # ==========================
     X_train = pd.DataFrame(np.array(X_train))
-    
     sf = X.columns.get_loc(sf)
     X_train = pd.DataFrame(np.array(X_train))
     fair_metric = utils_fairlearn.set_fair_metric(sf, fairness_constrain)

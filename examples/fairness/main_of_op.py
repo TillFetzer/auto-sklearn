@@ -10,7 +10,9 @@ args=parser.parse_args()
 idx = args.idx
 under_folder = args.uf
 seeds = [12345,25,42,45451,97]          
-methods = ["moo","ps","cr", "moo+cr", "moo+ps","moo+sar","sar","lfr"]
+methods = ["moo","ps","cr", "moo+cr", "moo+ps","moo+sar",
+           "sar","lfr", "moo+lfr", "moo+sar+cr",
+             "moo+cr*lfr","moo+cr+lfr", "moo+sar+cr+lfr", "moo+sar+lfr"]
 #methods = ["moo+sar+cr"]
 datasets = ["german"]
 #datasets = ["german"]
