@@ -53,7 +53,6 @@ def run_experiment(dataset, fairness_constrain, sf, runtime,
     utils_fairlearn.add_no_fair()
     utils_fairlearn.add_no_preprocessor()
     #utils_fairlearn.add_correlation_remover(sf)
-    utils_fairlearn.add_correlation_remover_dp(sf)
 
     utils_fairlearn.add_correlation_remover(sf)
 
@@ -77,9 +76,9 @@ def run_experiment(dataset, fairness_constrain, sf, runtime,
         seed = seed,
         tmp_folder =  autosklearn_directory,
         include={
-            'feature_preprocessor': ["no_preprocessing","CorrelationRemover"],
+            'feature_preprocessor': ["no_preprocessing"],
             'data_preprocessor': ["no_preprocessor"],
-            #"fair_preprocessor": ["NoFairPreprocessor","CorrelationRemover"],
+            "fair_preprocessor": ["NoFairPreprocessor","CorrelationRemover"],
             "classifier": [
                 "random_forest"
             ], 

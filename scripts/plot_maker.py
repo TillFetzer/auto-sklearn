@@ -57,8 +57,6 @@ def load_data(filepath, runetime, methods):
         data[constrain] = defaultdict()
         constrain_path = "{}{}".format(filepath, constrain)
         for dataset in os.listdir(constrain_path):
-            if dataset == "adult":
-                continue
             data[constrain][dataset] = defaultdict()
             dataset_path = "{}/{}".format(constrain_path, dataset)
             for seed in os.listdir(dataset_path):
@@ -75,11 +73,15 @@ def load_data(filepath, runetime, methods):
                     file  = "{}/{}/{}/runhistory.json".format(seed_path,method,runetime_folder)
                     if not(os.path.exists(file)):
                         file  = "{}/{}/{}/runhistory.json".format(seed_path,method,"200timestrat")
-                        if not(os.path.exists(file)):
-                            file  = "{}/{}/{}/del/smac3-output/run_{}/runhistory.json".format(seed_path,method,runetime_folder,seed) 
-                            if not(os.path.exists(file)):
-                                print(file)
-                                continue        
+                    if not(os.path.exists(file)):
+                        file  = "{}/{}/{}/del/smac3-output/run_{}/runhistory.json".format(seed_path,method,runetime_folder,seed) 
+                    if not(os.path.exists(file)):   
+                            file  = "{}/{}/{}/runhistory.json".format(seed_path,method,"150timestrat")
+                    if not(os.path.exists(file)):
+                         if not(os.path.exists(file)):   
+                            file  = "{}/{}/{}/runhistory.json".format(seed_path,method,"150timesstrat") 
+                    if not(os.path.exists(file)):
+                        print(file)    
                         #else:
                         #    print(file)   
                     #else:
@@ -862,9 +864,10 @@ import numpy as np
 
 def calculate_shapley_value(pareto_set,score):
     # Calculate the shape value using your desired method
+    #print(score)
     if len(pareto_set) == 0:
         return 0
-    if(score=="hypervolumne"):
+    if(score=="hypervolume"):
         hypervolume_obj =  HV(ref_point=np.array([1,1])) 
         shape_value = hypervolume_obj(np.array(pareto_set))
     if(score=="acc"):
@@ -923,6 +926,7 @@ def calculate_shapley_values(data, methods, file, compare = "acc", latex_table =
                     preprocessors = get_possible_pre(method)
                     methods_points = filter_points(pareto_front, pareto_config, preprocessors)
                     preprocessors = preprocessors[1:]
+                    print(f"{dataset},{constrain},{seed},{method}")
                     div = np.math.factorial(len(preprocessors)) * len(data[constrain][dataset].keys()) * calculate_shapley_value(pareto_front,compare)
                     for perm in permutations(preprocessors):
                         points = np.array(methods_points["no"])
@@ -936,11 +940,6 @@ def calculate_shapley_values(data, methods, file, compare = "acc", latex_table =
                 #shapley_values[constrain][dataset][method]["all"]["hypervolumne"] += hypervolume_obj(points) / len(data[constrain][dataset].keys())                                 
         with open(file + "shapley_{}.json".format(compare), 'w') as f:
             json.dump(shapley_values, f, indent=4)
-        if latex_table:
-            for constrain in shapley_values.keys():
-                for method in methods: 
-                    table_data = shapley_values[constrain]  
-                    generate_latex_table(table_data, constrain, method, file, compare)
     return  
                    
 """
@@ -1081,39 +1080,63 @@ def test_table(alldata, file = "/home/till/Desktop/redlineing/table_cp.txt"):
     
 
 
+from mergedeep import merge
+def generate_latex_table(file = "/home/till/Desktop/shapley_values/table.txt"):
+    data = []
+    for post in ["acc", "fairness", "hypervolume"]:
+        with open("/home/till/Desktop/shapley_values/shapley_{}.json".format(post), 'r') as f:
+            data.append(json.load(f))
+    data = merge(data[0], data[1], data[2])
+    for constrain, data in data.items():
+        latex_table = ""
+        latex_table += fr"""
+        \begin{{table}}
+            
+        \begin{{center}}"""
+        latex_table += r"\scalebox{0.55}{" +"\n"
+        latex_table += fr"""\centering
+        
+        \begin{{tabular}}{{l ccc c ccc c ccc}}
+        \hline
+        Method & \multicolumn{{{len(data)}}}{{c}}{{Accuracy Gain}} & & \multicolumn{{{len(data)}}}{{c}}{{Fairness Gain}}  & & \multicolumn{{{len(data)}}}{{c}}{{Hypervolume Gain}}\\
+        \cline{{2-5}} \cline{{7-10}} \cline{{12-15}}
+        & {' & '.join(data.keys())} & & {' & '.join(data.keys())} & & {' & '.join(data.keys())} \\
+                """    
+        #method_count = len(data["lawschool"].keys())  # Assuming the count is consistent across datasets    
+        for method in data["lawschool"].keys():
+            method_name = get_method_name(method)
+            latex_table += f" \cline{{2-5}} \cline{{7-10}} \cline{{12-15}}"
+            latex_table +=  "\n"+ r"\textbf{" + f"{method_name}" + r"} \\"
+            for prepro in data["lawschool"][method].keys():
+                latex_table +=  "\n"+ r"\text{" + f"{prepro}" + r"}"
+                for value_type in data["lawschool"][method][prepro].keys(): 
+                    for dataset in data.keys():
+                        val = data[dataset][method][prepro][value_type] # that has to change to something that makes sense
+                        if val > 0.01 or val == 0:
+                            latex_table += f" & {val: .2f}"
+                        else:
+                            latex_table += f"& {val: .2e}"
+                        latex_table += r" & " if dataset == "compass"  and value_type != "hypervolume" else r""
+                latex_table += r" \\"
+                
+        latex_table += r"""
+        \bottomrule
+        \end{tabular}
+        }
+        }"""
 
-def generate_latex_table(data, constrain, method, file, compare):
-    table = "\\begin{table}[]\n"
-    table += "\\centering\n"
-    #table += "\\caption{"
-    table += "\\begin{tabular}{|l|" + "l|" * len(list(data["german"][method].keys())) + "}\n"
-    table += "\\hline\n"
-    
-    # Header row
-    header = "Dataset & "
-    for pre in data["german"][method].keys():
-        header += pre + " & "
-    header = header.rstrip(" & ") + " \\\\\n"
-    table += header
-    table += "\\hline\n"
-    
-    # Data rows
-    
-    for dataset in data.keys():
-        row = f"{dataset} & "
-        for pre in data[dataset][method].keys():
-            hypervolume = data[dataset][method][pre][compare]
-            row += "{:.2f} & ".format(hypervolume)
-        row = row.rstrip(" & ")
-        row += " \\\\\n"
-        table += row
-        table += "\\hline\n"
-    
-    table += "\\end{tabular}\n"
-    table += "\\end{table}"
-    
-    with open(file + 'table_{}_{}.tex'.format(constrain,method), 'w') as file:
-        file.write(table)
+        latex_table += f"""\caption{{Shapley Values for {constrain}. For combination without \gls{{mooE}}, the base values is zero. 
+        For combination with \gls{{mooE}}, the base value is the \gls{{mooE}} value. 
+        Which leads to lot higher values for the combinations with \gls{{mooE}}.}}"""
+        latex_table += r"""
+        \label{tab:sv}
+        \end{center}
+        \end{table}
+        """
+        latex_table += "\n"
+        #print(latex_table)
+        with open(file, "a+") as f:
+            f.write(latex_table)
 # Create an empty list to store processed data
 from collections import OrderedDict
 method_mapping = OrderedDict([
@@ -1344,7 +1367,7 @@ if __name__ == "__main__":
         ]
   
     #make_plot_3(data)
-    #data = load_data_particully("/home/till/Desktop/psoss_val/", "200timesstrat",
+    #data = load_data_particully("/home/till/Desktop/psoss_val/", "200timesstrat")
     #datasets = ["german","adult", "compass","lawschool"],
     #constrains = ["consistency_score"],
     #folders=["one_rf_seed_1", "one_rf_seed"],
@@ -1352,10 +1375,11 @@ if __name__ == "__main__":
     #seeds= ["12345","25","42","45451", "97","13","27","39","41","53"]
     #make_difference_plot(data,"best")
     #methods = ["moo","cr"]
-    data = load_data("/home/till/Desktop/cross_val/", "200timesstrat", methods)
+    #data = load_data("/home/till/Desktop/cross_val/", "200timesstrat", methods)
     #methods = ["moo","ps_ranker","moo_ps_ranker"]
     #print()
-    calculate_shapley_values(data,methods,file="/home/till/Desktop/shapley_values/", compare="hypervolumne")
+    #for compare in ["hypervolume"]:
+    #    calculate_shapley_values(data,methods,file="/home/till/Desktop/shapley_values/", compare=compare)
     #print(sv)
     #make_plot_3(data)
     #deep_dive = defaultdict()
@@ -1367,7 +1391,7 @@ if __name__ == "__main__":
     #            deep_dive[method] = defaultdict()
     #            for seed in seeds:
     #                deep_dive[method][seed] = data["error_rate_difference"]["adult"][seed][method]["pareto_config"]
-                    
+    generate_latex_table()                
         
     #file = "/home/till/Documents/auto-sklearn/tmp/scaled_results_all_cp.json"
     #with open(file, 'w') as f:

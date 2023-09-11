@@ -25,10 +25,10 @@ import tempfile
 import os
 
 def run_experiment(dataset, fairness_constrain, sf, runtime, file, seed, runcount, under_folder, performance =  autosklearn.metrics.accuracy, test=False):
-    result_folder =  file + "/{}/{}/{}/{}/moo_sar_cr_com/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
+    result_folder =  file + "/{}/{}/{}/{}/moo_sar_cr/{}timesstrat".format(under_folder, fairness_constrain, dataset, seed, runcount)
     runtime = runtime
     tempdir = tempfile.mkdtemp()
-    autosklearn_directory = tempdir + 'dir_moo_sar_cr_com{}'.format(seed)
+    autosklearn_directory = tempdir + 'dir_moo_sar_cr{}'.format(seed)
     runhistory =  autosklearn_directory +  "/smac3-output/run_{}/runhistory.json".format(seed)
     if os.path.exists(result_folder):
         return
