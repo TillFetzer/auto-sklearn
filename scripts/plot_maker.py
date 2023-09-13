@@ -994,6 +994,8 @@ def generate_result_table(data):
         
     return latex_table
 def get_method_name(method):
+    if method == "redlineing":
+        print()
     method_mapping = {
         "moo": "Moo -s",
         "so": "So",
@@ -1137,53 +1139,184 @@ def generate_latex_table(file = "/home/till/Desktop/shapley_values/table.txt"):
         #print(latex_table)
         with open(file, "a+") as f:
             f.write(latex_table)
+
+def get_2_important(data, excluded_keys):
+    max_importance = float("-inf")
+    highest_importance_name = None
+
+    for key, value in data.items():
+        if key not in excluded_keys:
+            individual_importance = value.get("individual importance", 0)
+            if individual_importance > max_importance:
+                max_importance = individual_importance
+                highest_importance_name = key
+
+    return highest_importance_name
+
+
+def generate_fanvoa_table(methods, file = "/home/till/Desktop/fanova/table.txt"):
+     
+    for constrain in ["error_rate_difference"]:
+        latex_table = ""
+        latex_table += fr"""
+        \begin{{table}}
+            
+        \begin{{center}}"""
+        latex_table += r"\scalebox{0.43}{" +"\n"
+        latex_table += fr"""\centering
+        
+        \begin{{tabular}}{{l cccc c cccc}}
+        \hline
+        Method & \multicolumn{{4}}{{c}}{{Accuracy fANOVA}} & & \multicolumn{{4}}{{c}}{{Fairness fANOVA}} \\
+        \cline{{2-5}} \cline{{7-10}}
+         & lawschool & german & adult & compass & & lawschool & german & adult & compass \\
+                """    
+        #method_count = len(data["lawschool"].keys())  # Assuming the count is consistent across datasets    
+        for method in methods:
+            method_name = get_method_name(method)
+            latex_table += f" \cline{{2-5}} \cline{{7-10}}"
+            latex_table +=  "\n"+ r"\textbf{" + f"{method_name}" + r"} \\"
+            
+
+            name = [ "fair_preprocessor", "Best other hyperparameter", "Best other hyperparameter"]       
+            for i in range(0,3):
+                latex_table +=  "\n"+ r"\text{" + f"{name[i]}" + r"}"
+                for value_type in ["performance", "fairness"]:
+                    for dataset in ["lawschool","german", "adult","compass"]:
+                        with open("/home/till/Desktop/fanova/{}/{}_{}.json".format(value_type, value_type, method), 'r') as f:
+                            data = json.load(f) 
+                        if "-m" in method_name:          
+                            prepro_types = ["data_preprocessor:__choice__", "feature_preprocessor:__choice__"]
+                        elif method == "moo+cr":
+                            prepro_types = ["feature_preprocessor:__choice__"]
+                        else:
+                            prepro_types = ["fair_preprocessor:__choice__"]
+                        
+                        try:
+                            fanova_values = data[dataset][constrain]
+                        except: 
+                            print(f"{method}/{dataset}/{constrain} not found")
+                            continue
+                        prepro_types.append(get_2_important(fanova_values, prepro_types))
+                        #print(len(prepro_types))
+                        if i > len(prepro_types)-1:
+                            continue
+                        #print(i)
+                        val = fanova_values[prepro_types[i]]["individual importance"] # that has to change to something that makes sense
+                        if val > 0.01 or val == 0:
+                            latex_table += f" & {val: .2f}"
+                        else:
+                            latex_table += f"& {val: .2e}"
+                        latex_table += r" & " if dataset == "compass"  and value_type != "fairness" else r""
+                latex_table += r" \\" + "\n"
+                        
+        latex_table += r"""
+        \bottomrule
+        \end{tabular}
+        }
+        """
+
+        latex_table += f"""\caption{{FANOVA Values for {constrain}.}}"""
+        latex_table += r"""
+            \label{tab:fanova}
+            \end{center}
+            \end{table}
+            """
+        latex_table += "\n"
+        #print(latex_table)
+        with open("/home/till/Desktop/fanova/table.txt", "a+") as f:
+            f.write(latex_table)
 # Create an empty list to store processed data
+
+def get_used_methods(data):
+    methods = []
+    for dataset in data.keys():
+        for method in data[dataset].keys():
+            if method not in methods:
+                methods.append(method)
+    return methods
+
+
+def create_pareto_dominace_table(file= "/home/till/Desktop/domination.json"):
+    # we do not speak about time complexity here.
+    with open(file, 'r') as f:
+            data = json.load(f)
+    
+    latex_table = ""
+    latex_table += fr"""
+    \begin{{table}}
+            
+    \begin{{center}}""" + "\n"
+    latex_table += r"\scalebox{0.55}{" +"\n"
+    latex_table += fr"""\centering
+        
+    \begin{{tabular}}{{l cccc}}
+    \hline
+    Method & {' & '.join(data.keys())} & & {' & '.join(data.keys())} & & {' & '.join(data.keys())} \\
+                """    
+    #method_count = len(data["lawschool"].keys())  # Assuming the count is consistent across datasets    
+    for constrain, data in data.items():
+        latex_table += "\n" + f" \cline{{}}"
+        latex_table +=  "\n"+ r"\textbf{" + f"{constrain}" + r"} \\"
+        methods = get_used_methods(data)
+        for method in methods:
+                method_name = get_method_name(method)
+                latex_table +=  "\n"+ r"\text{" + f"{method_name}" + r"} "
+                for data_name in ["lawschool", "german", "adult", "compass"]:
+                    if data.get(data_name) is not None and method in data[data_name].keys():
+                        val = data[data_name][method] # that has to change to something that makes sense
+                        if val >= 5:
+                            latex_table +=  r"& \textbf{" + f"{val}" + r"}"
+                        else:
+                            latex_table += f"& {val}"
+                    else:
+                        latex_table += f" & 0"
+                latex_table += r" \\"
+                    
+    latex_table += r"""
+    \bottomrule
+    \end{tabular}
+    }
+    }"""
+
+    latex_table += f"""\caption{{number of seeds \gls{{mooE}} is dominated.}}"""
+    latex_table += r"""
+    \label{tab:pd}
+    \end{center}
+    \end{table}
+        """
+    with open("/home/till/Desktop/dom_table.txt", "a+") as f:
+        f.write(latex_table) 
+
 from collections import OrderedDict
 method_mapping = OrderedDict([
-    # Baselines
-    ("moo", {"name": "Moo", "type": "baseline"}),
-    ("so", {"name": "Optimizing for accuracy", "type": "baseline"}),
-
-   
-    
-    # Preprocessor every time
-    #("redlineing", {"name": "Moo with SAR every time", "type": "everytime"}),
-    #("cr", {"name": "Moo with CR every time", "type": "everytime"}),
-    #("ps_ranker", {"name": "Moo with Sampling every time", "type": "everytime"}),
-    #("lfr", {"name": "Moo with LFR every time", "type": "everytime"}),
-    
-    # Preprocessor optional
-    #("moo+sar", {"name": "Moo with optional SAR", "type": "optional"}),
-    #("moo_ps_ranker", {"name": "Moo with optional sampling", "type": "optional"}),
-    #("moo+cr", {"name": "Moo with optional CR", "type": "optional"}),
-    #("moo+lfr", {"name": "Moo with optional LFR", "type": "optional"}),
-
-    # Preprocessor combinations
-    ("moo+sar+cr", {"name": "Moo with optional SAR or CR", "type": "combination"}),
-    ("moo+sar+ps", {"name": "Moo with optional SAR or sampling", "type": "combination"}),
-    ("moo+sar+ps", {"name": "Moo with optional SAR and sampling", "type": "combination"}),
-    ("moo+ps+cr", {"name": "Moo with optional CR or sampling", "type": "combination"}),
-    ("moo+cr+lfr", {"name": "Moo with optional CR or LFR", "type": "combination"}),
-    ("moo+ps+lfr", {"name": "Moo with optional sampling or LFR", "type": "combination"}),
-    ("moo_sar_lfr", {"name": "Moo with optional SAR and LFR", "type": "combination"}),
-    
-
-    #and/or combinations:
-    # please notice that other and/or combinations are not possible, detail in the maseter thessis
-    ("moo+ps*cr", {"name": "Moo with optional CR and/or sampling", "type": "combination"}),
-    ("moo+cr*lfr", {"name": "Moo with optional CR and/or LFR", "type": "combination"}),
-    ("moo_sar_ps_com", {"name": "Moo with optional SAR and/or sampling", "type": "combination"}),
-
-    #three:
-    ("moo_sar_cr_lfr", {"name": "Moo with optional SAR, CR and LFR", "type": "combination"}),
-    ("moo_sar_ps_lfr", {"name": "Moo with optional SAR, sampling and LFR", "type": "combination"}),
-    ("moo+sar+cr+ps", {"name": "Moo with optional SAR, CR and sampling", "type": "combination"}),
-    ("moo+ps+cr+lfr", {"name": "Moo with optional CR, sampling and LFR", "type": "combination"}),
-    ("moo+sar+cr+ps", {"name": "Moo with optional SAR, CR and sampling", "type": "combination"}),
-
-    #all:
-    ("moo_sar_ps_cr_lfr", {"name": "Moo with optionally all preprocessor", "type": "combination"}),
-    ("sar_cr_ps_lfr", {"name": "Moo with SAR or CR or sampling or LFR", "type": "combination"})
+    ("moo", {"name": "Moo -a", "type": "baseline"}),
+    ("so", {"name": "So", "type": "baseline"}),
+    ("cr", {"name": "CR -a", "type": "baseline"}),
+    ("ps_ranker", {"name": "PS -a", "type": "baseline"}),
+    ("redlineing", {"name": "SAR -a", "type": "baseline"}),
+    ("lfr", {"name": "LFR -a", "type": "baseline"}),
+    ("moo+sar", {"name": "SAR -o", "type": "optional"}),
+    ("moo_ps_ranker", {"name": "PS -o", "type": "optional"}),
+    ("moo+cr", {"name": "CR -o", "type": "optional"}),
+    ("moo+lfr", {"name": "LFR -o", "type": "optional"}),
+    ("moo+sar+cr", {"name": "[SAR, CR] -o", "type": "combination"}),
+    ("moo+sar+ps", {"name": "[SAR, PS] -o", "type": "combination"}),
+    ("moo+sar+ps", {"name": "[SAR, PS] -o", "type": "combination"}),
+    ("moo+ps+cr", {"name": "[PS, CR] -o", "type": "combination"}),
+    ("moo+cr+lfr", {"name": "[CR, LFR] -o", "type": "combination"}),
+    ("moo+ps+lfr", {"name": "[PS, LFR] -o", "type": "combination"}),
+    ("moo_sar_lfr", {"name": "[SAR, LFR] -o", "type": "combination"}),
+    ("moo+ps*cr", {"name": "[PS, CR] -m", "type": "combination"}),
+    ("moo+cr*lfr", {"name": "[CR, LFR] -m", "type": "combination"}),
+    ("moo_sar_ps_com", {"name": "[SAR, PS] -m", "type": "combination"}),
+    ("moo_sar_cr_lfr", {"name": "[SAR, CR, LFR] -o", "type": "combination"}),
+    ("moo_sar_ps_lfr", {"name": "[SAR, PS, LFR] -o", "type": "combination"}),
+    ("moo+sar+cr+ps", {"name": "[SAR, CR, PS] -o", "type": "combination"}),
+    ("moo+ps+cr+lfr", {"name": "[PS, CR, LFR] -o", "type": "combination"}),
+    ("moo+sar+cr+ps", {"name": "[SAR, CR, PS] -o", "type": "combination"}),
+    ("moo_sar_ps_cr_lfr", {"name": "[all] -o", "type": "combination"}),
+    ("sar_cr_ps_lfr", {"name": "[all] -of", "type": "combination"}),
         
 ])    
     
@@ -1194,7 +1327,9 @@ colors = [
     "#FF00FF", "#00FF00", "#4B0082", "#E6E6FA", "#800000", 
     "#808000", "#000080", "#FFDAB9", "#40E0D0", "#FFD700", 
     "#C0C0C0", "#EE82EE", "#00FFFF", "#FF6F61", "#DC143C", 
-    "#2E8B57", "#FF00FF", "#FFFFF0", "#E0115F", "#007FFF"
+    "#2E8B57", "#FF00FF", "#FFFFF0", "#E0115F", "#007FFF",
+    "#F5F5DC", "#7FFF00", "#F0FFF0", "#F5F5F5", "#F0FFFF",
+    "#FDF5E6", "#FFDEAD", "#FFDAB9", "#F0F8FF", "#F5FFFA",
 ]
 
 
@@ -1323,13 +1458,13 @@ if __name__ == "__main__":
     #            "ps_ranker", "cr", #one prepreproessor
     #            "moo_ps_ranker","moo+cr", "moo+lfr", #one prepreproessor
     methods = [ 
-        #"moo",
-        #"so",
+        "moo",
+        "so",
         #preprocessor every time
-        #"redlineing",
-        #"cr",
-        #"ps_ranker",
-        #"lfr",
+        "redlineing",
+        "cr",
+        "ps_ranker",
+        "lfr",
         #preprocessor optional
         "moo+sar",     
         "moo_ps_ranker",
@@ -1391,27 +1526,26 @@ if __name__ == "__main__":
     #            deep_dive[method] = defaultdict()
     #            for seed in seeds:
     #                deep_dive[method][seed] = data["error_rate_difference"]["adult"][seed][method]["pareto_config"]
-    generate_latex_table()                
-        
-    #file = "/home/till/Documents/auto-sklearn/tmp/scaled_results_all_cp.json"
-    #with open(file, 'w') as f:
-    #    json.dump(deep_dive, f, indent=4)
+    #generate_latex_table()                
+    #generate_fanvoa_table(methods)   
+    #create_pareto_dominace_table()
+    file = "/home/till/Documents/auto-sklearn/tmp/scaled_results_all_cp.json"
     #calc_hypervolume(data, file)
-    #with open(file) as f:
-    #  results = json.load(f)
+    with open(file) as f:
+        results = json.load(f)
     #check_pareto_front(data)
     #test_table(results)
     names = ["hypervolume[scaled]","accurancy[bestScaled]", "fairness[bestScaled]",
                                     "accurancy[avgScaled]", "fairness[avgScaled]",
                                    "accurancy[best]", "fairness[best]",
                                      "accurancy[avg]", "fairness[avg]", "hypervolume"]
-    #names = ["test"]
+    names = ["test"]
     comparisons = ["hypervolume_scaled_max","acc_best_scaled_max", "fairness_best_scaled_max", 
                                    "acc_scaled_max", "fairness_scaled_max",
                                    "acc_best", "fairness_best",
                                     "acc", "fairness", "hypervolume"]
     #for i, comparison in enumerate(comparisons):
-    #    barplot_results(results, comparison, names[i],"/home/till/Desktop/redlineing/all/")
+    barplot_results(results, comparisons[0], names[0],"/home/till/Desktop/redlineing/all/")
        
     #plot_scaled_values(results,"/home/till/Desktop/redlineing/all/","hypervolume_scaled_max", methods)
 
