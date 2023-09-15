@@ -1080,10 +1080,16 @@ def test_table(alldata, file = "/home/till/Desktop/redlineing/table_cp.txt"):
         with open(file, "a+") as f:
             f.write(latex_table)
     
-
+def check_if_bold(value_type, val, method_name):
+    if method_name == "[all] -of":
+        return False
+    if value_type == "acc":
+        return val >= 0.01
+    else:
+        return val >= 0.05
 
 from mergedeep import merge
-def generate_latex_table(file = "/home/till/Desktop/shapley_values/table.txt"):
+def generate_latex_table(file = "/home/till/Desktop/shapley_values/table_marked.txt"):
     data = []
     for post in ["acc", "fairness", "hypervolume"]:
         with open("/home/till/Desktop/shapley_values/shapley_{}.json".format(post), 'r') as f:
@@ -1098,7 +1104,7 @@ def generate_latex_table(file = "/home/till/Desktop/shapley_values/table.txt"):
         latex_table += r"\scalebox{0.55}{" +"\n"
         latex_table += fr"""\centering
         
-        \begin{{tabular}}{{l ccc c ccc c ccc}}
+        \begin{{tabular}}{{l cccc c cccc c cccc}}
         \hline
         Method & \multicolumn{{{len(data)}}}{{c}}{{Accuracy Gain}} & & \multicolumn{{{len(data)}}}{{c}}{{Fairness Gain}}  & & \multicolumn{{{len(data)}}}{{c}}{{Hypervolume Gain}}\\
         \cline{{2-5}} \cline{{7-10}} \cline{{12-15}}
@@ -1115,7 +1121,10 @@ def generate_latex_table(file = "/home/till/Desktop/shapley_values/table.txt"):
                     for dataset in data.keys():
                         val = data[dataset][method][prepro][value_type] # that has to change to something that makes sense
                         if val > 0.01 or val == 0:
-                            latex_table += f" & {val: .2f}"
+                            if check_if_bold(value_type,val, method_name):
+                                latex_table += r" & \textbf{" + f"{val: .2f}" + r"}"
+                            else:
+                                latex_table += f" & {val: .2f}"
                         else:
                             latex_table += f"& {val: .2e}"
                         latex_table += r" & " if dataset == "compass"  and value_type != "hypervolume" else r""
@@ -1141,22 +1150,28 @@ def generate_latex_table(file = "/home/till/Desktop/shapley_values/table.txt"):
             f.write(latex_table)
 
 def get_2_important(data, excluded_keys):
+    max_importance_of = float("-inf")
+    highest_importance_name_of = None
     max_importance = float("-inf")
     highest_importance_name = None
-
+    
     for key, value in data.items():
         if key not in excluded_keys:
             individual_importance = value.get("individual importance", 0)
-            if individual_importance > max_importance:
-                max_importance = individual_importance
-                highest_importance_name = key
+            if individual_importance > max_importance_of:
+                max_importance_of= individual_importance
+                highest_importance_name_of = key
+        individual_importance = value.get("individual importance", 0)
+        if individual_importance > max_importance:
+            max_importance= individual_importance
+            highest_importance_name = key    
 
-    return highest_importance_name
+    return highest_importance_name_of, highest_importance_name
 
 
-def generate_fanvoa_table(methods, file = "/home/till/Desktop/fanova/table.txt"):
+def generate_fanvoa_table(methods, file = "/home/till/Desktop/fanova/table_marked.txt"):
      
-    for constrain in ["error_rate_difference"]:
+    for constrain in ["consistency_score", "equalized_odds", "demographic_parity"]:
         latex_table = ""
         latex_table += fr"""
         \begin{{table}}
@@ -1171,6 +1186,7 @@ def generate_fanvoa_table(methods, file = "/home/till/Desktop/fanova/table.txt")
         \cline{{2-5}} \cline{{7-10}}
          & lawschool & german & adult & compass & & lawschool & german & adult & compass \\
                 """    
+        ov_hi_of = []
         #method_count = len(data["lawschool"].keys())  # Assuming the count is consistent across datasets    
         for method in methods:
             method_name = get_method_name(method)
@@ -1197,16 +1213,22 @@ def generate_fanvoa_table(methods, file = "/home/till/Desktop/fanova/table.txt")
                         except: 
                             print(f"{method}/{dataset}/{constrain} not found")
                             continue
-                        prepro_types.append(get_2_important(fanova_values, prepro_types))
+                        hip_of, hip = get_2_important(fanova_values, prepro_types)
+                        ov_hi_of.append(hip_of)
+                        prepro_types.append(hip_of)
                         #print(len(prepro_types))
                         if i > len(prepro_types)-1:
                             continue
                         #print(i)
                         val = fanova_values[prepro_types[i]]["individual importance"] # that has to change to something that makes sense
                         if val > 0.01 or val == 0:
-                            latex_table += f" & {val: .2f}"
+                            val_t = f"{val: .2f}"
                         else:
-                            latex_table += f"& {val: .2e}"
+                            val_t = f"{val: .2e}"
+                        if prepro_types[i] == hip:
+                            latex_table += r" & \textbf{" + val_t + r"}"
+                        else:
+                            latex_table +=r"& "+ val_t
                         latex_table += r" & " if dataset == "compass"  and value_type != "fairness" else r""
                 latex_table += r" \\" + "\n"
                         
@@ -1224,8 +1246,10 @@ def generate_fanvoa_table(methods, file = "/home/till/Desktop/fanova/table.txt")
             """
         latex_table += "\n"
         #print(latex_table)
-        with open("/home/till/Desktop/fanova/table.txt", "a+") as f:
+        with open("/home/till/Desktop/fanova/table_marked.txt", "a+") as f:
             f.write(latex_table)
+        from collections import Counter
+        print(dict(Counter(ov_hi_of)))
 # Create an empty list to store processed data
 
 def get_used_methods(data):
@@ -1458,13 +1482,13 @@ if __name__ == "__main__":
     #            "ps_ranker", "cr", #one prepreproessor
     #            "moo_ps_ranker","moo+cr", "moo+lfr", #one prepreproessor
     methods = [ 
-        "moo",
-        "so",
+        #"moo",
+        #"so",
         #preprocessor every time
-        "redlineing",
-        "cr",
-        "ps_ranker",
-        "lfr",
+        #"redlineing",
+        #"cr",
+        #"ps_ranker",
+        #"lfr",
         #preprocessor optional
         "moo+sar",     
         "moo_ps_ranker",
@@ -1527,7 +1551,7 @@ if __name__ == "__main__":
     #            for seed in seeds:
     #                deep_dive[method][seed] = data["error_rate_difference"]["adult"][seed][method]["pareto_config"]
     #generate_latex_table()                
-    #generate_fanvoa_table(methods)   
+    generate_fanvoa_table(methods)   
     #create_pareto_dominace_table()
     file = "/home/till/Documents/auto-sklearn/tmp/scaled_results_all_cp.json"
     #calc_hypervolume(data, file)
@@ -1535,17 +1559,17 @@ if __name__ == "__main__":
         results = json.load(f)
     #check_pareto_front(data)
     #test_table(results)
-    names = ["hypervolume[scaled]","accurancy[bestScaled]", "fairness[bestScaled]",
-                                    "accurancy[avgScaled]", "fairness[avgScaled]",
-                                   "accurancy[best]", "fairness[best]",
-                                     "accurancy[avg]", "fairness[avg]", "hypervolume"]
-    names = ["test"]
-    comparisons = ["hypervolume_scaled_max","acc_best_scaled_max", "fairness_best_scaled_max", 
-                                   "acc_scaled_max", "fairness_scaled_max",
-                                   "acc_best", "fairness_best",
-                                    "acc", "fairness", "hypervolume"]
+    #names = ["hypervolume[scaled]","accurancy[bestScaled]", "fairness[bestScaled]",
+    #                                "accurancy[avgScaled]", "fairness[avgScaled]",
+    #                               "accurancy[best]", "fairness[best]",
+    #                                 "accurancy[avg]", "fairness[avg]", "hypervolume"]
+    #names = ["test"]
+    #comparisons = ["hypervolume_scaled_max","acc_best_scaled_max", "fairness_best_scaled_max", 
+    #                               "acc_scaled_max", "fairness_scaled_max",
+    #                               "acc_best", "fairness_best",
+    #                                "acc", "fairness", "hypervolume"]
     #for i, comparison in enumerate(comparisons):
-    barplot_results(results, comparisons[0], names[0],"/home/till/Desktop/redlineing/all/")
+    #barplot_results(results, comparisons[0], names[0],"/home/till/Desktop/redlineing/all/")
        
     #plot_scaled_values(results,"/home/till/Desktop/redlineing/all/","hypervolume_scaled_max", methods)
 

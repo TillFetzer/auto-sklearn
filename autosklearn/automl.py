@@ -1153,6 +1153,7 @@ class AutoML(BaseEstimator):
             in [
                 "partial-cv",
                 "cv",
+                "fairness-cv",
                 "cv-iterative-fit",
                 "partial-cv-iterative-fit",
             ]
@@ -2193,7 +2194,7 @@ class AutoML(BaseEstimator):
         table["rank"] = np.arange(1, len(table.index) + 1)
 
         # Check which resampling strategy is chosen and selecting the appropriate models
-        is_cv = self._resampling_strategy == "cv"
+        is_cv = self._resampling_strategy == "cv"  or self._resampling_strategy == "fairness-cv"
         models = self.cv_models_ if is_cv else self.models_
 
         for (_, model_id, _), model in models.items():

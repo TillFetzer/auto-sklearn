@@ -445,7 +445,7 @@ class AutoMLSMBO:
 
         metalearning_configurations = self.get_metalearning_suggestions()
         
-        if self.resampling_strategy in ["partial-cv", "partial-cv-iterative-fit"]:
+        if self.resampling_strategy in ["partial-cv", "partial-cv-iterative-fit", "fairness-cv"]:
             num_folds = self.resampling_strategy_args["folds"]
             instances = [
                 [json.dumps({"task_id": self.dataset_name, "fold": fold_number})]
